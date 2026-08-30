@@ -1,0 +1,6 @@
+{
+  "name": "Daily Tools",
+  "description": "Una collezione minimalista di 9 strumenti digitali utili per la vita quotidiana, con tema scuro.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
