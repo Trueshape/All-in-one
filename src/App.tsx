@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeftRight,
@@ -52,33 +52,33 @@ import {
 } from "lucide-react";
 
 // Import Components
-import CurrencyConverter from "./components/CurrencyConverter";
-import UnitConverter from "./components/UnitConverter";
-import PasswordGenerator from "./components/PasswordGenerator";
-import TipCalculator from "./components/TipCalculator";
-import PomodoroTimer from "./components/PomodoroTimer";
-import QrGenerator from "./components/QrGenerator";
-import TextCounter from "./components/TextCounter";
-import ColorPicker from "./components/ColorPicker";
-import DecisionMaker from "./components/DecisionMaker";
-import BmiCalculator from "./components/BmiCalculator";
-import MarkdownPreviewer from "./components/MarkdownPreviewer";
-import WorldClock from "./components/WorldClock";
-import AgeCalculator from "./components/AgeCalculator";
-import ScientificCalculator from "./components/ScientificCalculator";
-import CircleCalculator from "./components/CircleCalculator";
-import AspectRatioCalculator from "./components/AspectRatioCalculator";
-import CaseConverter from "./components/CaseConverter";
-import CompoundInterestCalculator from "./components/CompoundInterestCalculator";
-import TextDiff from "./components/TextDiff";
-import ImageConverter from "./components/ImageConverter";
-import DiscordTimestamp from "./components/DiscordTimestamp";
-import CodiceFiscaleCalculator from "./components/CodiceFiscaleCalculator";
-import CryptoAndNasdaqTracker from "./components/CryptoAndNasdaqTracker";
-import IbanValidator from "./components/IbanValidator";
-import BackgroundRemover from "./components/BackgroundRemover";
-import TodoList from "./components/TodoList";
-import Translator from "./components/Translator";
+const CurrencyConverter = lazy(() => import("./components/CurrencyConverter"));
+const UnitConverter = lazy(() => import("./components/UnitConverter"));
+const PasswordGenerator = lazy(() => import("./components/PasswordGenerator"));
+const TipCalculator = lazy(() => import("./components/TipCalculator"));
+const PomodoroTimer = lazy(() => import("./components/PomodoroTimer"));
+const QrGenerator = lazy(() => import("./components/QrGenerator"));
+const TextCounter = lazy(() => import("./components/TextCounter"));
+const ColorPicker = lazy(() => import("./components/ColorPicker"));
+const DecisionMaker = lazy(() => import("./components/DecisionMaker"));
+const BmiCalculator = lazy(() => import("./components/BmiCalculator"));
+const MarkdownPreviewer = lazy(() => import("./components/MarkdownPreviewer"));
+const WorldClock = lazy(() => import("./components/WorldClock"));
+const AgeCalculator = lazy(() => import("./components/AgeCalculator"));
+const ScientificCalculator = lazy(() => import("./components/ScientificCalculator"));
+const CircleCalculator = lazy(() => import("./components/CircleCalculator"));
+const AspectRatioCalculator = lazy(() => import("./components/AspectRatioCalculator"));
+const CaseConverter = lazy(() => import("./components/CaseConverter"));
+const CompoundInterestCalculator = lazy(() => import("./components/CompoundInterestCalculator"));
+const TextDiff = lazy(() => import("./components/TextDiff"));
+const ImageConverter = lazy(() => import("./components/ImageConverter"));
+const DiscordTimestamp = lazy(() => import("./components/DiscordTimestamp"));
+const CodiceFiscaleCalculator = lazy(() => import("./components/CodiceFiscaleCalculator"));
+const CryptoAndNasdaqTracker = lazy(() => import("./components/CryptoAndNasdaqTracker"));
+const IbanValidator = lazy(() => import("./components/IbanValidator"));
+const BackgroundRemover = lazy(() => import("./components/BackgroundRemover"));
+const TodoList = lazy(() => import("./components/TodoList"));
+const Translator = lazy(() => import("./components/Translator"));
 
 interface ToolItem {
   id: string;
@@ -1288,7 +1288,9 @@ export default function App() {
 
               {/* Scrollable Modal Content Workspace */}
               <div className={tc.modalBody}>
-                <activeTool.component isEditorMode={isEditorMode} />
+                <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
+                  <activeTool.component isEditorMode={isEditorMode} />
+                </Suspense>
               </div>
 
               {/* Modal Footer */}

@@ -12,12 +12,40 @@ async function startServer() {
 
   app.use(express.json({ limit: "20mb" }));
 
+  // Simple in-memory rate limit for the translate route: max 20 requests per IP per minute
+  const RATE_WINDOW_MS = 60_000;
+  const RATE_MAX = 20;
+  const hits = new Map<string, { count: number; start: number }>();
+  const rateLimited = (ip: string) => {
+    const now = Date.now();
+    const entry = hits.get(ip);
+    if (!entry || now - entry.start > RATE_WINDOW_MS) {
+      hits.set(ip, { count: 1, start: now });
+      return false;
+    }
+    entry.count += 1;
+    return entry.count > RATE_MAX;
+  };
+
+  const MAX_TEXT_LENGTH = 5000;
+  const ALLOWED_LANGS = new Set(["auto", "it", "en", "es", "fr", "de", "pt", "ru", "zh", "ja", "ko", "ar", "nl", "pl", "sv", "tr", "el"]);
+
   // API Route: Translation powered by Gemini API
   app.post("/api/translate", async (req, res) => {
     try {
+      if (rateLimited(req.ip || "unknown")) {
+        return res.status(429).json({ error: "Troppe richieste, riprova tra un minuto" });
+      }
+
       const { text, sourceLang, targetLang, tone } = req.body;
       if (!text || typeof text !== "string") {
         return res.status(400).json({ error: "Testo mancante" });
+      }
+      if (text.length > MAX_TEXT_LENGTH) {
+        return res.status(413).json({ error: `Testo troppo lungo (max ${MAX_TEXT_LENGTH} caratteri)` });
+      }
+      if (!ALLOWED_LANGS.has(sourceLang) || !ALLOWED_LANGS.has(targetLang) || targetLang === "auto") {
+        return res.status(400).json({ error: "Lingua non valida" });
       }
 
       const apiKey = process.env.GEMINI_API_KEY;

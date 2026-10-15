@@ -41,7 +41,9 @@ Fai clic su **Pulisci** per iniziare un nuovo documento o usa [questo link](http
     html = html
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
 
     // Code blocks (multiline)
     html = html.replace(/```([\s\S]*?)```/gm, (match, code) => {
@@ -71,7 +73,11 @@ Fai clic su **Pulisci** per iniziare un nuovo documento o usa [questo link](http
     html = html.replace(/^\s*\d+\.\s+(.*?)$/gm, '<li class="list-decimal list-inside text-zinc-400 ml-4 mb-1">$1</li>');
 
     // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline hover:text-indigo-300">$2</a>');
+    // Only http(s) and mailto links are rendered as anchors; anything else (e.g. javascript:) stays as plain text
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, href) => {
+      if (!/^(https?:\/\/|mailto:)/i.test(href)) return match;
+      return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline hover:text-indigo-300">${text}</a>`;
+    });
 
     // Horizontal Rule
     html = html.replace(/^---$/gm, '<hr class="border-zinc-800 my-6" />');
