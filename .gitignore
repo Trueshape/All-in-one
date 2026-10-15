@@ -1,16 +1,5 @@
-# Dipendenze e build
 node_modules/
 dist/
-build/
-
-# Segreti: mai nel repo
 .env
-.env.*
-*.pem
-*.key
-
-# Sistema e editor
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+.env.local
+.env*.local

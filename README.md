@@ -1,24 +1,16 @@
 # All in one
 
-Sito statico pubblicato con GitHub Pages.
+Strumenti quotidiani (calcoli, convertitori, produttività, utilità), in un'unica pagina.
 
-- URL pubblico: https://trueshape.github.io/All-in-one/
+- Sito pubblico: https://trueshape.github.io/All-in-one/ (senza Traduttore: richiede il server locale)
 
-## Come si avvia in locale
+## Avvio in locale
 
-1. Apri `index.html` nel browser.
+1. Installa Node.js (versione LTS).
+2. Nella cartella del progetto: `npm install`.
+3. Per il Traduttore: crea `.env.local` con `GEMINI_API_KEY=la-tua-chiave` (non va nel repo).
+4. Avvia: `npm run dev`, poi apri http://localhost:3000.
 
-Non serve installare nulla: non c'è build né dipendenze.
+## Pubblicazione
 
-## Come si pubblica
-
-1. Su GitHub: **Settings → Pages**.
-2. In *Build and deployment*: **Source** = `Deploy from a branch`.
-3. **Branch** = `main`, cartella = `/ (root)`, poi **Save**.
-4. Dopo 1–2 minuti il sito è online all'URL sopra.
-
-Il file `.nojekyll` disabilita Jekyll, quindi i file e le cartelle che iniziano con `_` vengono serviti così come sono.
-
-## Struttura
-
-Vedi [overview.md](overview.md) per l'elenco dei file.
+Il workflow `.github/workflows/pages.yml` pubblica la versione statica a ogni push su `main`.
