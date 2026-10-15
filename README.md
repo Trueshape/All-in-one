@@ -1,11 +1,24 @@
-<div align="center">
+# All in one
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Sito statico pubblicato con GitHub Pages.
 
-  <h1>Built with AI Studio</h2>
+- URL pubblico: https://trueshape.github.io/All-in-one/
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Come si avvia in locale
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+1. Apri `index.html` nel browser.
 
-</div>
+Non serve installare nulla: non c'è build né dipendenze.
+
+## Come si pubblica
+
+1. Su GitHub: **Settings → Pages**.
+2. In *Build and deployment*: **Source** = `Deploy from a branch`.
+3. **Branch** = `main`, cartella = `/ (root)`, poi **Save**.
+4. Dopo 1–2 minuti il sito è online all'URL sopra.
+
+Il file `.nojekyll` disabilita Jekyll, quindi i file e le cartelle che iniziano con `_` vengono serviti così come sono.
+
+## Struttura
+
+Vedi [overview.md](overview.md) per l'elenco dei file.
