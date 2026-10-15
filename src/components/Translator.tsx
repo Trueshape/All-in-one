@@ -81,6 +81,12 @@ function TranslatorInner() {
         }),
       });
 
+      if (response.status === 429) {
+        setTranslatedText("Troppe richieste al traduttore: riprova tra un minuto.");
+        setIsLoading(false);
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         if (data.translation) {

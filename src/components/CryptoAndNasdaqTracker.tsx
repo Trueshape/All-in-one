@@ -117,40 +117,44 @@ export default function CryptoAndNasdaqTracker() {
   };
 
   // Fetch Crypto Top 100 from API
-  const fetchCrypto = async () => {
+  const fetchCrypto = async (signal?: AbortSignal) => {
     setLoadingCrypto(true);
     setCryptoError(null);
     try {
       const res = await fetch(
-        "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h,7d"
+        "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h,7d",
+        { signal }
       );
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
+        if (signal?.aborted) return;
         setCryptoData(data);
         setLastUpdated(new Date());
       } else {
         throw new Error("Dati non validi");
       }
     } catch (err: any) {
+      if (signal?.aborted) return;
       console.warn("CoinGecko API rate limit or error, using enhanced fallback dataset", err);
       setCryptoError("Aggiornamento live temporaneamente limitato. Visualizzati dati di mercato recenti.");
-      // Enhance fallback with tiny random noise to simulate live updates
-      setCryptoData((prev) =>
-        prev.map((c) => ({
+      // Enhance static fallback with tiny random noise; always starts from FALLBACK_CRYPTO so noise does not accumulate
+      setCryptoData(
+        FALLBACK_CRYPTO.map((c) => ({
           ...c,
           current_price: c.current_price * (1 + (Math.random() * 0.004 - 0.002)),
         }))
       );
     } finally {
-      setLoadingCrypto(false);
+      if (!signal?.aborted) setLoadingCrypto(false);
     }
   };
 
   useEffect(() => {
-    fetchCrypto();
+    const controller = new AbortController();
+    fetchCrypto(controller.signal);
     // Refresh EUR rate
-    fetch("https://open.er-api.com/v6/latest/USD")
+    fetch("https://open.er-api.com/v6/latest/USD", { signal: controller.signal })
       .then((res) => res.json())
       .then((d) => {
         if (d && d.rates && d.rates.EUR) {
@@ -158,6 +162,7 @@ export default function CryptoAndNasdaqTracker() {
         }
       })
       .catch(() => {});
+    return () => controller.abort();
   }, []);
 
   // Filtered Crypto List
@@ -245,7 +250,7 @@ export default function CryptoAndNasdaqTracker() {
           </div>
 
           <button
-            onClick={fetchCrypto}
+            onClick={() => fetchCrypto()}
             disabled={loadingCrypto}
             className="p-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 rounded transition-all flex items-center gap-1.5 text-xs font-mono disabled:opacity-50 cursor-pointer"
             title="Ricarica Dati Live"
