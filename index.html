@@ -1,49 +1,151 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <!-- Pagina statica per GitHub Pages: nessuna build, nessuna dipendenza. -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>All in one</title>
-  <meta name="description" content="All in one — sito statico ospitato su GitHub Pages.">
-  <style>
-    :root {
-      --bg: #ffffff;
-      --fg: #111827;
-      --muted: #6b7280;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg: #0b0f14;
-        --fg: #e5e7eb;
-        --muted: #9ca3af;
-      }
-    }
-    :root[data-theme="dark"] {
-      --bg: #0b0f14;
-      --fg: #e5e7eb;
-      --muted: #9ca3af;
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: var(--bg);
-      color: var(--fg);
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      padding: 16px;
-      box-sizing: border-box;
-    }
-    main { text-align: center; max-width: 560px; }
-    h1 { font-size: 2rem; margin: 0 0 8px; }
-    p { color: var(--muted); margin: 0; line-height: 1.5; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Il sito è mio</title>
+<style>
+  :root { --bg:#0a0a0b; --panel:#0f0f11; --line:#24242a; --ink:#e8e8ea; --soft:#9a9aa3; --mute:#5c5c66; --accent:#e8e8ea; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.5 ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:18px 28px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .brand { display:flex; align-items:baseline; gap:12px; }
+  .brand h1 { margin:0; font:700 22px/1 system-ui, sans-serif; letter-spacing:-.02em; }
+  .brand small { color:var(--mute); letter-spacing:.12em; font-size:10px; }
+  nav { display:flex; gap:22px; flex-wrap:wrap; }
+  nav button { all:unset; cursor:pointer; color:var(--soft); letter-spacing:.12em; font-size:11px; text-transform:uppercase; padding:4px 0; border-bottom:1px solid transparent; }
+  nav button:hover { color:var(--ink); }
+  nav button[aria-pressed="true"] { color:var(--ink); border-bottom-color:var(--accent); }
+  .bar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 28px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .field { display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--panel); padding:8px 12px; border-radius:6px; min-width:260px; color:var(--mute); }
+  .field input { all:unset; flex:1; color:var(--ink); font:inherit; }
+  .field input::placeholder { color:var(--mute); }
+  .chip { border:1px solid var(--line); background:var(--panel); padding:8px 12px; border-radius:6px; color:var(--soft); font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
+  .clock { color:var(--mute); font-size:11px; letter-spacing:.1em; display:flex; gap:20px; }
+  main { padding:40px 28px 24px; max-width:1140px; margin:0 auto; }
+  .title { letter-spacing:.3em; font-size:12px; text-transform:uppercase; margin:0 0 6px; }
+  .sub { color:var(--soft); margin:0 0 28px; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--panel); }
+  .cat { padding:22px 24px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); min-height:180px; }
+  .cat:nth-child(3n) { border-right:0; }
+  .cat-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+  .idx { color:var(--mute); font-size:10px; letter-spacing:.14em; text-transform:uppercase; }
+  .cat h2 { margin:6px 0 0; font:500 26px/1.1 system-ui, sans-serif; letter-spacing:-.01em; }
+  .count { color:var(--mute); font-size:11px; white-space:nowrap; }
+  .cat ul { list-style:none; margin:0; padding:0; }
+  .cat li { color:var(--soft); padding:4px 0; }
+  .cat li::before { content:"— "; color:var(--mute); }
+  .hidden { display:none !important; }
+  footer { display:flex; justify-content:space-between; gap:16px; padding:18px 28px; border-top:1px solid var(--line); color:var(--mute); font-size:10px; letter-spacing:.14em; text-transform:uppercase; flex-wrap:wrap; margin-top:40px; }
+  @media (max-width:820px) { .grid { grid-template-columns:1fr 1fr; } .cat:nth-child(3n) { border-right:1px solid var(--line); } .cat:nth-child(2n) { border-right:0; } }
+  @media (max-width:560px) { .grid { grid-template-columns:1fr; } .cat { border-right:0 !important; } .field { min-width:0; width:100%; } }
+</style>
 </head>
 <body>
-  <main>
-    <h1>All in one</h1>
-    <p>Pagina iniziale. Sostituisci questo file con il contenuto reale del sito.</p>
-  </main>
+<header>
+  <div class="brand">
+    <h1>IL SITO È MIO</h1>
+    <small>SISTEMI QUOTIDIANI V1.0</small>
+  </div>
+  <nav id="nav">
+    <button type="button" data-filter="Tutti" aria-pressed="true">Tutti i Tool</button>
+    <button type="button" data-filter="Calcoli" aria-pressed="false">Calcoli</button>
+    <button type="button" data-filter="Convertitori" aria-pressed="false">Convertitori</button>
+    <button type="button" data-filter="Produttività" aria-pressed="false">Produttività</button>
+    <button type="button" data-filter="Utilità" aria-pressed="false">Utilità</button>
+    <button type="button" data-filter="Preferiti" aria-pressed="false">Preferiti</button>
+  </nav>
+</header>
+
+<div class="bar">
+  <div class="controls">
+    <label class="field">
+      <span aria-hidden="true">⌕</span>
+      <input id="search" type="search" placeholder="Cerca strumento o funzione…" aria-label="Cerca strumento o funzione">
+    </label>
+    <span class="chip">Stile: Artistic Flair</span>
+  </div>
+  <div class="clock"><span id="date"></span><span id="time"></span></div>
+</div>
+
+<main>
+  <p class="title">Seleziona categoria</p>
+  <p class="sub">Esplora i diversi strumenti raggruppati per tipologia di utilizzo.</p>
+
+  <section class="grid" id="grid">
+    <article class="cat" data-cat="Calcoli">
+      <div class="cat-head"><div><div class="idx">01 / Category</div><h2>Calcoli</h2></div><span class="count">10 tools</span></div>
+      <ul>
+        <li>Aspect ratio</li><li>BMI</li><li>Calcolatrice</li><li>Circonferenza</li><li>Codice fiscale e Inverso</li>
+        <li>Crypto Top 100 &amp; Nasdaq</li><li>Età</li><li>Interessi composti</li><li>Mance e sconti</li><li>Validatore IBAN</li>
+      </ul>
+    </article>
+    <article class="cat" data-cat="Convertitori">
+      <div class="cat-head"><div><div class="idx">02 / Category</div><h2>Convertitori</h2></div><span class="count">5 tools</span></div>
+      <ul>
+        <li>Case converter</li><li>Convertitore di Unità</li><li>Convertitore di Valuta</li><li>Convertitore immagini</li><li>Traduttore Multilingua</li>
+      </ul>
+    </article>
+    <article class="cat" data-cat="Produttività">
+      <div class="cat-head"><div><div class="idx">03 / Category</div><h2>Produttività</h2></div><span class="count">6 tools</span></div>
+      <ul>
+        <li>Confronto differenze</li><li>Contatore &amp; Analisi Testo</li><li>Generatore di Password</li><li>Orologio e Fusi Mondiali</li><li>Timer &amp; Pomodoro</li><li>To Do List &amp; Checklist</li>
+      </ul>
+    </article>
+    <article class="cat" data-cat="Utilità">
+      <div class="cat-head"><div><div class="idx">04 / Category</div><h2>Utilità</h2></div><span class="count">6 tools</span></div>
+      <ul>
+        <li>Anteprima Markdown Live</li><li>Discord superscript &amp; timestamps</li><li>Generatore di Decisioni</li><li>Generatore QR Code</li><li>Rimozione Sfondo IA</li><li>Tavolozza e Picker Colori</li>
+      </ul>
+    </article>
+    <article class="cat" data-cat="Preferiti">
+      <div class="cat-head"><div><div class="idx">05 / Personal</div><h2>Preferiti</h2></div><span class="count">3 tools</span></div>
+      <ul>
+        <li>Aspect ratio</li><li>Circonferenza</li><li>Età</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<footer>
+  <span>CPU: 4% — MEM: 124MB — LAT: 12MS</span>
+  <span>© 2026 Design Minimalista • Built for productivity</span>
+</footer>
+
+<script>
+  // filtro per categoria dalla barra di navigazione e ricerca nei nomi degli strumenti
+  const buttons = document.querySelectorAll("#nav button");
+  const cats = document.querySelectorAll(".cat");
+  let current = "Tutti";
+  function applyFilter() {
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    cats.forEach((cat) => {
+      const catMatch = current === "Tutti" || cat.dataset.cat === current;
+      let anyVisible = false;
+      cat.querySelectorAll("li").forEach((li) => {
+        const show = !q || li.textContent.toLowerCase().includes(q);
+        li.classList.toggle("hidden", !show);
+        if (show) anyVisible = true;
+      });
+      cat.classList.toggle("hidden", !(catMatch && (anyVisible || !q)));
+    });
+  }
+  buttons.forEach((b) => b.addEventListener("click", () => {
+    current = b.dataset.filter;
+    buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    applyFilter();
+  }));
+  document.getElementById("search").addEventListener("input", applyFilter);
+
+  // data e ora
+  function tick() {
+    const now = new Date();
+    document.getElementById("date").textContent = now.toLocaleDateString("it-IT", { weekday: "short", day: "2-digit", month: "short" }).toUpperCase();
+    document.getElementById("time").textContent = now.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>
 </body>
 </html>
