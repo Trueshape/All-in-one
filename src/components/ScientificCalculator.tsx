@@ -36,7 +36,7 @@ const SCIENTIFIC_KEYS: Key[] = [
 
 // Simple keypad: 4 × 5.
 const SIMPLE_KEYS: Key[] = [
-  k("C", "clear", "C", 0, 0), k("(", "paren", "(", 1, 0), k(")", "paren", ")", 2, 0), k("⌫", "back", "", 3, 0),
+  k("⌫", "back", "", 0, 0), k("(", "paren", "(", 1, 0), k(")", "paren", ")", 2, 0), k("C", "clear", "C", 3, 0),
   k("7", "num", "7", 0, 1), k("8", "num", "8", 1, 1), k("9", "num", "9", 2, 1), k("÷", "op", "÷", 3, 1),
   k("4", "num", "4", 0, 2), k("5", "num", "5", 1, 2), k("6", "num", "6", 2, 2), k("×", "op", "×", 3, 2),
   k("1", "num", "1", 0, 3), k("2", "num", "2", 1, 3), k("3", "num", "3", 2, 3), k("−", "op", "-", 3, 3),
@@ -95,7 +95,7 @@ function keyStyle(kind: Kind, accentHex: string): CSSProperties {
   return { background: "#111112" };
 }
 
-export default function ScientificCalculator() {
+export default function ScientificCalculator({ showSettings = false }: { showSettings?: boolean }) {
   const u = useUi();
   const [calc, dispatch] = useReducer(reducer, INITIAL);
   const [radians, setRadians] = useState(true);
@@ -189,7 +189,7 @@ export default function ScientificCalculator() {
         <div className={cx("text-xs h-4", u.subtle)}>{preview ? `= ${preview}` : ""}</div>
       </Panel>
 
-      {simple ? (
+      {simple && showSettings && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Forma">
             <Segmented
@@ -217,7 +217,9 @@ export default function ScientificCalculator() {
             />
           </Field>
         </div>
-      ) : (
+      )}
+
+      {!simple && (
         <div className="flex items-center justify-between gap-3">
           <div className="flex gap-1.5">
             {(["MC", "MR", "M+", "M-"] as const).map((op) => (
@@ -253,9 +255,9 @@ export default function ScientificCalculator() {
         ))}
       </div>
 
-      <p className={cx("flex items-center justify-center gap-1.5 text-[11px] text-center pt-2", u.muted)}>
+      {!simple && <p className={cx("flex items-center justify-center gap-1.5 text-[11px] text-center pt-2", u.muted)}>
         <HelpCircle className="w-3.5 h-3.5" /> Tastiera: cifre, + − * / ^ ( ), Invio (=), Backspace, Esc (C)
-      </p>
+      </p>}
     </Stack>
   );
 }

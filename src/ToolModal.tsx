@@ -1,7 +1,7 @@
 import type React from "react";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronLeft, ChevronRight, Heart, Info, Pencil, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Heart, Info, Pencil, Settings, X } from "lucide-react";
 import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
 import { UiContext, UI_TOKENS } from "./ui/tokens";
@@ -47,6 +47,9 @@ export default function ToolModal({
   onToggleInfo,
 }: ToolModalProps) {
   const tc = getThemeClasses(activeTheme);
+  const [showSettings, setShowSettings] = useState(false);
+  // Settings belong to one tool: close them when the open tool changes.
+  useEffect(() => setShowSettings(false), [activeTool?.id]);
 
   return (
     <AnimatePresence>
@@ -146,6 +149,18 @@ export default function ToolModal({
 
               {/* Close Button and Favorite Toggle */}
               <div className="flex items-center gap-2">
+                {activeTool.id === "scientific_calc" && (
+                  <button
+                    onClick={() => setShowSettings(!showSettings)}
+                    className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic} ${showSettings ? `${UI_TOKENS[activeTheme].accent} border-current` : ""}`}
+                    title={showSettings ? "Chiudi impostazioni" : "Impostazioni"}
+                    aria-pressed={showSettings}
+                    id="btn-toggle-settings"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                )}
+
                 <button
                   onClick={onToggleInfo}
                   className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic} ${showInfo ? `${UI_TOKENS[activeTheme].accent} border-current` : ""}`}
@@ -180,7 +195,7 @@ export default function ToolModal({
               <UiContext.Provider value={UI_TOKENS[activeTheme]}>
                <InfoContext.Provider value={showInfo}>
                 <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
-                  <activeTool.component />
+                  <activeTool.component showSettings={showSettings} />
                 </Suspense>
                </InfoContext.Provider>
               </UiContext.Provider>
