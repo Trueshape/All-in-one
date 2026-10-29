@@ -668,7 +668,7 @@ export default function App() {
       )}
 
       {/* Header Section */}
-      <header className={`h-20 ${tc.headerBg} flex items-center justify-between px-6 sm:px-8 shrink-0 z-30`}>
+      <header className={`min-h-20 py-3 ${tc.headerBg} flex flex-wrap items-center justify-between gap-y-3 px-6 sm:px-8 shrink-0 z-30`}>
         <div className="flex items-baseline gap-4">
           <h1 className={tc.headerTitle}>
             {activeTheme === "immersive" ? "IL SITO È MIO" : "Il sito è mio"}
