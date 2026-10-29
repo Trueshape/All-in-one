@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Maximize } from "lucide-react";
-import { Field, TextInput, Toggle, Chips, Panel, SectionTitle, Stack } from "../ui/kit";
+import { Lock, LockOpen, Maximize } from "lucide-react";
+import { Notice, Field, TextInput, Chips, Panel, SectionTitle, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const PRESETS = [
@@ -23,7 +23,8 @@ export default function AspectRatioCalculator() {
   const u = useUi();
   const [width, setWidth] = useState("1920");
   const [height, setHeight] = useState("1080");
-  const [lock, setLock] = useState(true);
+  // Locked: the two sides always keep the selected ratio. Unlocked: each side is free.
+  const [locked, setLocked] = useState(true);
   const [ratio, setRatio] = useState({ w: 16, h: 9 });
 
   const w = parseFloat(width);
@@ -34,47 +35,64 @@ export default function AspectRatioCalculator() {
   const onWidth = (value: string) => {
     setWidth(value);
     const next = parseFloat(value);
-    if (lock && next > 0) setHeight(String(Math.round((next * ratio.h) / ratio.w)));
+    if (locked && next > 0) setHeight(String(Math.round((next * ratio.h) / ratio.w)));
+    else if (!locked && next > 0 && h > 0) setRatio(simplify(next, h));
   };
 
   const onHeight = (value: string) => {
     setHeight(value);
     const next = parseFloat(value);
-    if (lock && next > 0) setWidth(String(Math.round((next * ratio.w) / ratio.h)));
+    if (locked && next > 0) setWidth(String(Math.round((next * ratio.w) / ratio.h)));
+    else if (!locked && next > 0 && w > 0) setRatio(simplify(w, next));
   };
 
-  const onLock = (checked: boolean) => {
-    setLock(checked);
-    if (checked && current) setRatio(current);
+  // Locking takes the ratio currently shown on the fields
+  const toggleLock = () => {
+    setLocked((l) => {
+      if (!l && current) setRatio(current);
+      return !l;
+    });
   };
 
+  // A preset sets the ratio and resizes the height from the current width (the locked side)
   const applyPreset = (p: { w: number; h: number }) => {
     setRatio({ w: p.w, h: p.h });
-    setLock(true);
+    setLocked(true);
     if (w > 0) setHeight(String(Math.round((w * p.h) / p.w)));
   };
 
+  const activeRatio = locked ? `${ratio.w}:${ratio.h}` : "";
   const previewW = valid ? w : 16;
   const previewH = valid ? h : 9;
-  const scale = Math.min(300 / previewW, 150 / previewH);
+  const scale = Math.min(480 / previewW, 230 / previewH);
 
   return (
     <Stack>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
         <Field label="Larghezza (px)">
-          <TextInput type="number" min="1" value={width} onChange={(e) => onWidth(e.target.value)} />
+          <TextInput type="number" min="0" step={locked ? ratio.w : 1} value={width} onChange={(e) => onWidth(e.target.value)} />
         </Field>
+        <button
+          type="button"
+          onClick={toggleLock}
+          aria-pressed={locked}
+          aria-label={locked ? "Sblocca proporzioni" : "Blocca proporzioni"}
+          title={locked ? `Proporzioni bloccate (${ratio.w}:${ratio.h})` : "Proporzioni libere"}
+          className={cx("mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border cursor-pointer transition-colors", locked ? u.tag : u.btnSecondary)}
+          style={locked ? { color: u.accentHex, borderColor: u.accentHex } : undefined}
+        >
+          {locked ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
+        </button>
         <Field label="Altezza (px)">
-          <TextInput type="number" min="1" value={height} onChange={(e) => onHeight(e.target.value)} />
+          <TextInput type="number" min="0" step={locked ? ratio.h : 1} value={height} onChange={(e) => onHeight(e.target.value)} />
         </Field>
       </div>
-
-      <Toggle checked={lock} onChange={onLock} label={`Mantieni proporzioni (${ratio.w}:${ratio.h})`} />
 
       <div className="space-y-2">
         <SectionTitle>Preset comuni</SectionTitle>
         <Chips
-          value={(lock ? `${ratio.w}:${ratio.h}` : "") as string}
+          fill
+          value={activeRatio}
           onChange={(value) => {
             const p = PRESETS.find((x) => x.label === value);
             if (p) applyPreset(p);
@@ -85,10 +103,10 @@ export default function AspectRatioCalculator() {
 
       <Panel inset className="flex flex-col items-center gap-3">
         <span className={`${u.statLabel} self-start`}>Anteprima</span>
-        <div className="h-[170px] w-full flex items-center justify-center">
+        <div className="h-[270px] w-full flex items-center justify-center">
           <div
             className="flex flex-col items-center justify-center gap-1 border-2 transition-all duration-300"
-            style={{ width: previewW * scale, height: previewH * scale, borderColor: u.accentHex, background: `${u.accentHex}14` }}
+            style={{ width: Math.max(180, previewW * scale), height: previewH * scale, borderColor: u.accentHex, background: `${u.accentHex}14` }}
           >
             <Maximize className={`w-4 h-4 ${u.accent}`} />
             <span className={`text-xs font-mono font-bold ${u.text}`}>{valid ? `${width} × ${height}` : "—"}</span>
@@ -96,6 +114,7 @@ export default function AspectRatioCalculator() {
           </div>
         </div>
       </Panel>
+      <Notice>Con il lucchetto chiuso, cambiando un lato l’altro si ricalcola sul rapporto attivo. Con il lucchetto aperto i due lati sono indipendenti.</Notice>
     </Stack>
   );
 }

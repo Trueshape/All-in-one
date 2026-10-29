@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeftRight, RefreshCw } from "lucide-react";
+import { ArrowLeftRight, RefreshCw, TrendingUp } from "lucide-react";
 import { Field, TextInput, Select, IconButton, ResultCard, Row, Panel, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
@@ -90,19 +90,30 @@ export default function CurrencyConverter() {
       </div>
 
       <ResultCard
-        label={valid ? `${fmtNumber(value, 2)} ${from} =` : "Risultato"}
-        value={valid ? `${fmtNumber(converted, 4)} ${to}` : "—"}
+        label="Conversione"
+        value={valid ? (
+          <span className="block">
+            <span className="block text-lg font-semibold font-display text-zinc-100">{fmtNumber(value, 2)} {from} =</span>
+            <span className="block text-2xl font-bold font-display" style={{ color: u.accentHex }}>{fmtNumber(converted, 4)} {to}</span>
+          </span>
+        ) : "—"}
         copyText={valid ? `${fmtNumber(value, 2)} ${from} = ${fmtNumber(converted, 2)} ${to}` : ""}
-      >
-        <Row label="Tasso" value={`1 ${from} = ${fmtNumber(rate, 6)} ${to}`} />
-      </ResultCard>
+      />
 
-      <Panel className="space-y-2">
-        <SectionTitle>Riferimento (1 EUR)</SectionTitle>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 pt-1">
-          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").map((code) => <Row key={code} label={code} value={fmtNumber(rates[code], 4)} />)}
+      <div className={cx("p-3 space-y-2 rounded-xl", u.panel)}>
+        <div className={cx("flex items-center gap-1.5 px-1 text-xs font-medium", u.subtle)}>
+          <TrendingUp className={cx("w-3.5 h-3.5", u.accent)} />
+          <span>Tassi di Cambio Riferimento (1 EUR)</span>
         </div>
-      </Panel>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").slice(0, 4).map((code) => (
+            <div key={code} className={cx("flex items-center justify-between px-2 py-1.5 rounded-lg", u.panelInset)}>
+              <span className={cx("font-medium", u.muted)}>{code}</span>
+              <span className={cx("font-mono font-semibold", u.text)}>{fmtNumber(rates[code], 4)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </Stack>
   );
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { Field, TextInput, Slider, Panel, SectionTitle, Stack, useCopy, cx } from "../ui/kit";
+import { Notice, Field, TextInput, Slider, Panel, SectionTitle, Stack, useCopy, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 type Rgb = [number, number, number];
@@ -149,7 +149,7 @@ export default function ColorPicker() {
             </div>
           ))}
         </div>
-        <p className={cx("text-[11px]", u.muted)}>Clic su un colore per copiarlo, doppio clic per usarlo come colore corrente.</p>
+        <Notice>Clic su un colore per copiarlo, doppio clic per usarlo come colore corrente.</Notice>
       </div>
 
       <Panel className="grid grid-cols-2 gap-3">

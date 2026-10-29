@@ -58,7 +58,6 @@ const PasswordGenerator = lazy(() => import("../components/PasswordGenerator"));
 const TipCalculator = lazy(() => import("../components/TipCalculator"));
 const PomodoroTimer = lazy(() => import("../components/PomodoroTimer"));
 const QrGenerator = lazy(() => import("../components/QrGenerator"));
-const TextCounter = lazy(() => import("../components/TextCounter"));
 const ColorPicker = lazy(() => import("../components/ColorPicker"));
 const DecisionMaker = lazy(() => import("../components/DecisionMaker"));
 const BmiCalculator = lazy(() => import("../components/BmiCalculator"));
@@ -158,17 +157,6 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-cyan-400 bg-cyan-500/10",
     category: "creative",
     component: QrGenerator,
-  },
-  {
-    id: "text",
-    name: "Contatore & Analisi Testo",
-    description: "Analisi di parole, lettere, righe e tempo stimato di lettura con trasformazioni rapide.",
-    icon: AlignLeft,
-    colorClass: "border-violet-900/30 hover:border-violet-500/50",
-    glowClass: "shadow-violet-950/20 hover:shadow-violet-500/5",
-    iconColor: "text-violet-400 bg-violet-500/10",
-    category: "produttivita",
-    component: TextCounter,
   },
   {
     id: "color",

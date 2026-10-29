@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { Field, TextInput, TextArea, Chips, Panel, SectionTitle, Notice, Stack, Row, CopyButton, useCopy, cx } from "../ui/kit";
+import { DatePicker, Field, TextInput, TextArea, Chips, Panel, SectionTitle, Notice, Stack, Row, CopyButton, useCopy, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -73,7 +73,7 @@ export default function DiscordTimestamp() {
         <div className="space-y-4">
           <SectionTitle>Timestamp</SectionTitle>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Data"><TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+            <Field label="Data"><DatePicker value={date} onChange={setDate} /></Field>
             <Field label="Ora"><TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} /></Field>
           </div>
 
@@ -108,7 +108,7 @@ export default function DiscordTimestamp() {
           <Field label="Testo">
             <TextArea rows={4} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Scrivi il testo da formattare..." />
           </Field>
-          <Chips value={markupId} onChange={setMarkupId} options={MARKUP.map((m) => ({ value: m.id, label: m.label }))} />
+          <Chips fill value={markupId} onChange={setMarkupId} options={MARKUP.map((m) => ({ value: m.id, label: m.label }))} />
           <Panel inset className="relative min-h-[88px]">
             <span className={u.statLabel}>Risultato</span>
             <pre className={cx("mt-1 pr-8 text-xs font-mono whitespace-pre-wrap break-all select-all", u.text)}>{formatted || "—"}</pre>

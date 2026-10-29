@@ -49,7 +49,7 @@ export default function CircleCalculator() {
         <div className="space-y-4">
           <p className={`text-[11px] ${u.muted}`}>Inserisci un parametro: gli altri si aggiornano.</p>
           {FIELDS.map((f) => (
-            <Fragment key={f.key}><Field label={<span>{f.label}{edited === f.key && <span className={`ml-2 normal-case tracking-normal ${u.accent}`}>• modificato</span>}</span>}>
+            <Fragment key={f.key}><Field label={f.label}>
               <TextInput type="number" inputMode="decimal" step="any" min="0" value={values[f.key]} placeholder={f.placeholder} onChange={(e) => onChange(f.key, e.target.value)} />
             </Field></Fragment>
           ))}

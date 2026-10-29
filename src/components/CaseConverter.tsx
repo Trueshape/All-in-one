@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { TextArea, Button, IconButton, CopyButton, SectionTitle, Stat, Panel, Stack } from "../ui/kit";
+import { Notice, TextArea, Button, IconButton, CopyButton, SectionTitle, Stat, Panel, Stack } from "../ui/kit";
 
 const SAMPLE = "Converti questo testo di esempio in diversi formati. Analizza anche le statistiche della lettura.";
 
@@ -14,6 +14,8 @@ const words = (s: string) =>
     .filter(Boolean);
 
 const CONVERSIONS: Array<{ label: string; run: (s: string) => string }> = [
+  { label: "Inverti testo", run: (s) => Array.from(s).reverse().join("") },
+  { label: "Inverti parole", run: (s) => s.split(/(\s+)/).reverse().join("") },
   { label: "MAIUSCOLO", run: (s) => s.toUpperCase() },
   { label: "minuscolo", run: (s) => s.toLowerCase() },
   {
@@ -82,6 +84,7 @@ export default function CaseConverter() {
           <Stat label="Righe" value={lines} />
         </div>
       </Panel>
+      <Notice>Le trasformazioni agiscono sul testo intero. Snake_case e kebab-case tolgono accenti e punteggiatura e uniscono le parole con _ o -.</Notice>
     </Stack>
   );
 }

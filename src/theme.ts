@@ -81,7 +81,7 @@ export const getThemeClasses = (theme: Theme) => {
         searchInput: "w-full bg-zinc-900/40 border border-zinc-800 rounded px-9 pr-8 py-1.5 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors",
         clockText: "text-zinc-500",
         clockTime: "text-zinc-400 font-bold",
-        gridContainer: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1px] bg-zinc-850 border border-zinc-800 rounded-lg overflow-hidden max-w-7xl mx-auto",
+        gridContainer: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1px] bg-zinc-850 border border-zinc-800 rounded-none overflow-hidden max-w-7xl mx-auto",
         card: "bg-[#0a0a0a] pt-3 pb-2 px-4 flex flex-col justify-between group h-36 cursor-pointer hover:bg-zinc-900/10 transition-all duration-300 relative",
         cardIndex: "text-[10px] font-mono text-zinc-500 tracking-wider uppercase",
         cardTitle: "text-2xl font-light text-zinc-100 group-hover:text-white transition-colors",
@@ -102,7 +102,7 @@ export const getThemeClasses = (theme: Theme) => {
 export const getToolModalSize = (toolId: string): string => {
   switch (toolId) {
     case "aspect_ratio_calc":
-      return "max-w-[640px] w-[90vw]";
+      return "max-w-[880px] w-[92vw]";
     case "case_converter":
     case "text_diff":
     case "markdown":

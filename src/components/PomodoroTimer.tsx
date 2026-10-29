@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass, ListPlus, Pause, Play, RotateCcw, Timer } from "lucide-react";
-import { Segmented, Chips, Button, IconButton, Stack, cx } from "../ui/kit";
+import { Notice, Segmented, Chips, Button, IconButton, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 type Phase = "work" | "short" | "long";
@@ -77,7 +77,7 @@ function Pomodoro() {
   return (
     <div className="space-y-6 text-center">
       <div className="flex justify-center">
-        <Chips value={phase} onChange={choose} options={(Object.keys(PHASES) as Phase[]).map((p) => ({ value: p, label: PHASES[p].short }))} />
+        <Chips fill value={phase} onChange={choose} options={(Object.keys(PHASES) as Phase[]).map((p) => ({ value: p, label: PHASES[p].short }))} />
       </div>
 
       <div className="relative w-48 h-48 mx-auto flex flex-col items-center justify-center">
@@ -145,6 +145,7 @@ export default function PomodoroTimer() {
   return (
     <Stack>
       <Segmented
+        fill
         value={mode}
         onChange={setMode}
         options={[
@@ -153,6 +154,7 @@ export default function PomodoroTimer() {
         ]}
       />
       {mode === "pomodoro" ? <Pomodoro /> : <Stopwatch />}
+      <Notice>Tecnica Pomodoro: 25 minuti di concentrazione, poi una pausa. Il tempo è calcolato sull’orologio di sistema, quindi non si ferma se cambi scheda.</Notice>
     </Stack>
   );
 }

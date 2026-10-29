@@ -11,3 +11,4 @@
 - 2026-10-29 — Generatore QR locale con `qrcode-generator` (nessun servizio esterno) — la password Wi-Fi non lascia più il browser.
 - 2026-10-29 — Rimosse le finte funzioni: traduttore senza dizionario di ripiego, crypto senza rumore casuale sui prezzi, NASDAQ marcato come dati dimostrativi — non mostrare come reale ciò che non lo è.
 - 2026-10-29 — Aggiunti `@types/react` e `@types/react-dom` — il type-check ora copre davvero i componenti.
+- 2026-10-29 — Calcolatrice scientifica sostituita da una griglia fissa 7×5 con modalità "Semplice" (forma e dimensione dei tasti regolabili); eliminati l'editor del layout e `calcLayout.ts`, la logica dei tasti vive in `calcState.ts` — un solo layout curato è più semplice da mantenere dell'editor drag-and-drop.

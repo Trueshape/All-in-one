@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
-import { Field, TextInput, Select, Chips, IconButton, ResultCard, Row, Stack, fmtNumber } from "../ui/kit";
+import { useUi } from "../ui/tokens";
+import { Notice, Field, TextInput, Select, Tabs, IconButton, ResultCard, Row, Stack, fmtNumber } from "../ui/kit";
 
 interface Unit {
   name: string;
@@ -110,6 +111,7 @@ function convert(category: string, value: number, from: string, to: string): num
 }
 
 export default function UnitConverter() {
+  const u = useUi();
   const [category, setCategory] = useState("lunghezza");
   const [value, setValue] = useState("1");
   const [from, setFrom] = useState("m");
@@ -139,7 +141,7 @@ export default function UnitConverter() {
 
   return (
     <Stack>
-      <Chips value={category} onChange={selectCategory} options={Object.entries(CATEGORIES).map(([id, c]) => ({ value: id, label: c.name }))} />
+      <Tabs fill value={category} onChange={selectCategory} options={Object.entries(CATEGORIES).map(([id, c]) => ({ value: id, label: c.name }))} />
 
       <Field label="Valore">
         <TextInput type="number" inputMode="decimal" step="any" value={value} onChange={(e) => setValue(e.target.value)} suffixText={fromSymbol} />
@@ -160,13 +162,16 @@ export default function UnitConverter() {
       </div>
 
       <ResultCard
-        label="Risultato"
-        value={valid ? `${fmtNumber(result, 8)} ${toSymbol}` : "—"}
+        label="Conversione"
+        value={valid ? (
+          <span className="block">
+            <span className="block text-lg font-semibold font-display text-zinc-100">{fmtNumber(number, 8)} {fromSymbol} =</span>
+            <span className="block text-2xl font-bold font-display" style={{ color: u.accentHex }}>{fmtNumber(result, 8)} {toSymbol}</span>
+          </span>
+        ) : "—"}
         copyText={text}
-      >
-        <Row label="Unità base" value={cat.base} />
-        {category !== "temperatura" && <Row label="Rapporto" value={`1 ${fromSymbol} = ${fmtNumber(cat.units[from].factor / cat.units[to].factor, 8)} ${toSymbol}`} />}
-      </ResultCard>
+      />
+      <Notice>Ogni unità è riportata a un’unità base della categoria tramite un fattore fisso. La temperatura usa formule dedicate.</Notice>
     </Stack>
   );
 }

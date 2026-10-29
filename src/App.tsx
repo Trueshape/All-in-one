@@ -4,6 +4,7 @@ import { TOOLS } from "./tools/registry";
 import { getThemeClasses, type Theme } from "./theme";
 import Landing from "./Landing";
 import ToolModal from "./ToolModal";
+import { I18nContext, makeI18n, type Lang } from "./i18n";
 
 export default function App() {
   const [activeToolId, setActiveToolId] = useState<string | null>(null);
@@ -17,8 +18,19 @@ export default function App() {
     return (saved as Theme) || "artistic";
   });
 
-  // Editor mode state for buttons sizing/ordering
-  const [isEditorMode, setIsEditorMode] = useState<boolean>(false);
+  // Info notices: off by default, switched on/off from the modal header for every tool
+  const [showInfo, setShowInfo] = useState<boolean>(false);
+
+  // Interface language, remembered between visits
+  const [lang, setLang] = useState<Lang>(() => {
+    const saved = localStorage.getItem("utilita365_lang");
+    return saved === "en" || saved === "es" || saved === "de" || saved === "fr" ? saved : "it";
+  });
+  useEffect(() => {
+    localStorage.setItem("utilita365_lang", lang);
+    document.documentElement.lang = lang;
+  }, [lang]);
+  const i18n = makeI18n(lang, setLang);
 
   // Favorite Tools State
   const [favoriteTools, setFavoriteTools] = useState<Record<string, boolean>>(() => {
@@ -44,13 +56,6 @@ export default function App() {
 
   const [editingToolName, setEditingToolName] = useState<boolean>(false);
   const [tempToolName, setTempToolName] = useState<string>("");
-
-  // Reset editor mode when closing the active tool
-  useEffect(() => {
-    if (!activeToolId) {
-      setIsEditorMode(false);
-    }
-  }, [activeToolId]);
 
   useEffect(() => {
     localStorage.setItem("utilita365_custom_tool_names", JSON.stringify(customToolNames));
@@ -114,9 +119,25 @@ export default function App() {
     }
   };
 
+  // Arrow keys move between tools while one is open (ignored while typing in a field)
+  useEffect(() => {
+    if (!activeToolId) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
+      if (e.key === "ArrowRight") handleNextTool();
+      else if (e.key === "ArrowLeft") handlePrevTool();
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const tc = getThemeClasses(activeTheme);
 
   return (
+    <I18nContext.Provider value={i18n}>
     <div className={`min-h-screen ${tc.bg} flex flex-col relative transition-colors duration-500`}>
 
       {/* Background decoration elements */}
@@ -146,8 +167,6 @@ export default function App() {
         activeTool={activeTool}
         activeToolIndex={activeToolIndex}
         toolCount={orderedTools.length}
-        isEditorMode={isEditorMode}
-        setIsEditorMode={setIsEditorMode}
         editingToolName={editingToolName}
         setEditingToolName={setEditingToolName}
         tempToolName={tempToolName}
@@ -156,13 +175,13 @@ export default function App() {
         setCustomToolNames={setCustomToolNames}
         favoriteTools={favoriteTools}
         toggleFavorite={(id) => toggleFavorite(id)}
-        onClose={() => {
-          setActiveToolId(null);
-          setIsEditorMode(false);
-        }}
+        onClose={() => setActiveToolId(null)}
         onNext={handleNextTool}
         onPrev={handlePrevTool}
+        showInfo={showInfo}
+        onToggleInfo={() => setShowInfo((v) => !v)}
       />
     </div>
+    </I18nContext.Provider>
   );
 }

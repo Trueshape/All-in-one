@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Check, ChevronDown, ChevronUp, Circle, ListTodo, Plus, Star, Trash2, X } from "lucide-react";
-import { Field, TextInput, TextArea, Select, Chips, Button, IconButton, CopyButton, Panel, Notice, Stack, cx } from "../ui/kit";
+import { DatePicker, Field, TextInput, TextArea, Select, Chips, Button, IconButton, CopyButton, Panel, Notice, Stack, Tag, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 type Category = "lavoro" | "personale" | "spesa" | "studio" | "progetti";
@@ -175,7 +175,7 @@ export default function TodoList() {
                   <option value="alta">Alta</option>
                 </Select>
               </Field>
-              <Field label="Scadenza"><TextInput type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></Field>
+              <Field label="Scadenza"><DatePicker value={dueDate} onChange={setDueDate} /></Field>
             </div>
             <Field label="Sotto-attività">
               <div className="flex gap-2">
@@ -186,10 +186,7 @@ export default function TodoList() {
             {newSubs.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {newSubs.map((s, i) => (
-                  <span key={`${s}-${i}`} className={cx("inline-flex items-center gap-1 px-2 py-1 text-[11px]", u.panel, u.subtle)}>
-                    {s}
-                    <button type="button" className="cursor-pointer hover:text-red-400" onClick={() => setNewSubs(newSubs.filter((_, j) => j !== i))} aria-label={`Rimuovi ${s}`}><X className="w-3 h-3" /></button>
-                  </span>
+                  <Tag key={`${s}-${i}`} label={s} onRemove={() => setNewSubs(newSubs.filter((_, j) => j !== i))} />
                 ))}
               </div>
             )}
@@ -203,7 +200,7 @@ export default function TodoList() {
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Chips value={status} onChange={setStatus} options={[
+          <Chips fill value={status} onChange={setStatus} options={[
             { value: "all", label: `Tutti (${tasks.length})` },
             { value: "active", label: `In corso (${tasks.length - done})` },
             { value: "completed", label: `Completati (${done})` },

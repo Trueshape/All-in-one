@@ -72,7 +72,7 @@ export default function CompoundInterestCalculator() {
             </Field>
           </div>
           <Field label="Capitalizzazione">
-            <Chips value={frequency} onChange={setFrequency} options={FREQUENCIES} />
+            <Chips fill value={frequency} onChange={setFrequency} options={FREQUENCIES} />
           </Field>
         </div>
 

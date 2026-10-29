@@ -77,7 +77,6 @@ export default function QrGenerator() {
     ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="${bg}"/><path d="${path}" fill="${fg}"/></svg>`
     : "";
 
-  const downloadSvg = () => download(new Blob([svgMarkup], { type: "image/svg+xml" }), `qrcode_${mode}.svg`);
 
   const downloadPng = () => {
     if (!matrix) return;
@@ -100,6 +99,7 @@ export default function QrGenerator() {
   return (
     <Stack>
       <Segmented
+        fill
         value={mode}
         onChange={setMode}
         options={[
@@ -135,7 +135,7 @@ export default function QrGenerator() {
           )}
 
           <Field label="Correzione errori">
-            <Chips value={level} onChange={setLevel} options={(["L", "M", "Q", "H"] as Level[]).map((l) => ({ value: l, label: l }))} />
+            <Chips fill value={level} onChange={setLevel} options={(["L", "M", "Q", "H"] as Level[]).map((l) => ({ value: l, label: l }))} />
           </Field>
 
           <div className="grid grid-cols-2 gap-4">
@@ -161,11 +161,8 @@ export default function QrGenerator() {
             )}
           </div>
           {error && <Notice tone="error">{error}</Notice>}
-          <div className="flex gap-2 w-full">
-            <Button variant="primary" className="flex-1" disabled={!matrix} icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>PNG</Button>
-            <Button className="flex-1" disabled={!matrix} icon={<Download className="w-3.5 h-3.5" />} onClick={downloadSvg}>SVG</Button>
-          </div>
-          <p className={`text-[11px] text-center ${u.muted}`}>Il codice è generato nel browser: nessun dato viene inviato a servizi esterni.</p>
+          <Button variant="primary" className="w-full !rounded-xl py-3" disabled={!matrix} icon={<Download className="w-4 h-4" />} onClick={downloadPng}>Scarica QR Code</Button>
+          <Notice>Il codice è generato nel browser: nessun dato viene inviato a servizi esterni.</Notice>
         </Panel>
       </div>
     </Stack>

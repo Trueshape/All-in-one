@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Globe, Moon, Sun } from "lucide-react";
-import { Panel, Slider, Button, Stack, cx } from "../ui/kit";
+import { Notice, Panel, Slider, Button, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const CITIES = [
@@ -75,6 +75,7 @@ export default function WorldClock() {
           );
         })}
       </div>
+      <Notice>Gli orari seguono i fusi orari del sistema, ora legale inclusa. Sposta il cursore per vedere che ore saranno in un altro momento.</Notice>
     </Stack>
   );
 }

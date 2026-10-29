@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Field, Segmented, Slider, Panel, Row, Notice, Stack, fmtNumber } from "../ui/kit";
+import { Field, Segmented, Slider, Row, Notice, Stack, cx, fmtNumber } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const SCALE_MIN = 10;
 const SCALE_MAX = 45;
 
 const CLASSES = [
-  { max: 18.5, label: "Sottopeso", text: "text-sky-400", bar: "bg-sky-500/40" },
-  { max: 25, label: "Normopeso", text: "text-emerald-400", bar: "bg-emerald-500/40" },
-  { max: 30, label: "Sovrappeso", text: "text-amber-400", bar: "bg-amber-500/40" },
-  { max: Infinity, label: "Obesità", text: "text-rose-400", bar: "bg-rose-500/40" },
+  { max: 18.5, label: "Sottopeso", text: "text-sky-400", bar: "bg-sky-500/40", box: "bg-sky-500/10 border-sky-500/30" },
+  { max: 25, label: "Normopeso", text: "text-emerald-400", bar: "bg-emerald-500/40", box: "bg-emerald-500/10 border-emerald-500/30" },
+  { max: 30, label: "Sovrappeso", text: "text-amber-400", bar: "bg-amber-500/40", box: "bg-amber-500/10 border-amber-500/30" },
+  { max: Infinity, label: "Obesità", text: "text-rose-400", bar: "bg-rose-500/40", box: "bg-rose-500/10 border-rose-500/30" },
 ];
 
 const pct = (bmi: number) => Math.min(100, Math.max(0, ((bmi - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 100));
@@ -39,6 +39,7 @@ export default function BmiCalculator() {
         <div className="space-y-5">
           <Field label="Sesso">
             <Segmented
+              fill
               value={sex}
               onChange={setSex}
               options={[
@@ -52,7 +53,7 @@ export default function BmiCalculator() {
           <Slider label="Peso" value={weight} min={30} max={150} onChange={setWeight} display={`${weight} kg`} />
         </div>
 
-        <Panel className="space-y-5">
+        <div className={cx("space-y-5 p-4 border rounded-xl transition-colors duration-300", current.box)}>
           <div>
             <span className={u.statLabel}>Indice di massa corporea</span>
             <div className="flex items-baseline gap-3 mt-1 flex-wrap">
@@ -84,7 +85,7 @@ export default function BmiCalculator() {
             <Row label="Peso ideale (BMI 18,5–24,9)" value={`${fmtNumber(idealMin, 1)} – ${fmtNumber(idealMax, 1)} kg`} />
             <Row label="Grasso corporeo stimato" value={`~ ${fmtNumber(bodyFat, 1)}%`} />
           </div>
-        </Panel>
+        </div>
       </div>
 
       <Notice>

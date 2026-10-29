@@ -9,7 +9,7 @@
 - `src/components/` — un file per strumento, tutti costruiti con il kit in `src/ui/`.
 - `src/ui/tokens.ts` — token di stile per tema (colori, font, bordi) usati dagli strumenti.
 - `src/ui/kit.tsx` — componenti condivisi: campi, bottoni, slider, pannelli, risultati, avvisi.
-- `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcLayout.ts`, `chromaKey.ts`, `marketData.ts`.
+- `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `chromaKey.ts`, `marketData.ts`.
 - `src/index.css`, `src/main.tsx`, `src/vite-env.d.ts` — stili globali, entry React, tipi Vite.
 - `server.ts` — server Express locale: serve Vite in sviluppo e l'API `/api/translate` (Gemini). Non è usato su Pages.
 - `vite.config.ts` — config Vite; `base` cambia con `VITE_PUBLIC=1` (sottocartella `/All-in-one/` per Pages).

@@ -172,7 +172,7 @@ export default function ImageConverter() {
           </div>
           <Toggle checked={lock} onChange={setLock} label="Mantieni proporzioni" />
           <Field label="Formato">
-            <Chips value={format} onChange={setFormat} options={[{ value: "jpeg", label: "JPG" }, { value: "png", label: "PNG" }, { value: "webp", label: "WEBP" }]} />
+            <Chips fill value={format} onChange={setFormat} options={[{ value: "jpeg", label: "JPG" }, { value: "png", label: "PNG" }, { value: "webp", label: "WEBP" }]} />
           </Field>
           {format !== "png" && <Slider label="Qualità" value={quality} min={10} max={100} onChange={setQuality} display={`${quality}%`} />}
           <Button variant="primary" className="w-full" disabled={!source || busy} icon={<Download className="w-3.5 h-3.5" />} onClick={save}>

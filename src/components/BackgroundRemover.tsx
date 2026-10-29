@@ -241,6 +241,7 @@ export default function BackgroundRemover() {
 
           <Field label="Strumento">
             <Segmented
+              fill
               value={tool}
               onChange={setTool}
               options={[
@@ -255,7 +256,7 @@ export default function BackgroundRemover() {
 
           <Field label="Sfondo dell'esportazione">
             <div className="flex items-center gap-3">
-              <Segmented value={bgMode} onChange={setBgMode} options={[{ value: "transparent", label: "Trasparente" }, { value: "color", label: "Colore" }]} />
+              <Segmented fill value={bgMode} onChange={setBgMode} options={[{ value: "transparent", label: "Trasparente" }, { value: "color", label: "Colore" }]} />
               {bgMode === "color" && <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore di sfondo" />}
             </div>
           </Field>
@@ -278,7 +279,7 @@ export default function BackgroundRemover() {
             {loaded && showOriginal && <img src={loaded.url} alt="Immagine originale" className="max-w-full max-h-[460px]" />}
           </div>
           {loaded?.scaled && <p className={cx("text-[11px]", u.muted)}>L'immagine è stata ridotta a {loaded.width} × {loaded.height} px per mantenere fluida l'elaborazione.</p>}
-          <p className={cx("text-[11px]", u.muted)}>La rimozione si basa sul colore, non su un modello di intelligenza artificiale, e avviene nel browser. Nessun file viene inviato altrove.</p>
+          <Notice>La rimozione si basa sul colore, non su un modello di intelligenza artificiale, e avviene nel browser. Nessun file viene inviato altrove.</Notice>
         </div>
       </div>
     </Stack>

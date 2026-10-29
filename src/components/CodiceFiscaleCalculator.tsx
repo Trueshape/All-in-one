@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { RefreshCw } from "lucide-react";
-import { Field, TextInput, Select, Segmented, Button, Panel, Row, Notice, SectionTitle, ResultCard, Stack, cx } from "../ui/kit";
+import { DatePicker, Field, TextInput, Select, Segmented, Button, Panel, Row, Notice, SectionTitle, ResultCard, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { COMUNI, encode } from "../lib/codiceFiscale";
 import type { EncodeParts } from "../lib/codiceFiscale";
@@ -38,7 +38,7 @@ export default function CodiceFiscaleCalculator() {
 
   return (
     <Stack>
-      <Segmented value={tab} onChange={setTab} options={[{ value: "calc", label: "Calcola" }, { value: "inv", label: "Decodifica" }]} />
+      <Segmented fill value={tab} onChange={setTab} options={[{ value: "calc", label: "Calcola" }, { value: "inv", label: "Decodifica" }]} />
 
       {tab === "inv" ? (
         <CodiceFiscaleInverse />
@@ -48,16 +48,16 @@ export default function CodiceFiscaleCalculator() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Cognome"><TextInput value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="es. Rossi" autoComplete="off" /></Field>
               <Field label="Nome"><TextInput value={name} onChange={(e) => setName(e.target.value)} placeholder="es. Mario" autoComplete="off" /></Field>
-              <Field label="Data di nascita"><TextInput type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} /></Field>
+              <Field label="Data di nascita"><DatePicker value={birthDate} onChange={setBirthDate} /></Field>
               <Field label="Sesso">
-                <Segmented value={sex} onChange={setSex} options={[{ value: "M", label: "Maschio" }, { value: "F", label: "Femmina" }]} />
+                <Segmented fill value={sex} onChange={setSex} options={[{ value: "M", label: "Maschio" }, { value: "F", label: "Femmina" }]} />
               </Field>
             </div>
 
             <Panel className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <SectionTitle>Luogo di nascita</SectionTitle>
-                <Segmented value={placeMode} onChange={setPlaceMode} options={[{ value: "list", label: "Capoluoghi" }, { value: "custom", label: "Altro / estero" }]} />
+                <Segmented fill value={placeMode} onChange={setPlaceMode} options={[{ value: "list", label: "Capoluoghi" }, { value: "custom", label: "Altro / estero" }]} />
               </div>
               {placeMode === "list" ? (
                 <Select value={listCode} onChange={(e) => setListCode(e.target.value)}>
@@ -90,7 +90,7 @@ export default function CodiceFiscaleCalculator() {
                   <Row label="Luogo (Belfiore)" value={result.parts.belfiore} />
                   <Row label="Carattere di controllo" value={result.parts.check} tone="good" />
                 </div>
-                <p className={cx("text-[11px] pt-1", u.muted)}>I dati restano nel browser e non vengono inviati altrove. Il calcolo non gestisce l'omocodia.</p>
+                <Notice>I dati restano nel browser e non vengono inviati altrove. Il calcolo non gestisce l'omocodia.</Notice>
               </Panel>
             </div>
           )}

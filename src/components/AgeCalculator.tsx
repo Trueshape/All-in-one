@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Gift, Heart, Moon, Wind } from "lucide-react";
-import { Field, TextInput, Panel, ResultCard, Row, Stat, SectionTitle, Notice, Stack, fmtNumber } from "../ui/kit";
+import { DatePicker, Field, TextInput, Panel, ResultCard, Row, Stat, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const WEEKDAYS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
@@ -65,7 +65,7 @@ export default function AgeCalculator() {
   return (
     <Stack>
       <Field label="Data di nascita">
-        <TextInput type="date" value={birthdate} max={toDateInput(today)} onChange={(e) => setBirthdate(e.target.value)} />
+        <DatePicker value={birthdate} max={toDateInput(today)} onChange={setBirthdate} />
       </Field>
 
       {!age ? (
@@ -85,7 +85,7 @@ export default function AgeCalculator() {
               </div>
             </Panel>
 
-            <Panel className="flex items-center gap-3">
+            <Panel className="flex flex-col items-center justify-center gap-2 text-center">
               <Gift className={`w-5 h-5 shrink-0 ${u.accent}`} />
               <div>
                 <span className={u.statLabel}>Mancano al compleanno</span>
@@ -99,20 +99,21 @@ export default function AgeCalculator() {
           <div className="space-y-3">
             <SectionTitle>Stime del viaggio della vita</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Stat
-                label={<span className="inline-flex items-center gap-1.5"><Heart className="w-3 h-3" /> Battiti cardiaci</span>}
-                value={fmtNumber(age.totalDays * 24 * 60 * 70, 0)}
-              />
-              <Stat
-                label={<span className="inline-flex items-center gap-1.5"><Wind className="w-3 h-3" /> Respiri</span>}
-                value={fmtNumber(age.totalDays * 24 * 60 * 16, 0)}
-              />
-              <Stat
-                label={<span className="inline-flex items-center gap-1.5"><Moon className="w-3 h-3" /> Ore di sonno</span>}
-                value={fmtNumber(age.totalDays * 8, 0)}
-              />
+              {[
+                { icon: <Heart className="w-6 h-6 text-rose-500 animate-pulse shrink-0" />, label: "Battiti cardiaci", value: fmtNumber(age.totalDays * 24 * 60 * 70, 0), card: "bg-rose-500/5 border-rose-500/10", text: "text-rose-400" },
+                { icon: <Wind className="w-6 h-6 text-emerald-400 shrink-0" />, label: "Respiri compiuti", value: fmtNumber(age.totalDays * 24 * 60 * 16, 0), card: "bg-emerald-500/5 border-emerald-500/10", text: "text-emerald-400" },
+                { icon: <Moon className="w-6 h-6 text-indigo-400 shrink-0" />, label: "Ore di sonno", value: `${fmtNumber(age.totalDays * 8, 0)} ore`, card: "bg-indigo-500/5 border-indigo-500/10", text: "text-indigo-300" },
+              ].map((stat) => (
+                <div key={stat.label} className={cx("px-5 py-3.5 border rounded-xl flex items-center gap-4", stat.card)}>
+                  {stat.icon}
+                  <div>
+                    <span className={cx("block text-[10px] font-mono uppercase tracking-wider mb-0.5", u.muted)}>{stat.label}</span>
+                    <span className={cx("text-lg font-bold font-mono", stat.text)}>{stat.value}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <p className={`text-[11px] ${u.muted}`}>Stime medie: 70 battiti/min, 16 respiri/min, 8 ore di sonno al giorno.</p>
+            <Notice>Stime medie: 70 battiti/min, 16 respiri/min, 8 ore di sonno al giorno.</Notice>
           </div>
         </>
       )}

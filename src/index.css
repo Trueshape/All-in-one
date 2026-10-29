@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+:root {
+  color-scheme: dark;
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", sans-serif;
@@ -16,3 +20,11 @@
   scrollbar-width: none;
 }
 
+
+/* Decision maker: dice tumble while rolling */
+@keyframes dice-tumble {
+  0% { transform: rotateX(0deg) rotateY(0deg) translateY(0); }
+  35% { transform: rotateX(540deg) rotateY(360deg) translateY(-14px); }
+  70% { transform: rotateX(900deg) rotateY(720deg) translateY(0); }
+  100% { transform: rotateX(1080deg) rotateY(720deg) translateY(0); }
+}

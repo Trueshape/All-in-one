@@ -1,18 +1,17 @@
 import type React from "react";
 import { Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronLeft, ChevronRight, Heart, Lock, Pencil, Unlock, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Heart, Info, Pencil, X } from "lucide-react";
 import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
 import { UiContext, UI_TOKENS } from "./ui/tokens";
+import { InfoContext } from "./ui/kit";
 
 interface ToolModalProps {
   activeTheme: Theme;
   activeTool: ToolItem | null;
   activeToolIndex: number;
   toolCount: number;
-  isEditorMode: boolean;
-  setIsEditorMode: (value: boolean) => void;
   editingToolName: boolean;
   setEditingToolName: (value: boolean) => void;
   tempToolName: string;
@@ -24,6 +23,8 @@ interface ToolModalProps {
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
+  showInfo: boolean;
+  onToggleInfo: () => void;
 }
 
 export default function ToolModal({
@@ -31,8 +32,6 @@ export default function ToolModal({
   activeTool,
   activeToolIndex,
   toolCount,
-  isEditorMode,
-  setIsEditorMode,
   editingToolName,
   setEditingToolName,
   tempToolName,
@@ -44,6 +43,8 @@ export default function ToolModal({
   onClose,
   onNext,
   onPrev,
+  showInfo,
+  onToggleInfo,
 }: ToolModalProps) {
   const tc = getThemeClasses(activeTheme);
 
@@ -145,18 +146,15 @@ export default function ToolModal({
 
               {/* Close Button and Favorite Toggle */}
               <div className="flex items-center gap-2">
-                {activeTool.id === "scientific_calc" && (
-                  <button
-                    onClick={() => setIsEditorMode(!isEditorMode)}
-                    className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic} ${
-                      isEditorMode ? "bg-amber-500/10 border-amber-500/40 text-amber-400" : "text-zinc-400 hover:text-zinc-200"
-                    }`}
-                    title={isEditorMode ? "Blocca modifiche" : "Abilita modifiche (Editor)"}
-                    id="btn-toggle-editor"
-                  >
-                    {isEditorMode ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                  </button>
-                )}
+                <button
+                  onClick={onToggleInfo}
+                  className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic} ${showInfo ? `${UI_TOKENS[activeTheme].accent} border-current` : ""}`}
+                  title={showInfo ? "Nascondi spiegazioni" : "Mostra spiegazioni"}
+                  aria-pressed={showInfo}
+                  id="btn-toggle-info"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
 
                 <button
                   onClick={() => toggleFavorite(activeTool.id)}
@@ -180,9 +178,11 @@ export default function ToolModal({
             {/* Scrollable Modal Content Workspace */}
             <div className={tc.modalBody}>
               <UiContext.Provider value={UI_TOKENS[activeTheme]}>
+               <InfoContext.Provider value={showInfo}>
                 <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
-                  <activeTool.component isEditorMode={isEditorMode} />
+                  <activeTool.component />
                 </Suspense>
+               </InfoContext.Provider>
               </UiContext.Provider>
             </div>
 

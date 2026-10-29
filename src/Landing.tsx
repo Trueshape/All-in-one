@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { TOOLS } from "./tools/registry";
 import { CATEGORY_LABELS, getThemeClasses, type Theme } from "./theme";
+import { LANGS, useI18n, type Lang } from "./i18n";
+import { LangMenu } from "./ui/kit";
 
 interface LandingProps {
   activeTheme: Theme;
@@ -61,6 +63,7 @@ export default function Landing({
   const [editingCardToolId, setEditingCardToolId] = useState<string | null>(null);
   const [tempCardToolName, setTempCardToolName] = useState<string>("");
 
+  const { t, lang, setLang } = useI18n();
   const tc = getThemeClasses(activeTheme);
 
   // Always sort the tools alphabetically by name (taking custom names into account)
@@ -85,17 +88,17 @@ export default function Landing({
   return (
     <>
       {/* Header Section */}
-      <header className={`min-h-20 py-3 ${tc.headerBg} flex flex-wrap items-center justify-between gap-y-3 px-6 sm:px-8 shrink-0 z-30`}>
-        <div className="flex items-baseline gap-4">
+      <header className={`min-h-20 py-3 ${tc.headerBg} relative flex flex-wrap md:flex-nowrap items-center justify-between gap-y-3 px-6 sm:px-8 shrink-0 z-30`}>
+        <div className="flex flex-none items-baseline gap-4 whitespace-nowrap">
           <h1 className={tc.headerTitle}>
             {activeTheme === "immersive" ? "IL SITO È MIO" : "Il sito è mio"}
           </h1>
-          <span className={`${tc.headerSubtitle} hidden sm:inline-block`}>
+          <span className={`${tc.headerSubtitle} hidden xl:inline-block`}>
             {activeTheme === "artistic" ? "Sistemi Quotidiani v1.0" : activeTheme === "immersive" ? "KERNEL_V1.0 // ONLINE" : "Elegant Suite v1.0"}
           </span>
         </div>
 
-        <nav className="flex gap-6 text-[10px] font-medium tracking-[0.2em] uppercase overflow-x-auto max-w-full pb-1 sm:pb-0 no-scrollbar">
+        <nav className="flex justify-center gap-4 text-[10px] md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-max font-medium tracking-[0.2em] uppercase overflow-x-auto max-w-full pb-1 sm:pb-0 no-scrollbar">
           {Object.keys(CATEGORY_LABELS).map((catKey) => (
             <button
               key={catKey}
@@ -105,10 +108,18 @@ export default function Landing({
               }`}
               id={`tab-cat-${catKey}`}
             >
-              {CATEGORY_LABELS[catKey]}
+              {t(`nav_${catKey}`)}
             </button>
           ))}
         </nav>
+        <div className="flex justify-end shrink-0 md:ml-auto">
+          <LangMenu
+            value={lang}
+            onChange={(v) => setLang(v)}
+            options={LANGS.map((l) => ({ value: l.code, label: l.label, flag: l.flag }))}
+            ariaLabel={t("language")}
+          />
+        </div>
       </header>
 
       {/* Search, Time and Theme Selector Panel */}
@@ -121,7 +132,7 @@ export default function Landing({
             </span>
             <input
               type="text"
-              placeholder="Cerca strumento o funzione..."
+              placeholder={t("search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`${tc.searchInput}`}
@@ -259,7 +270,7 @@ export default function Landing({
       <main className="flex-1 overflow-y-auto px-6 sm:px-8 py-8 no-scrollbar z-10">
         {activeTab === "all" && searchQuery === "" ? (
           <div className="max-w-7xl mx-auto flex flex-col gap-6">
-            <div className="flex flex-col gap-1 select-none">
+            <div className="flex flex-col gap-1 select-none invisible" aria-hidden="true">
               <h2 className={`text-xs font-mono uppercase tracking-[0.25em] ${
                 activeTheme === "immersive" ? "text-emerald-500" : activeTheme === "sophisticated" ? "text-violet-400" : "text-zinc-400"
               }`}>
@@ -445,7 +456,7 @@ export default function Landing({
                           {/* Control group */}
                           <div
                             className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity rounded px-1 py-0.5 border ${
-                              activeTheme === "immersive" ? "bg-[#030812]/90 border-emerald-900/60" : activeTheme === "sophisticated" ? "bg-slate-950/80 border-slate-800" : "bg-zinc-950/80 border-zinc-800"
+                              activeTheme === "immersive" ? "bg-[#030812]/90 border-emerald-900/60" : activeTheme === "sophisticated" ? "bg-slate-950/80 border-slate-800" : "bg-zinc-900 border-zinc-800"
                             }`}
                             onClick={(e) => e.stopPropagation()}
                           >

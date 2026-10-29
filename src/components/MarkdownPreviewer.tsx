@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Eye, FileText, PenLine, Trash2, Check, Copy } from "lucide-react";
-import { Segmented, Button, TextArea, Panel, SectionTitle, Stack, useCopy, cx } from "../ui/kit";
+import { Notice, Segmented, Button, TextArea, Panel, SectionTitle, Stack, useCopy, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import type { Ui } from "../ui/tokens";
 import { parseMarkdown, toHtml } from "../lib/markdown";
@@ -107,6 +107,7 @@ export default function MarkdownPreviewer() {
     <Stack className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Segmented
+          fill
           value={view}
           onChange={setView}
           options={[
@@ -141,6 +142,7 @@ export default function MarkdownPreviewer() {
           </div>
         )}
       </div>
+      <Notice>Anteprima live del Markdown: l’HTML grezzo non viene eseguito e i link non sicuri restano testo semplice.</Notice>
     </Stack>
   );
 }

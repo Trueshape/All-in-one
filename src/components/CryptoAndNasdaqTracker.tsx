@@ -137,7 +137,7 @@ export default function CryptoAndNasdaqTracker() {
               <Search className={cx("w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none", u.muted)} />
               <TextInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca per nome o simbolo (es. Bitcoin, ETH)" className="pl-9" />
             </div>
-            <Chips value={filter} onChange={setFilter} options={[
+            <Chips fill value={filter} onChange={setFilter} options={[
               { value: "all", label: "Tutte" },
               { value: "gainers", label: "In rialzo" },
               { value: "losers", label: "In ribasso" },

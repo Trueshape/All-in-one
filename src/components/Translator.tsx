@@ -100,7 +100,7 @@ function TranslatorInner() {
 
   return (
     <Stack>
-      <Chips value={tone} onChange={setTone} options={TONES} />
+      <Chips fill value={tone} onChange={setTone} options={TONES} />
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Select value={from} onChange={(e) => setFrom(e.target.value)} aria-label="Lingua di origine">
