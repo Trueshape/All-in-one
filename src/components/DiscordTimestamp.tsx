@@ -1,300 +1,125 @@
-import React, { useState, useEffect } from "react";
-import { Clock, Info, Copy, Check, MessageSquare } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Check, Copy } from "lucide-react";
+import { Field, TextInput, TextArea, Chips, Panel, SectionTitle, Notice, Stack, Row, CopyButton, useCopy, cx } from "../ui/kit";
+import { useUi } from "../ui/tokens";
 
-interface TimestampStyle {
-  code: string;
-  label: string;
-  exampleTemplate: (date: Date) => string;
+const pad = (n: number) => String(n).padStart(2, "0");
+const nowParts = () => {
+  const d = new Date();
+  return { date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, time: `${pad(d.getHours())}:${pad(d.getMinutes())}` };
+};
+
+const rtf = new Intl.RelativeTimeFormat("it", { numeric: "auto" });
+function relative(d: Date): string {
+  const seconds = Math.round((d.getTime() - Date.now()) / 1000);
+  const steps: Array<[Intl.RelativeTimeFormatUnit, number]> = [["year", 31_536_000], ["month", 2_592_000], ["day", 86_400], ["hour", 3600], ["minute", 60]];
+  for (const [unit, size] of steps) {
+    if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
+  }
+  return rtf.format(seconds, "second");
 }
 
+const FORMATS: Array<{ code: string; label: string; preview: (d: Date) => string }> = [
+  { code: "t", label: "Ora breve", preview: (d) => d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) },
+  { code: "T", label: "Ora estesa", preview: (d) => d.toLocaleTimeString("it-IT") },
+  { code: "d", label: "Data breve", preview: (d) => d.toLocaleDateString("it-IT") },
+  { code: "D", label: "Data estesa", preview: (d) => d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" }) },
+  { code: "f", label: "Data e ora", preview: (d) => d.toLocaleString("it-IT", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) },
+  { code: "F", label: "Data e ora estese", preview: (d) => d.toLocaleString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) },
+  { code: "R", label: "Tempo relativo", preview: relative },
+];
+
+const MARKUP: Array<{ id: string; label: string; wrap: (s: string) => string }> = [
+  { id: "bold", label: "Grassetto", wrap: (s) => `**${s}**` },
+  { id: "italic", label: "Corsivo", wrap: (s) => `*${s}*` },
+  { id: "underline", label: "Sottolineato", wrap: (s) => `__${s}__` },
+  { id: "strike", label: "Barrato", wrap: (s) => `~~${s}~~` },
+  { id: "spoiler", label: "Spoiler", wrap: (s) => `||${s}||` },
+  { id: "code", label: "Codice", wrap: (s) => `\`${s}\`` },
+  { id: "block", label: "Blocco codice", wrap: (s) => `\`\`\`\n${s}\n\`\`\`` },
+  { id: "quote", label: "Citazione", wrap: (s) => s.split("\n").map((l) => `> ${l}`).join("\n") },
+  { id: "header", label: "Titolo", wrap: (s) => `# ${s}` },
+  { id: "subtext", label: "Sottotesto", wrap: (s) => `-# ${s}` },
+  { id: "silent", label: "Link senza anteprima", wrap: (s) => `<${s}>` },
+];
+
 export default function DiscordTimestamp() {
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [selectedTime, setSelectedTime] = useState<string>("");
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const u = useUi();
+  const initial = useMemo(nowParts, []);
+  const [date, setDate] = useState(initial.date);
+  const [time, setTime] = useState(initial.time);
+  const [markupId, setMarkupId] = useState("bold");
+  const [input, setInput] = useState("");
+  const { copied, copy } = useCopy();
+  const [copiedTag, setCopiedTag] = useState<string | null>(null);
 
-  // Markdown formatting state
-  const [markupInput, setMarkupInput] = useState<string>("");
-  const [formattedOutput, setFormattedOutput] = useState<string>("");
+  const when = useMemo(() => {
+    const d = new Date(`${date}T${time || "00:00"}`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }, [date, time]);
+  const unix = when ? Math.floor(when.getTime() / 1000) : null;
 
-  useEffect(() => {
-    // Default to current date and time
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    const hh = String(now.getHours()).padStart(2, "0");
-    const min = String(now.getMinutes()).padStart(2, "0");
+  const formatted = input ? MARKUP.find((m) => m.id === markupId)!.wrap(input) : "";
 
-    setSelectedDate(`${yyyy}-${mm}-${dd}`);
-    setSelectedTime(`${hh}:${min}`);
-  }, []);
-
-  const getUnixTimestamp = (): number => {
-    if (!selectedDate || !selectedTime) return Math.floor(Date.now() / 1000);
-    const dateObj = new Date(`${selectedDate}T${selectedTime}`);
-    return isNaN(dateObj.getTime()) ? Math.floor(Date.now() / 1000) : Math.floor(dateObj.getTime() / 1000);
+  const copyTag = async (tag: string) => {
+    await navigator.clipboard.writeText(tag);
+    setCopiedTag(tag);
+    setTimeout(() => setCopiedTag((t) => (t === tag ? null : t)), 1800);
   };
-
-  const unixSeconds = getUnixTimestamp();
-
-  const styles: TimestampStyle[] = [
-    {
-      code: "t",
-      label: "Ora breve",
-      exampleTemplate: (d) =>
-        d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }),
-    },
-    {
-      code: "T",
-      label: "Ora estesa",
-      exampleTemplate: (d) =>
-        d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-    },
-    {
-      code: "d",
-      label: "Data breve",
-      exampleTemplate: (d) =>
-        d.toLocaleDateString("it-IT"),
-    },
-    {
-      code: "D",
-      label: "Data estesa",
-      exampleTemplate: (d) =>
-        d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" }),
-    },
-    {
-      code: "f",
-      label: "Data & Ora breve",
-      exampleTemplate: (d) =>
-        `${d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" })} ${d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}`,
-    },
-    {
-      code: "F",
-      label: "Data & Ora estesa",
-      exampleTemplate: (d) =>
-        d.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }),
-    },
-    {
-      code: "R",
-      label: "Tempo relativo",
-      exampleTemplate: (d) => {
-        const diffMs = d.getTime() - Date.now();
-        const diffMins = Math.round(diffMs / 60000);
-        if (Math.abs(diffMins) < 1) return "ora";
-        if (diffMins > 0) {
-          if (diffMins < 60) return `tra ${diffMins} minuti`;
-          const diffHours = Math.round(diffMins / 60);
-          if (diffHours < 24) return `tra ${diffHours} ore`;
-          return `tra ${Math.round(diffHours / 24)} giorni`;
-        } else {
-          const absMins = Math.abs(diffMins);
-          if (absMins < 60) return `${absMins} minuti fa`;
-          const absHours = Math.round(absMins / 60);
-          if (absHours < 24) return `${absHours} ore fa`;
-          return `${Math.round(absHours / 24)} giorni fa`;
-        }
-      },
-    },
-  ];
-
-  const handleCopy = (codeString: string) => {
-    navigator.clipboard.writeText(codeString);
-    setCopiedCode(codeString);
-    setTimeout(() => setCopiedCode(null), 2000);
-  };
-
-  const applyMarkup = (type: "superscript" | "spoiler" | "bold" | "italic" | "code" | "silent_url" | "header") => {
-    if (!markupInput) return;
-
-    let result = "";
-    switch (type) {
-      case "superscript":
-        result = `^(${markupInput})`;
-        break;
-      case "spoiler":
-        result = `||${markupInput}||`;
-        break;
-      case "bold":
-        result = `**${markupInput}**`;
-        break;
-      case "italic":
-        result = `*${markupInput}*`;
-        break;
-      case "code":
-        result = `\`${markupInput}\``;
-        break;
-      case "silent_url":
-        result = `<${markupInput}>`;
-        break;
-      case "header":
-        result = `# ${markupInput}`;
-        break;
-    }
-    setFormattedOutput(result);
-  };
-
-  const activeDateObj = new Date(unixSeconds * 1000);
 
   return (
-    <div className="space-y-6">
+    <Stack>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Timestamp Selector */}
         <div className="space-y-4">
-          <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
-            Configura Data e Ora
-          </span>
-
+          <SectionTitle>Timestamp</SectionTitle>
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-mono text-zinc-400 block mb-1">Data</label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full bg-zinc-950/40 border border-zinc-800 rounded px-2.5 py-1.5 text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-mono text-zinc-400 block mb-1">Ora</label>
-              <input
-                type="time"
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                className="w-full bg-zinc-950/40 border border-zinc-800 rounded px-2.5 py-1.5 text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700"
-              />
-            </div>
+            <Field label="Data"><TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+            <Field label="Ora"><TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} /></Field>
           </div>
 
-          <div className="p-3 bg-zinc-950/40 border border-zinc-900 rounded-lg space-y-1">
-            <div className="flex justify-between text-[10px] font-mono text-zinc-500">
-              <span>Unix Timestamp (secondi):</span>
-              <span className="text-indigo-400 font-bold">{unixSeconds}</span>
-            </div>
-          </div>
-
-          {/* Table list of codes */}
-          <div className="space-y-2">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
-              Codici Timestamp Generati (Clicca per Copiare)
-            </span>
-
-            <div className="border border-zinc-850 rounded overflow-hidden divide-y divide-zinc-900">
-              {styles.map((style) => {
-                const tag = `<t:${unixSeconds}:${style.code}>`;
-                const isCopied = copiedCode === tag;
-
-                return (
-                  <div
-                    key={style.code}
-                    onClick={() => handleCopy(tag)}
-                    className="flex justify-between items-center p-2.5 bg-zinc-950/10 hover:bg-zinc-950/40 cursor-pointer transition-all group"
-                  >
-                    <div className="font-mono">
-                      <span className="text-xs font-bold text-zinc-200 block group-hover:text-indigo-400 transition-colors">
-                        {style.label}
+          {unix === null ? (
+            <Notice tone="warn">Inserisci una data e un'ora valide.</Notice>
+          ) : (
+            <>
+              <Panel className="p-3"><Row label="Unix timestamp (secondi)" value={unix} /></Panel>
+              <div className={cx("border divide-y", u.divider, u.id === "sophisticated" && "rounded-xl overflow-hidden")}>
+                {FORMATS.map((f) => {
+                  const tag = `<t:${unix}:${f.code}>`;
+                  return (
+                    <button type="button" key={f.code} onClick={() => copyTag(tag)} className={cx("w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left cursor-pointer hover:bg-white/5 transition-colors", u.divider)}>
+                      <span className="min-w-0">
+                        <span className={cx("block text-xs font-semibold", u.text)}>{f.label}</span>
+                        <span className={cx("block text-[10px] font-mono truncate", u.muted)}>{tag}</span>
                       </span>
-                      <span className="text-[10px] text-zinc-500">{tag}</span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-mono text-zinc-400 bg-zinc-900/60 border border-zinc-800 px-1.5 py-0.5 rounded">
-                        Anteprima: {style.exampleTemplate(activeDateObj)}
+                      <span className="flex items-center gap-2 shrink-0">
+                        <span className={cx("text-[11px] font-mono", u.subtle)}>{f.preview(when!)}</span>
+                        {copiedTag === tag ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className={cx("w-3.5 h-3.5", u.muted)} />}
                       </span>
-                      {isCopied ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 shrink-0 transition-colors" />
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Discord Formatting Utility */}
-        <div className="bg-zinc-950/20 border border-zinc-800 rounded p-5 flex flex-col justify-between min-h-[350px]">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-zinc-850 pb-2">
-              <MessageSquare className="w-4 h-4 text-indigo-400" />
-              <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
-                Discord Markdown & Apice Generator
-              </span>
-            </div>
-
-            <div>
-              <label className="text-xs font-mono text-zinc-400 block mb-1">Inserisci Testo</label>
-              <textarea
-                value={markupInput}
-                onChange={(e) => setMarkupInput(e.target.value)}
-                placeholder="Scrivi qui il testo che vuoi formattare..."
-                className="w-full h-24 bg-zinc-950/40 border border-zinc-800 rounded p-2.5 text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700 resize-none"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => applyMarkup("superscript")}
-                className="px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-mono rounded text-zinc-350"
-              >
-                Apice / Superscript ^{(`text`)}
-              </button>
-              <button
-                onClick={() => applyMarkup("spoiler")}
-                className="px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-mono rounded text-zinc-350"
-              >
-                Spoiler ||spoiler||
-              </button>
-              <button
-                onClick={() => applyMarkup("bold")}
-                className="px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-mono rounded text-zinc-350"
-              >
-                Grassetto **bold**
-              </button>
-              <button
-                onClick={() => applyMarkup("silent_url")}
-                className="px-2 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-mono rounded text-zinc-350"
-              >
-                URL Silenzioso &lt;link&gt;
-              </button>
-            </div>
-
-            {formattedOutput && (
-              <div className="p-3 bg-zinc-950/60 border border-indigo-950 rounded-lg relative">
-                <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest block mb-1">
-                  Output Formattato Copiabile
-                </span>
-                <p className="text-xs font-mono text-zinc-200 break-all pr-8 select-all">
-                  {formattedOutput}
-                </p>
-                <button
-                  onClick={() => handleCopy(formattedOutput)}
-                  className="absolute right-3.5 bottom-3 text-zinc-500 hover:text-zinc-300 transition-colors"
-                  title="Copia Output"
-                >
-                  {copiedCode === formattedOutput ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </div>
+            </>
+          )}
+        </div>
 
-          <div className="pt-4 border-t border-zinc-800/60 text-[10px] font-mono text-zinc-500">
-            Fai clic su qualsiasi riga o pulsante per copiare istantaneamente il markup negli appunti del sistema.
-          </div>
+        <div className="space-y-4">
+          <SectionTitle>Formattazione testo</SectionTitle>
+          <Field label="Testo">
+            <TextArea rows={4} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Scrivi il testo da formattare..." />
+          </Field>
+          <Chips value={markupId} onChange={setMarkupId} options={MARKUP.map((m) => ({ value: m.id, label: m.label }))} />
+          <Panel inset className="relative min-h-[88px]">
+            <span className={u.statLabel}>Risultato</span>
+            <pre className={cx("mt-1 pr-8 text-xs font-mono whitespace-pre-wrap break-all select-all", u.text)}>{formatted || "—"}</pre>
+            <div className="absolute top-2 right-2"><CopyButton text={formatted} label={copied ? "Copiato" : "Copia"} /></div>
+          </Panel>
         </div>
       </div>
 
-      <div className="p-3 bg-zinc-900/40 border border-zinc-800/60 rounded flex gap-2.5 text-xs text-zinc-400">
-        <Info className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
-        <p className="leading-relaxed font-sans">
-          Discord analizza i timestamp Unix dinamici visualizzando la data e l'ora adattate al fuso orario locale del rispettivo destinatario del messaggio. L'apice renderizza il testo in formato micro per elenchi o note.
-        </p>
-      </div>
-    </div>
+      <Notice>
+        Discord mostra i timestamp nel fuso orario di chi legge. L'orario inserito è interpretato nel tuo fuso locale.
+      </Notice>
+    </Stack>
   );
 }

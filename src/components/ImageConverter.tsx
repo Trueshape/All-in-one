@@ -1,281 +1,189 @@
-import React, { useState, useRef } from "react";
-import { Image as ImageIcon, Info, Download, Trash2, ArrowRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent, DragEvent } from "react";
+import { Download, ImagePlus, Trash2 } from "lucide-react";
+import { Field, TextInput, Toggle, Chips, Slider, Button, IconButton, Panel, SectionTitle, Notice, Stack, Row, cx } from "../ui/kit";
+import { useUi } from "../ui/tokens";
+
+type Format = "jpeg" | "png" | "webp";
+
+interface Source {
+  url: string;
+  name: string;
+  width: number;
+  height: number;
+  size: number;
+}
+
+const MAX_SIDE = 8192;
+
+const formatSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+};
 
 export default function ImageConverter() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [imageName, setImageName] = useState<string>("image");
-  const [originalWidth, setOriginalWidth] = useState<number>(0);
-  const [originalHeight, setOriginalHeight] = useState<number>(0);
-  const [originalSize, setOriginalSize] = useState<number>(0); // in bytes
-  const [targetWidth, setTargetWidth] = useState<string>("");
-  const [targetHeight, setTargetHeight] = useState<string>("");
-  const [format, setFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
-  const [quality, setQuality] = useState<number>(90);
-  const [maintainAspect, setMaintainAspect] = useState<boolean>(true);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const u = useUi();
+  const [source, setSource] = useState<Source | null>(null);
+  const [width, setWidth] = useState("");
+  const [height, setHeight] = useState("");
+  const [lock, setLock] = useState(true);
+  const [format, setFormat] = useState<Format>("jpeg");
+  const [quality, setQuality] = useState(90);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [outputSize, setOutputSize] = useState<number | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const image = useRef<HTMLImageElement>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  useEffect(() => () => { if (source) URL.revokeObjectURL(source.url); }, [source]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const load = (file: File | undefined) => {
     if (!file) return;
-
-    setImageName(file.name.substring(0, file.name.lastIndexOf(".")) || "immagine");
-    setOriginalSize(file.size);
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setSelectedImage(event.target.result as string);
-        
-        // Load image to get original dimensions
-        const img = new Image();
-        img.onload = () => {
-          setOriginalWidth(img.width);
-          setOriginalHeight(img.height);
-          setTargetWidth(String(img.width));
-          setTargetHeight(String(img.height));
-        };
-        img.src = event.target.result as string;
-      }
+    if (!file.type.startsWith("image/")) {
+      setError("Il file selezionato non è un'immagine.");
+      return;
+    }
+    setError(null);
+    setOutputSize(null);
+    const url = URL.createObjectURL(file);
+    const probe = new Image();
+    probe.onload = () => {
+      setSource({ url, name: file.name.replace(/\.[^.]+$/, "") || "immagine", width: probe.naturalWidth, height: probe.naturalHeight, size: file.size });
+      setWidth(String(probe.naturalWidth));
+      setHeight(String(probe.naturalHeight));
     };
-    reader.readAsDataURL(file);
+    probe.onerror = () => {
+      URL.revokeObjectURL(url);
+      setError("Impossibile leggere l'immagine.");
+    };
+    probe.src = url;
   };
 
-  const handleWidthChange = (val: string) => {
-    setTargetWidth(val);
-    const w = parseFloat(val);
-    if (!isNaN(w) && w > 0 && maintainAspect && originalWidth > 0) {
-      const computedH = Math.round((w * originalHeight) / originalWidth);
-      setTargetHeight(String(computedH));
+  const onFile = (e: ChangeEvent<HTMLInputElement>) => load(e.target.files?.[0]);
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    load(e.dataTransfer.files?.[0]);
+  };
+
+  const onWidth = (value: string) => {
+    setWidth(value);
+    const w = parseFloat(value);
+    if (lock && source && w > 0) setHeight(String(Math.round((w * source.height) / source.width)));
+  };
+  const onHeight = (value: string) => {
+    setHeight(value);
+    const h = parseFloat(value);
+    if (lock && source && h > 0) setWidth(String(Math.round((h * source.width) / source.height)));
+  };
+
+  const clear = () => {
+    setSource(null);
+    setWidth("");
+    setHeight("");
+    setOutputSize(null);
+    setError(null);
+    if (input.current) input.current.value = "";
+  };
+
+  const save = () => {
+    if (!source || !image.current) return;
+    const w = Math.round(parseFloat(width));
+    const h = Math.round(parseFloat(height));
+    if (!(w > 0 && h > 0) || w > MAX_SIDE || h > MAX_SIDE) {
+      setError(`Dimensioni non valide: usa valori tra 1 e ${MAX_SIDE} px.`);
+      return;
     }
-  };
-
-  const handleHeightChange = (val: string) => {
-    setTargetHeight(val);
-    const h = parseFloat(val);
-    if (!isNaN(h) && h > 0 && maintainAspect && originalHeight > 0) {
-      const computedW = Math.round((h * originalWidth) / originalHeight);
-      setTargetWidth(String(computedW));
+    setError(null);
+    setBusy(true);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      setBusy(false);
+      setError("Canvas non disponibile in questo browser.");
+      return;
     }
-  };
-
-  const handleDownload = () => {
-    if (!selectedImage || !imageRef.current) return;
-    setIsProcessing(true);
-
-    try {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      const w = parseInt(targetWidth) || originalWidth;
-      const h = parseInt(targetHeight) || originalHeight;
-
-      canvas.width = w;
-      canvas.height = h;
-
-      if (ctx) {
-        // If converting to jpeg, draw white background first
-        if (format === "jpeg") {
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, w, h);
+    if (format === "jpeg") {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.drawImage(image.current, 0, 0, w, h);
+    canvas.toBlob(
+      (blob) => {
+        setBusy(false);
+        if (!blob) {
+          setError("Questo browser non supporta il formato scelto.");
+          return;
         }
-        ctx.drawImage(imageRef.current, 0, 0, w, h);
-
-        const mimeType = `image/${format}`;
-        const dataUrl = canvas.toDataURL(mimeType, format === "png" ? undefined : quality / 100);
-
-        const link = document.createElement("a");
-        link.download = `${imageName}_convertito.${format}`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const clearImage = () => {
-    setSelectedImage(null);
-    setOriginalWidth(0);
-    setOriginalHeight(0);
-    setOriginalSize(0);
-    setTargetWidth("");
-    setTargetHeight("");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+        setOutputSize(blob.size);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${source.name}_convertito.${format === "jpeg" ? "jpg" : format}`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      `image/${format}`,
+      format === "png" ? undefined : quality / 100,
+    );
   };
 
   return (
-    <div className="space-y-6">
+    <Stack>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Upload or Preview Block */}
-        <div className="space-y-4">
-          <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
-            Carica Immagine sorgente
-          </span>
-
-          {!selectedImage ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 hover:bg-zinc-950/60 transition-all rounded-lg p-10 flex flex-col items-center justify-center gap-3 cursor-pointer select-none text-center h-64"
+        <div className="space-y-2">
+          <SectionTitle right={source && <IconButton onClick={clear} title="Rimuovi immagine"><Trash2 className="w-4 h-4" /></IconButton>}>Immagine</SectionTitle>
+          {!source ? (
+            <button
+              type="button"
+              onClick={() => input.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
+              className={cx("w-full h-56 flex flex-col items-center justify-center gap-2 border-2 border-dashed cursor-pointer transition-colors", u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
             >
-              <div className="p-3 bg-zinc-900 border border-zinc-850 rounded-full text-zinc-400">
-                <ImageIcon className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-xs font-mono text-zinc-300 font-bold">Seleziona o trascina un'immagine</p>
-                <p className="text-[10px] font-mono text-zinc-500 mt-1">Supportati: PNG, JPG, WEBP, GIF</p>
-              </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept="image/*"
-                className="hidden"
-              />
-            </div>
+              <ImagePlus className="w-7 h-7" />
+              <span className={cx("text-xs font-semibold", u.text)}>Seleziona o trascina un'immagine</span>
+              <span className="text-[11px]">PNG, JPG, WEBP, GIF</span>
+            </button>
           ) : (
-            <div className="border border-zinc-800 bg-zinc-950/50 rounded-lg p-4 flex flex-col items-center justify-center relative min-h-[256px]">
-              <button
-                onClick={clearImage}
-                className="absolute top-3 right-3 p-1.5 bg-zinc-900/80 hover:bg-rose-950/20 border border-zinc-800 hover:border-rose-900/40 rounded text-zinc-400 hover:text-rose-400 transition-colors"
-                title="Rimuovi immagine"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-
-              <div className="max-h-48 overflow-hidden rounded border border-zinc-900 shadow-md">
-                <img
-                  ref={imageRef}
-                  src={selectedImage}
-                  alt="Original Preview"
-                  className="max-h-44 object-contain max-w-full"
-                />
+            <Panel className="space-y-3">
+              <div className="h-44 flex items-center justify-center">
+                <img ref={image} src={source.url} alt="Anteprima dell'immagine caricata" className="max-h-44 max-w-full object-contain" />
               </div>
-
-              <div className="w-full mt-4 pt-3 border-t border-zinc-900 text-[10px] font-mono text-zinc-500 flex justify-between px-1">
-                <span>Risoluzione: {originalWidth}x{originalHeight} px</span>
-                <span>Peso: {formatSize(originalSize)}</span>
+              <div className={cx("pt-3 border-t space-y-1.5", u.divider)}>
+                <Row label="Risoluzione" value={`${source.width} × ${source.height} px`} />
+                <Row label="Peso" value={formatSize(source.size)} />
               </div>
-            </div>
+            </Panel>
           )}
+          <input ref={input} type="file" accept="image/*" onChange={onFile} className="hidden" />
         </div>
 
-        {/* Options and Conversion panel */}
-        <div className="bg-zinc-950/20 border border-zinc-800 rounded p-5 flex flex-col justify-between min-h-[260px]">
-          <div className="space-y-4">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">
-              Opzioni di conversione
-            </span>
-
-            {/* Target dimensions */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-mono text-zinc-400 block mb-1">Larghezza Target (px)</label>
-                <input
-                  type="number"
-                  disabled={!selectedImage}
-                  value={targetWidth}
-                  onChange={(e) => handleWidthChange(e.target.value)}
-                  className="w-full bg-zinc-950/40 border border-zinc-800 rounded px-2.5 py-1.5 text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700 disabled:opacity-50"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-mono text-zinc-400 block mb-1">Altezza Target (px)</label>
-                <input
-                  type="number"
-                  disabled={!selectedImage}
-                  value={targetHeight}
-                  onChange={(e) => handleHeightChange(e.target.value)}
-                  className="w-full bg-zinc-950/40 border border-zinc-800 rounded px-2.5 py-1.5 text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700 disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <input
-                type="checkbox"
-                id="maintain-aspect-img"
-                disabled={!selectedImage}
-                checked={maintainAspect}
-                onChange={(e) => setMaintainAspect(e.target.checked)}
-                className="rounded bg-zinc-950 border-zinc-850 text-indigo-500 focus:ring-0 focus:ring-offset-0 disabled:opacity-50"
-              />
-              <label htmlFor="maintain-aspect-img" className="text-[10px] font-mono text-zinc-400 cursor-pointer select-none">
-                Mantieni proporzioni originali
-              </label>
-            </div>
-
-            {/* Output format */}
-            <div>
-              <label className="text-xs font-mono text-zinc-400 block mb-1.5">Formato Output</label>
-              <div className="grid grid-cols-3 gap-2">
-                {(["jpeg", "png", "webp"] as const).map((fmt) => (
-                  <button
-                    key={fmt}
-                    onClick={() => setFormat(fmt)}
-                    disabled={!selectedImage}
-                    className={`px-2.5 py-1.5 text-[10px] font-mono border rounded uppercase transition-all ${
-                      format === fmt
-                        ? "bg-zinc-100 text-zinc-900 border-zinc-100 font-bold"
-                        : "bg-zinc-950/40 border-zinc-850 text-zinc-400 hover:text-zinc-200 disabled:opacity-40"
-                    }`}
-                  >
-                    {fmt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quality Slider (for jpeg/webp) */}
-            {format !== "png" && (
-              <div>
-                <div className="flex justify-between text-[10px] font-mono text-zinc-400 mb-1">
-                  <span>Qualità Compressione</span>
-                  <span className="text-indigo-400 font-bold">{quality}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  disabled={!selectedImage}
-                  value={quality}
-                  onChange={(e) => setQuality(Number(e.target.value))}
-                  className="w-full accent-indigo-500 h-1 bg-zinc-900 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-            )}
+        <div className="space-y-4">
+          <SectionTitle>Opzioni</SectionTitle>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Larghezza (px)"><TextInput type="number" min="1" max={MAX_SIDE} disabled={!source} value={width} onChange={(e) => onWidth(e.target.value)} /></Field>
+            <Field label="Altezza (px)"><TextInput type="number" min="1" max={MAX_SIDE} disabled={!source} value={height} onChange={(e) => onHeight(e.target.value)} /></Field>
           </div>
-
-          <button
-            onClick={handleDownload}
-            disabled={!selectedImage || isProcessing}
-            className="w-full mt-4 py-2 bg-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/50 hover:bg-indigo-500/20 text-xs font-mono font-bold rounded text-indigo-400 flex items-center justify-center gap-1.5 transition-all disabled:opacity-40"
-          >
-            <Download className="w-3.5 h-3.5" />
-            {isProcessing ? "Elaborazione..." : "Salva e Scarica"}
-          </button>
+          <Toggle checked={lock} onChange={setLock} label="Mantieni proporzioni" />
+          <Field label="Formato">
+            <Chips value={format} onChange={setFormat} options={[{ value: "jpeg", label: "JPG" }, { value: "png", label: "PNG" }, { value: "webp", label: "WEBP" }]} />
+          </Field>
+          {format !== "png" && <Slider label="Qualità" value={quality} min={10} max={100} onChange={setQuality} display={`${quality}%`} />}
+          <Button variant="primary" className="w-full" disabled={!source || busy} icon={<Download className="w-3.5 h-3.5" />} onClick={save}>
+            {busy ? "Elaborazione..." : "Converti e scarica"}
+          </Button>
+          {outputSize !== null && <p className={cx("text-xs", u.muted)}>File generato: {formatSize(outputSize)}</p>}
         </div>
       </div>
 
-      <div className="p-3 bg-zinc-900/40 border border-zinc-800/60 rounded flex gap-2.5 text-xs text-zinc-400">
-        <Info className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
-        <p className="leading-relaxed font-sans">
-          La conversione e il ridimensionamento delle immagini avvengono interamente in locale nel tuo browser. Nessun file viene inviato a server esterni, garantendo la tua totale privacy.
-        </p>
-      </div>
-    </div>
+      {error && <Notice tone="error">{error}</Notice>}
+      <Notice>La conversione avviene interamente nel browser: nessun file viene inviato a server esterni.</Notice>
+    </Stack>
   );
 }

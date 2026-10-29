@@ -1,202 +1,146 @@
-import React, { useState } from "react";
-import { Eye, Edit2, FileText, Trash2, Copy, Check } from "lucide-react";
+import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { Eye, FileText, PenLine, Trash2, Check, Copy } from "lucide-react";
+import { Segmented, Button, TextArea, Panel, SectionTitle, Stack, useCopy, cx } from "../ui/kit";
+import { useUi } from "../ui/tokens";
+import type { Ui } from "../ui/tokens";
+import { parseMarkdown, toHtml } from "../lib/markdown";
+import type { Block, Inline } from "../lib/markdown";
 
-export default function MarkdownPreviewer() {
-  const [markdown, setMarkdown] = useState<string>(
-    `# 📓 Anteprima Markdown
+const SAMPLE = `# Anteprima Markdown
 
-Benvenuto nell'editor Markdown! Scrivi a sinistra e guarda la resa stilistica a destra.
+Scrivi a sinistra e guarda la resa a destra.
 
-## ✨ Funzionalità principali
+## Funzionalità
 
-1. **Grassetto** e *corsivo* immediati
+1. **Grassetto** e *corsivo*
 2. Liste puntate e numerate
-3. Blocchi di codice evidenziati
-4. Citazioni di testo e collegamenti ipertestuali
+3. Blocchi di codice
+4. Citazioni e [collegamenti](https://example.com)
 
-> "Il design minimale non è la mancanza di elementi, ma la perfetta armonia di ciò che rimane."
+> Il design minimale non è la mancanza di elementi, ma la perfetta armonia di ciò che rimane.
 
 ---
 
-### Esempio di codice:
+### Esempio di codice
 
-\`\`\`javascript
-const saluta = (nome) => {
-  console.log(\`Ciao \${nome}, benvenuto in Il sito è mio!\`);
-};
+\`\`\`
+const saluta = (nome) => \`Ciao \${nome}!\`;
 saluta("Utente");
 \`\`\`
+`;
 
-Fai clic su **Pulisci** per iniziare un nuovo documento o usa [questo link](https://ai.studio/build) per visitare AI Studio!`
-  );
+type ViewMode = "split" | "edit" | "preview";
 
-  const [activeTab, setActiveTab] = useState<"edit" | "preview" | "split">("split");
-  const [copiedHtml, setCopiedHtml] = useState<boolean>(false);
+function renderInline(nodes: Inline[], u: Ui): ReactNode[] {
+  return nodes.map((n, i) => {
+    switch (n.t) {
+      case "text":
+        return n.v;
+      case "code":
+        return (
+          <code key={i} className={cx("px-1.5 py-0.5 text-[0.85em] font-mono border", u.panel, u.accent)}>
+            {n.v}
+          </code>
+        );
+      case "strong":
+        return <strong key={i} className={cx("font-bold", u.text)}>{renderInline(n.c, u)}</strong>;
+      case "em":
+        return <em key={i}>{renderInline(n.c, u)}</em>;
+      case "link":
+        return (
+          <a key={i} href={n.href} target="_blank" rel="noopener noreferrer" className={cx("underline underline-offset-2", u.accent)}>
+            {renderInline(n.c, u)}
+          </a>
+        );
+    }
+  });
+}
 
-  // Simple, robust regex-based Markdown to HTML parser
-  const parseMarkdownToHtml = (md: string) => {
-    let html = md;
+function renderBlock(b: Block, i: number, u: Ui): ReactNode {
+  switch (b.t) {
+    case "h": {
+      const size = ["text-2xl", "text-xl", "text-lg", "text-base", "text-sm", "text-sm"][b.level - 1];
+      return (
+        <div key={i} role="heading" aria-level={b.level} className={cx(size, "font-semibold mt-4 mb-2", u.text, b.level === 1 && cx("pb-2 border-b", u.divider))}>
+          {renderInline(b.c, u)}
+        </div>
+      );
+    }
+    case "p":
+      return <p key={i} className={cx("text-sm leading-relaxed mb-3", u.subtle)}>{renderInline(b.c, u)}</p>;
+    case "hr":
+      return <hr key={i} className={cx("my-5 border-t", u.divider)} />;
+    case "quote":
+      return (
+        <blockquote key={i} className={cx("my-3 pl-4 border-l-2 text-sm italic", u.muted)} style={{ borderColor: u.accentHex }}>
+          {renderInline(b.c, u)}
+        </blockquote>
+      );
+    case "ul":
+    case "ol": {
+      const List = b.t;
+      return (
+        <List key={i} className={cx("mb-3 pl-5 space-y-1 text-sm", u.subtle, b.t === "ul" ? "list-disc" : "list-decimal")}>
+          {b.items.map((it, j) => <li key={j}>{renderInline(it, u)}</li>)}
+        </List>
+      );
+    }
+    case "pre":
+      return (
+        <pre key={i} className={cx("my-3 p-3 overflow-x-auto text-xs font-mono", u.panelInset, u.accent)}>
+          <code>{b.v}</code>
+        </pre>
+      );
+  }
+}
 
-    // Escape raw HTML tags to prevent XSS in preview
-    html = html
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+export default function MarkdownPreviewer() {
+  const u = useUi();
+  const [markdown, setMarkdown] = useState(SAMPLE);
+  const [view, setView] = useState<ViewMode>("split");
+  const { copied, copy } = useCopy();
 
-    // Code blocks (multiline)
-    html = html.replace(/```([\s\S]*?)```/gm, (match, code) => {
-      return `<pre class="bg-zinc-950/80 p-3 rounded font-mono text-xs text-indigo-300 border border-zinc-800 my-3 overflow-x-auto">${code.trim()}</pre>`;
-    });
-
-    // Inline code
-    html = html.replace(/`([^`]+)`/g, '<code class="bg-zinc-900 px-1.5 py-0.5 rounded text-rose-400 font-mono text-xs border border-zinc-800">$1</code>');
-
-    // Headers (H1 to H6)
-    html = html.replace(/^# (.*?)$/gm, '<h1 class="text-2xl font-bold tracking-tight text-white mb-4 mt-6 border-b border-zinc-800 pb-2">$1</h1>');
-    html = html.replace(/^## (.*?)$/gm, '<h2 class="text-xl font-semibold text-zinc-100 mb-3 mt-5">$1</h2>');
-    html = html.replace(/^### (.*?)$/gm, '<h3 class="text-lg font-medium text-zinc-200 mb-2 mt-4">$1</h3>');
-
-    // Blockquotes (styled)
-    html = html.replace(/^&gt;\s?(.*?)$/gm, '<blockquote class="border-l-4 border-indigo-500 bg-indigo-500/5 px-4 py-2 text-zinc-400 rounded-r my-4">$1</blockquote>');
-
-    // Bold and Italic
-    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-bold text-zinc-100">$1</strong>');
-    html = html.replace(/\*([^*]+)\*/g, '<em class="not-italic text-zinc-300">$1</em>');
-
-    // Unordered lists
-    html = html.replace(/^\s*-\s+(.*?)$/gm, '<li class="list-disc list-inside text-zinc-400 ml-4 mb-1">$1</li>');
-    html = html.replace(/^\s*\*\s+(.*?)$/gm, '<li class="list-disc list-inside text-zinc-400 ml-4 mb-1">$1</li>');
-
-    // Ordered lists
-    html = html.replace(/^\s*\d+\.\s+(.*?)$/gm, '<li class="list-decimal list-inside text-zinc-400 ml-4 mb-1">$1</li>');
-
-    // Links
-    // Only http(s) and mailto links are rendered as anchors; anything else (e.g. javascript:) stays as plain text
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, href) => {
-      if (!/^(https?:\/\/|mailto:)/i.test(href)) return match;
-      return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline hover:text-indigo-300">${text}</a>`;
-    });
-
-    // Horizontal Rule
-    html = html.replace(/^---$/gm, '<hr class="border-zinc-800 my-6" />');
-
-    // Paragraph splits (double newlines, filtering out lists & empty ones)
-    const lines = html.split(/\n/);
-    const processedLines = lines.map((line) => {
-      const trimmed = line.trim();
-      if (!trimmed) return "";
-      if (
-        trimmed.startsWith("<h") ||
-        trimmed.startsWith("<li") ||
-        trimmed.startsWith("<blockquote") ||
-        trimmed.startsWith("<pre") ||
-        trimmed.startsWith("</pre") ||
-        trimmed.startsWith("<hr")
-      ) {
-        return line;
-      }
-      return `<p class="text-xs text-zinc-350 leading-relaxed mb-3">${line}</p>`;
-    });
-
-    return processedLines.join("\n");
-  };
-
-  const parsedHtml = parseMarkdownToHtml(markdown);
-
-  const handleCopyHtml = () => {
-    navigator.clipboard.writeText(parsedHtml);
-    setCopiedHtml(true);
-    setTimeout(() => setCopiedHtml(false), 2000);
-  };
+  const blocks = useMemo(() => parseMarkdown(markdown), [markdown]);
 
   return (
-    <div className="space-y-4">
-      {/* Editor top controllers */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-zinc-950/20 p-2 border border-zinc-800/60 rounded">
-        {/* Toggle tabs */}
-        <div className="flex bg-zinc-900 p-1 rounded gap-1 border border-zinc-800">
-          <button
-            onClick={() => setActiveTab("split")}
-            className={`px-3 py-1 text-xs font-mono rounded flex items-center gap-1.5 transition-all ${
-              activeTab === "split" ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Split Screen</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("edit")}
-            className={`px-3 py-1 text-xs font-mono rounded flex items-center gap-1.5 transition-all ${
-              activeTab === "edit" ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-            <span>Editor</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("preview")}
-            className={`px-3 py-1 text-xs font-mono rounded flex items-center gap-1.5 transition-all ${
-              activeTab === "preview" ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Anteprima</span>
-          </button>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {markdown && (
-            <button
-              onClick={() => setMarkdown("")}
-              className="text-[10px] font-mono flex items-center gap-1 text-zinc-500 hover:text-rose-400 border border-zinc-850 px-2 py-1 rounded transition-colors"
-            >
-              <Trash2 className="w-3 h-3" />
-              Pulisci
-            </button>
-          )}
-          <button
-            onClick={handleCopyHtml}
-            className="text-[10px] font-mono flex items-center gap-1 text-zinc-400 hover:text-zinc-200 border border-zinc-800 px-2.5 py-1 rounded transition-colors"
-          >
-            {copiedHtml ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-            {copiedHtml ? "Copiato HTML!" : "Copia HTML"}
-          </button>
+    <Stack className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Segmented
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "split", label: <span className="inline-flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Split</span> },
+            { value: "edit", label: <span className="inline-flex items-center gap-1.5"><PenLine className="w-3.5 h-3.5" /> Editor</span> },
+            { value: "preview", label: <span className="inline-flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> Anteprima</span> },
+          ]}
+        />
+        <div className="flex gap-2">
+          <Button size="sm" variant="danger" disabled={!markdown} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setMarkdown("")}>
+            Pulisci
+          </Button>
+          <Button size="sm" disabled={!markdown} icon={copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />} onClick={() => copy(toHtml(blocks))}>
+            {copied ? "Copiato" : "Copia HTML"}
+          </Button>
         </div>
       </div>
 
-      {/* Editor & Render Container */}
-      <div
-        className={`grid gap-4 ${
-          activeTab === "split" ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
-        }`}
-      >
-        {/* Editing Column */}
-        {(activeTab === "split" || activeTab === "edit") && (
-          <div className="space-y-1">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Codice Sorgente Markdown</span>
-            <textarea
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              placeholder="# Inizia a scrivere qui..."
-              className="w-full h-[320px] bg-zinc-950/40 border border-zinc-800 rounded p-4 text-xs font-mono text-zinc-200 focus:outline-none focus:border-zinc-700 resize-none leading-relaxed"
-            />
+      <div className={cx("grid gap-4", view === "split" ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1")}>
+        {view !== "preview" && (
+          <div className="space-y-2">
+            <SectionTitle>Sorgente</SectionTitle>
+            <TextArea className="h-80 resize-none text-xs leading-relaxed" value={markdown} onChange={(e) => setMarkdown(e.target.value)} placeholder="# Inizia a scrivere qui..." />
           </div>
         )}
-
-        {/* Rendering Column */}
-        {(activeTab === "split" || activeTab === "preview") && (
-          <div className="space-y-1 flex flex-col">
-            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Resa Grafica Live</span>
-            <div
-              className="w-full h-[320px] bg-zinc-950/20 border border-zinc-800 rounded p-4 overflow-y-auto font-sans text-xs selection:bg-indigo-500/25"
-              dangerouslySetInnerHTML={{ __html: parsedHtml || '<p class="text-zinc-600 font-mono text-xs">Nessun testo da formattare. Scrivi qualcosa a sinistra per iniziare.</p>' }}
-            />
+        {view !== "edit" && (
+          <div className="space-y-2">
+            <SectionTitle>Anteprima</SectionTitle>
+            <Panel className="h-80 overflow-y-auto">
+              {blocks.length ? blocks.map((b, i) => renderBlock(b, i, u)) : <p className={cx("text-xs", u.muted)}>Nessun testo da mostrare.</p>}
+            </Panel>
           </div>
         )}
       </div>
-    </div>
+    </Stack>
   );
 }

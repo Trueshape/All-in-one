@@ -1,328 +1,120 @@
-import React, { useState } from "react";
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Copy,
-  Check,
-  Building2,
-  Globe,
-  CreditCard,
-  Sparkles,
-  Info,
-  CheckCircle2,
-  XCircle,
-  HelpCircle,
-  RefreshCw,
-} from "lucide-react";
+import { useMemo, useState } from "react";
+import { ShieldAlert, ShieldCheck } from "lucide-react";
+import { Field, TextInput, Chips, Panel, Row, SectionTitle, CopyButton, Notice, Stack, cx } from "../ui/kit";
+import { useUi } from "../ui/tokens";
 
-// IBAN Country standard lengths and patterns
-interface CountrySpec {
-  name: string;
-  length: number;
-  sepa: boolean;
-  bankNameLookup?: (bankCode: string) => string | null;
-}
-
-const IBAN_COUNTRIES: Record<string, CountrySpec> = {
-  IT: {
-    name: "Italia",
-    length: 27,
-    sepa: true,
-    bankNameLookup: (code) => {
-      const banks: Record<string, string> = {
-        "03069": "Intesa Sanpaolo",
-        "02008": "UniCredit",
-        "07601": "Poste Italiane (Postepay/BancoPosta)",
-        "05034": "Banco BPM",
-        "05387": "BPER Banca",
-        "03015": "FinecoBank",
-        "03058": "Mediobanca / CheBanca!",
-        "03268": "Banca Sella",
-        "06230": "Crédit Agricole Italia",
-        "03104": "ING Bank Italia",
-        "03111": "BNL Gruppo BNP Paribas",
-        "03127": "Banca Mediolanum",
-        "03226": "Illimity Bank",
-        "03608": "Hype / Banca Sella",
-        "03475": "BFF Bank",
-      };
-      return banks[code] || null;
-    },
-  },
-  DE: {
-    name: "Germania",
-    length: 22,
-    sepa: true,
-    bankNameLookup: (code) => {
-      if (code.startsWith("100")) return "Deutsche Bundesbank";
-      if (code.startsWith("500")) return "Deutsche Bank";
-      if (code.startsWith("1007")) return "N26 Bank";
-      if (code.startsWith("370")) return "Commerzbank";
-      return "Banca Tedesca";
-    },
-  },
-  FR: { name: "Francia", length: 27, sepa: true },
-  ES: { name: "Spagna", length: 24, sepa: true },
-  GB: { name: "Regno Unito", length: 22, sepa: true },
-  CH: { name: "Svizzera", length: 21, sepa: true },
-  AT: { name: "Austria", length: 20, sepa: true },
-  BE: { name: "Belgio", length: 16, sepa: true },
-  NL: { name: "Paesi Bassi", length: 18, sepa: true },
-  PT: { name: "Portogallo", length: 25, sepa: true },
-  IE: { name: "Irlanda", length: 22, sepa: true },
-  LU: { name: "Lussemburgo", length: 20, sepa: true },
-  LT: { name: "Lituania (es. Revolut LT)", length: 20, sepa: true },
-  PL: { name: "Polonia", length: 28, sepa: true },
-  RO: { name: "Romania", length: 24, sepa: true },
-  US: { name: "Stati Uniti (Routing ABA)", length: 0, sepa: false },
+/** Total IBAN length per country (ISO 13616 registry). */
+const COUNTRIES: Record<string, { name: string; length: number }> = {
+  AT: { name: "Austria", length: 20 }, BE: { name: "Belgio", length: 16 }, BG: { name: "Bulgaria", length: 22 },
+  CH: { name: "Svizzera", length: 21 }, CY: { name: "Cipro", length: 28 }, CZ: { name: "Cechia", length: 24 },
+  DE: { name: "Germania", length: 22 }, DK: { name: "Danimarca", length: 18 }, EE: { name: "Estonia", length: 20 },
+  ES: { name: "Spagna", length: 24 }, FI: { name: "Finlandia", length: 18 }, FR: { name: "Francia", length: 27 },
+  GB: { name: "Regno Unito", length: 22 }, GR: { name: "Grecia", length: 27 }, HR: { name: "Croazia", length: 21 },
+  HU: { name: "Ungheria", length: 28 }, IE: { name: "Irlanda", length: 22 }, IS: { name: "Islanda", length: 26 },
+  IT: { name: "Italia", length: 27 }, LI: { name: "Liechtenstein", length: 21 }, LT: { name: "Lituania", length: 20 },
+  LU: { name: "Lussemburgo", length: 20 }, LV: { name: "Lettonia", length: 21 }, MC: { name: "Monaco", length: 27 },
+  MT: { name: "Malta", length: 31 }, NL: { name: "Paesi Bassi", length: 18 }, NO: { name: "Norvegia", length: 15 },
+  PL: { name: "Polonia", length: 28 }, PT: { name: "Portogallo", length: 25 }, RO: { name: "Romania", length: 24 },
+  SE: { name: "Svezia", length: 24 }, SI: { name: "Slovenia", length: 19 }, SK: { name: "Slovacchia", length: 24 },
+  SM: { name: "San Marino", length: 27 },
 };
 
-// Sample valid IBANs for test button (Calculated MOD-97 compliant)
-const SAMPLE_IBANS = [
-  { label: "Italia (Intesa)", iban: "IT35O0306901600000000012345" },
-  { label: "Italia (Poste)", iban: "IT58Y0760101600000000987654" },
-  { label: "Italia (UniCredit)", iban: "IT51F0200801600000000012345" },
-  { label: "Germania (N26)", iban: "DE18100110012612345678" },
-  { label: "Francia (BNP)", iban: "FR1420041010050500013M02606" },
-  { label: "Spagna (BBVA)", iban: "ES9121000418450200051332" },
-  { label: "Lituania (Revolut)", iban: "LT983250011234567890" },
+/** A few well-known Italian ABI codes (indicative only). */
+const ABI: Record<string, string> = {
+  "01005": "BNL", "01030": "Banca Monte dei Paschi di Siena", "02008": "UniCredit", "03015": "FinecoBank",
+  "03032": "Credem", "03069": "Intesa Sanpaolo", "03268": "Banca Sella", "03335": "ING Bank",
+  "05034": "Banco BPM", "05387": "BPER Banca", "05696": "Banca Popolare di Sondrio", "06230": "Crédit Agricole Italia",
+  "07601": "Poste Italiane",
+};
+
+const SAMPLES = [
+  { label: "Italia · Intesa", iban: "IT35O0306901600000000012345" },
+  { label: "Italia · Poste", iban: "IT58Y0760101600000000987654" },
+  { label: "Germania", iban: "DE18100110012612345678" },
+  { label: "Francia", iban: "FR1420041010050500013M02606" },
+  { label: "Spagna", iban: "ES9121000418450200051332" },
 ];
 
+/** ISO 7064 MOD-97-10, computed digit by digit so it works for any length. */
+function mod97(iban: string): number {
+  const rearranged = iban.slice(4) + iban.slice(0, 4);
+  let remainder = 0;
+  for (const ch of rearranged) {
+    const digits = /[A-Z]/.test(ch) ? String(ch.charCodeAt(0) - 55) : ch;
+    for (const d of digits) remainder = (remainder * 10 + Number(d)) % 97;
+  }
+  return remainder;
+}
+
 export default function IbanValidator() {
-  const [rawIban, setRawIban] = useState<string>("");
-  const [copied, setCopied] = useState<boolean>(false);
+  const u = useUi();
+  const [raw, setRaw] = useState("");
 
-  // Clean IBAN
-  const iban = rawIban.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  const iban = raw.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  const formatted = iban.replace(/(.{4})/g, "$1 ").trim();
 
-  // Validate MOD 97 Checksum using BigInt
-  const validateMod97 = (code: string): boolean => {
-    if (code.length < 15 || code.length > 34) return false;
+  const result = useMemo(() => {
+    if (!iban) return null;
+    const country = COUNTRIES[iban.slice(0, 2)];
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(iban)) return { valid: false, reason: "Formato non valido: servono 2 lettere, 2 cifre di controllo e il codice del conto." };
+    if (!country) return { valid: false, reason: "Codice paese non riconosciuto." };
+    if (iban.length !== country.length) return { valid: false, reason: `Lunghezza errata per ${country.name}: attesi ${country.length} caratteri, inseriti ${iban.length}.` };
+    if (mod97(iban) !== 1) return { valid: false, reason: "Le cifre di controllo (MOD-97) non corrispondono." };
+    return { valid: true, reason: `Cifre di controllo corrette (${iban.length} caratteri).` };
+  }, [iban]);
 
-    // Rearrange: move first 4 chars to end
-    const rearranged = code.substring(4) + code.substring(0, 4);
-
-    // Convert letters to numbers (A=10, B=11, ..., Z=35)
-    let numericStr = "";
-    for (let i = 0; i < rearranged.length; i++) {
-      const char = rearranged[i];
-      if (/[A-Z]/.test(char)) {
-        numericStr += (char.charCodeAt(0) - 55).toString();
-      } else if (/[0-9]/.test(char)) {
-        numericStr += char;
-      } else {
-        return false;
-      }
-    }
-
-    try {
-      return BigInt(numericStr) % 97n === 1n;
-    } catch {
-      return false;
-    }
-  };
-
-  // Perform Analysis
-  const countryCode = iban.substring(0, 2);
-  const countryInfo = IBAN_COUNTRIES[countryCode];
-  const isValidMod97 = validateMod97(iban);
-  const isLengthValid = countryInfo ? iban.length === countryInfo.length : iban.length >= 15 && iban.length <= 34;
-  const isValid = iban.length > 0 && isLengthValid && isValidMod97;
-
-  // Italian IBAN Structure Breakdown
-  const isItalian = countryCode === "IT" && iban.length === 27;
-  const checkDigits = iban.substring(2, 4);
-  const cin = isItalian ? iban.substring(4, 5) : "";
-  const abi = isItalian ? iban.substring(5, 10) : "";
-  const cab = isItalian ? iban.substring(10, 15) : "";
-  const accountNumber = isItalian ? iban.substring(15, 27) : iban.substring(4);
-
-  const bankName = isItalian && countryInfo?.bankNameLookup ? countryInfo.bankNameLookup(abi) : null;
-
-  // Format IBAN with spaces every 4 characters
-  const formattedIban = iban.replace(/(.{4})/g, "$1 ").trim();
-
-  const handleCopy = () => {
-    if (!formattedIban) return;
-    navigator.clipboard.writeText(formattedIban);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const isItalian = iban.startsWith("IT") && iban.length === 27;
+  const abi = isItalian ? iban.slice(5, 10) : "";
+  const country = COUNTRIES[iban.slice(0, 2)];
 
   return (
-    <div className="space-y-6">
-      {/* Top Description */}
-      <div className="bg-zinc-950/40 border border-zinc-800 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-mono font-bold text-zinc-100 flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-emerald-400" />
-            <span>Verifica & Validatore IBAN Bancario</span>
-          </h2>
-          <p className="text-xs text-zinc-400 font-mono mt-0.5">
-            Valida codici IBAN con algoritmo ufficiale ISO 13616 MOD-97 e rileva istituto bancario.
-          </p>
-        </div>
-
-        {/* Quick Sample Selector */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] text-zinc-500 font-mono">Esempi:</span>
-          {SAMPLE_IBANS.map((sample) => (
-            <button
-              key={sample.label}
-              onClick={() => setRawIban(sample.iban)}
-              className="px-2 py-0.5 text-[10px] font-mono bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-emerald-400 rounded transition-all cursor-pointer"
-            >
-              {sample.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Input Field */}
-      <div className="space-y-2">
-        <label className="block text-xs font-mono text-zinc-400 uppercase tracking-wider">
-          Inserisci Codice IBAN
-        </label>
+    <Stack>
+      <Field label="Codice IBAN">
         <div className="relative">
-          <input
-            type="text"
-            value={rawIban}
-            onChange={(e) => setRawIban(e.target.value)}
-            placeholder="es. IT02 L 03069 01600 000000012345"
-            className={`w-full bg-zinc-950/80 border text-sm sm:text-base font-mono uppercase tracking-widest px-4 py-3 rounded-lg text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-all pr-12 ${
-              iban.length === 0
-                ? "border-zinc-800 focus:border-zinc-600"
-                : isValid
-                ? "border-emerald-500/80 focus:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                : "border-rose-500/80 focus:border-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.15)]"
-            }`}
-          />
-          {formattedIban && (
-            <button
-              onClick={handleCopy}
-              className="absolute right-3 top-3 p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 rounded transition-colors"
-              title="Copia IBAN Formattato"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            </button>
-          )}
+          <TextInput value={raw} onChange={(e) => setRaw(e.target.value)} placeholder="es. IT35 O030 6901 6000 0000 0012 345" spellCheck={false} autoComplete="off" className="uppercase tracking-wider pr-11"
+            style={result ? { borderColor: result.valid ? "rgb(52 211 153 / 0.7)" : "rgb(248 113 113 / 0.7)" } : undefined} />
+          <div className="absolute right-1 top-1/2 -translate-y-1/2"><CopyButton text={formatted} label="Copia IBAN formattato" /></div>
         </div>
+      </Field>
+
+      <div className="space-y-2">
+        <span className={u.statLabel}>Esempi</span>
+        <Chips value={"" as string} onChange={(v) => setRaw(v)} options={SAMPLES.map((s) => ({ value: s.iban, label: s.label }))} />
       </div>
 
-      {/* Validation Status Box */}
-      {iban.length > 0 && (
-        <div
-          className={`p-4 rounded-lg border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
-            isValid
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-300"
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            {isValid ? (
-              <ShieldCheck className="w-7 h-7 text-emerald-400 shrink-0" />
-            ) : (
-              <ShieldAlert className="w-7 h-7 text-rose-400 shrink-0" />
-            )}
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono font-bold uppercase tracking-wider">
-                  {isValid ? "IBAN Valido Corretto" : "IBAN Non Valido / Errato"}
-                </span>
-                {countryInfo?.sepa && isValid && (
-                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded font-mono font-bold">
-                    Area SEPA
-                  </span>
-                )}
-              </div>
-              <p className="text-xs font-mono text-zinc-300 mt-0.5">
-                {isValid
-                  ? `Verifica cifre di controllo superata (${iban.length} caratteri).`
-                  : !countryInfo
-                  ? "Codice paese non riconosciuto."
-                  : !isLengthValid
-                  ? `Lunghezza errata per ${countryInfo.name}: attesi ${countryInfo.length} caratteri, inseriti ${iban.length}.`
-                  : "Le cifre di controllo (checksum MOD-97) non corrispondono."}
-              </p>
-            </div>
+      {result && (
+        <Panel className={cx("flex items-start gap-3", result.valid ? "border-emerald-500/40" : "border-red-500/40")}>
+          {result.valid ? <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0" /> : <ShieldAlert className="w-6 h-6 text-red-400 shrink-0" />}
+          <div>
+            <p className={cx("text-sm font-semibold", result.valid ? "text-emerald-300" : "text-red-300")}>{result.valid ? "IBAN valido" : "IBAN non valido"}</p>
+            <p className={cx("text-xs mt-0.5", u.subtle)}>{result.reason}</p>
           </div>
-
-          <button
-            onClick={handleCopy}
-            className="px-3 py-1.5 text-xs font-mono font-bold bg-zinc-900 border border-zinc-700 hover:border-zinc-500 text-zinc-200 rounded transition-all shrink-0 cursor-pointer"
-          >
-            {copied ? "Copiato!" : "Copia Formattato"}
-          </button>
-        </div>
+        </Panel>
       )}
 
-      {/* IBAN Structure Breakdown */}
       {iban.length >= 4 && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-2">
-            <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Struttura Dettagliata IBAN</span>
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {/* Country */}
-            <div className="p-3 bg-zinc-950/40 border border-zinc-800 rounded-lg space-y-1">
-              <span className="text-[10px] text-zinc-500 font-mono block uppercase">Paese</span>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold font-mono text-zinc-100">{countryCode}</span>
-                <span className="text-xs text-zinc-400 font-mono">{countryInfo?.name || "Sconosciuto"}</span>
-              </div>
-            </div>
-
-            {/* Check Digits */}
-            <div className="p-3 bg-zinc-950/40 border border-zinc-800 rounded-lg space-y-1">
-              <span className="text-[10px] text-zinc-500 font-mono block uppercase">Cifre di Controllo</span>
-              <span className="text-sm font-bold font-mono text-emerald-400">{checkDigits || "--"}</span>
-            </div>
-
-            {/* Italian CIN */}
-            {isItalian && (
-              <div className="p-3 bg-zinc-950/40 border border-zinc-800 rounded-lg space-y-1">
-                <span className="text-[10px] text-zinc-500 font-mono block uppercase">CIN Nazionale</span>
-                <span className="text-sm font-bold font-mono text-indigo-400">{cin}</span>
-              </div>
+        <Panel className="space-y-2">
+          <SectionTitle>Struttura</SectionTitle>
+          <div className="pt-1 space-y-1.5">
+            <Row label="Paese" value={`${iban.slice(0, 2)} · ${country?.name ?? "sconosciuto"}`} />
+            <Row label="Cifre di controllo" value={iban.slice(2, 4)} />
+            {isItalian ? (
+              <>
+                <Row label="CIN" value={iban.slice(4, 5)} />
+                <Row label="ABI (banca)" value={`${abi}${ABI[abi] ? ` · ${ABI[abi]}` : ""}`} />
+                <Row label="CAB (filiale)" value={iban.slice(10, 15)} />
+                <Row label="Numero di conto" value={iban.slice(15)} />
+              </>
+            ) : (
+              <Row label="Coordinate bancarie (BBAN)" value={iban.slice(4) || "—"} />
             )}
-
-            {/* Italian ABI / Bank */}
-            {isItalian && (
-              <div className="p-3 bg-zinc-950/40 border border-zinc-800 rounded-lg space-y-1">
-                <span className="text-[10px] text-zinc-500 font-mono block uppercase">Codice ABI (Banca)</span>
-                <span className="text-sm font-bold font-mono text-amber-400">{abi}</span>
-                {bankName && <span className="text-[10px] text-zinc-400 block truncate">{bankName}</span>}
-              </div>
-            )}
-
-            {/* Italian CAB */}
-            {isItalian && (
-              <div className="p-3 bg-zinc-950/40 border border-zinc-800 rounded-lg space-y-1">
-                <span className="text-[10px] text-zinc-500 font-mono block uppercase">Codice CAB (Filiale)</span>
-                <span className="text-sm font-bold font-mono text-cyan-400">{cab}</span>
-              </div>
-            )}
-
-            {/* Account Number */}
-            <div className="p-3 bg-zinc-950/40 border border-zinc-800 rounded-lg space-y-1 sm:col-span-2">
-              <span className="text-[10px] text-zinc-500 font-mono block uppercase">Numero di Conto Corrente</span>
-              <span className="text-sm font-bold font-mono text-zinc-200 tracking-wider truncate block">
-                {accountNumber || "--"}
-              </span>
-            </div>
           </div>
-        </div>
+        </Panel>
       )}
 
-      {/* Info Notice */}
-      <div className="p-3.5 bg-zinc-950/20 border border-zinc-850 rounded-lg flex items-start gap-2.5 text-xs font-mono text-zinc-400">
-        <Info className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
-        <p>
-          Il controllo di validità IBAN utilizza l'algoritmo matematico ufficiale MOD-97 secondo lo standard internazionale ISO 13616. Nessun dato inserito viene salvato o inviato a server esterni.
-        </p>
-      </div>
-    </div>
+      <Notice>
+        La validità è verificata con l'algoritmo MOD-97 (ISO 13616) direttamente nel browser: nessun dato viene inviato altrove. Il nome della banca è indicativo e non garantisce che il conto esista.
+      </Notice>
+    </Stack>
   );
 }

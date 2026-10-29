@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronLeft, ChevronRight, Heart, Lock, Pencil, Unlock, X } from "lucide-react";
 import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
+import { UiContext, UI_TOKENS } from "./ui/tokens";
 
 interface ToolModalProps {
   activeTheme: Theme;
@@ -178,9 +179,11 @@ export default function ToolModal({
 
             {/* Scrollable Modal Content Workspace */}
             <div className={tc.modalBody}>
-              <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
-                <activeTool.component isEditorMode={isEditorMode} />
-              </Suspense>
+              <UiContext.Provider value={UI_TOKENS[activeTheme]}>
+                <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
+                  <activeTool.component isEditorMode={isEditorMode} />
+                </Suspense>
+              </UiContext.Provider>
             </div>
 
             {/* Modal Footer */}

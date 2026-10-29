@@ -1,232 +1,108 @@
-import { useState, useEffect } from "react";
-import { ArrowLeftRight, Copy, RefreshCw, Check, TrendingUp } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowLeftRight, RefreshCw } from "lucide-react";
+import { Field, TextInput, Select, IconButton, ResultCard, Row, Panel, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
+import { useUi } from "../ui/tokens";
 
-interface Rates {
-  [key: string]: number;
-}
-
-const DEFAULT_RATES: Rates = {
-  EUR: 1.0,
-  USD: 1.09,
-  GBP: 0.85,
-  JPY: 165.25,
-  CAD: 1.48,
-  AUD: 1.63,
-  CHF: 0.98,
-  CNY: 7.82,
+const CURRENCIES: Record<string, { name: string; symbol: string; fallback: number }> = {
+  EUR: { name: "Euro", symbol: "€", fallback: 1 },
+  USD: { name: "Dollaro statunitense", symbol: "$", fallback: 1.09 },
+  GBP: { name: "Sterlina britannica", symbol: "£", fallback: 0.85 },
+  JPY: { name: "Yen giapponese", symbol: "¥", fallback: 165.25 },
+  CAD: { name: "Dollaro canadese", symbol: "C$", fallback: 1.48 },
+  AUD: { name: "Dollaro australiano", symbol: "A$", fallback: 1.63 },
+  CHF: { name: "Franco svizzero", symbol: "CHF", fallback: 0.98 },
+  CNY: { name: "Renminbi cinese", symbol: "¥", fallback: 7.82 },
 };
 
-const CURRENCY_SYMBOLS: { [key: string]: string } = {
-  EUR: "€",
-  USD: "$",
-  GBP: "£",
-  JPY: "¥",
-  CAD: "C$",
-  AUD: "A$",
-  CHF: "CHF",
-  CNY: "元",
-};
+const FALLBACK_RATES = Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, c.fallback]));
 
-const CURRENCY_NAMES: { [key: string]: string } = {
-  EUR: "Euro",
-  USD: "Dollaro Statunitense",
-  GBP: "Sterlina Britannica",
-  JPY: "Yen Giapponese",
-  CAD: "Dollaro Canadese",
-  AUD: "Dollaro Australiano",
-  CHF: "Franco Svizzero",
-  CNY: "Renminbi Cinese",
-};
+type Status = { kind: "fallback" } | { kind: "loading" } | { kind: "live"; at: string } | { kind: "error" };
 
 export default function CurrencyConverter() {
-  const [rates, setRates] = useState<Rates>(DEFAULT_RATES);
-  const [amount, setAmount] = useState<string>("100");
-  const [fromCurrency, setFromCurrency] = useState<string>("EUR");
-  const [toCurrency, setToCurrency] = useState<string>("USD");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [lastUpdated, setLastUpdated] = useState<string>("Statico (Default)");
-  const [copied, setCopied] = useState<boolean>(false);
+  const u = useUi();
+  const [rates, setRates] = useState<Record<string, number>>(FALLBACK_RATES);
+  const [status, setStatus] = useState<Status>({ kind: "fallback" });
+  const [amount, setAmount] = useState("100");
+  const [from, setFrom] = useState("EUR");
+  const [to, setTo] = useState("USD");
 
-  const fetchRates = async () => {
-    setLoading(true);
+  const load = useCallback(async (signal?: AbortSignal) => {
+    setStatus({ kind: "loading" });
     try {
-      const response = await fetch("https://open.er-api.com/v6/latest/EUR");
-      if (!response.ok) throw new Error("Errore nel caricamento dei tassi");
-      const data = await response.json();
-      
-      const filteredRates: Rates = {};
-      Object.keys(DEFAULT_RATES).forEach((currency) => {
-        if (data.rates[currency]) {
-          filteredRates[currency] = data.rates[currency];
-        } else {
-          filteredRates[currency] = DEFAULT_RATES[currency];
-        }
-      });
-      
-      setRates(filteredRates);
-      const date = new Date(data.time_last_update_utc);
-      setLastUpdated(date.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) + " UTC");
-    } catch (error) {
-      console.error("Using fallback rates:", error);
-      setLastUpdated("Offline (Predefinito)");
-    } finally {
-      setLoading(false);
+      const res = await fetch("https://open.er-api.com/v6/latest/EUR", { signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!data?.rates) throw new Error("Risposta non valida");
+      setRates(Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, Number(data.rates[code]) || c.fallback])));
+      const at = new Date(data.time_last_update_utc);
+      setStatus({ kind: "live", at: Number.isNaN(at.getTime()) ? "ora" : at.toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" }) });
+    } catch (err) {
+      if (signal?.aborted) return;
+      setStatus({ kind: "error" });
     }
-  };
-
-  useEffect(() => {
-    fetchRates();
   }, []);
 
-  const handleSwap = () => {
-    setFromCurrency(toCurrency);
-    setToCurrency(fromCurrency);
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
 
-  const getConvertedAmount = (): number => {
-    const value = parseFloat(amount);
-    if (isNaN(value)) return 0;
-    
-    // Convert to EUR first
-    const rateInEur = value / (rates[fromCurrency] || 1);
-    // Convert from EUR to target
-    return rateInEur * (rates[toCurrency] || 1);
-  };
+  const value = parseFloat(amount);
+  const valid = Number.isFinite(value);
+  const converted = valid ? (value / rates[from]) * rates[to] : 0;
+  const rate = rates[to] / rates[from];
 
-  const convertedValue = getConvertedAmount();
-
-  const handleCopy = () => {
-    const formatted = `${amount} ${fromCurrency} = ${convertedValue.toFixed(2)} ${toCurrency}`;
-    navigator.clipboard.writeText(formatted);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const statusText = {
+    fallback: "Tassi di riserva",
+    loading: "Aggiornamento in corso…",
+    live: `Aggiornati: ${status.kind === "live" ? status.at : ""}`,
+    error: "Offline: tassi di riserva, non aggiornati",
+  }[status.kind];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium text-zinc-100 font-display">Convertitore di Valuta</h3>
-          <p className="text-xs text-zinc-400">Tassi aggiornati: {lastUpdated}</p>
-        </div>
-        <button
-          onClick={fetchRates}
-          disabled={loading}
-          className="p-2 transition-colors rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 disabled:opacity-50"
-          title="Aggiorna tassi"
-          id="btn-currency-refresh"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-        </button>
+    <Stack>
+      <div className="flex items-center justify-between gap-3">
+        <span className={cx("text-xs", status.kind === "error" ? "text-amber-400" : u.muted)}>{statusText}</span>
+        <IconButton onClick={() => load()} disabled={status.kind === "loading"} title="Aggiorna tassi">
+          <RefreshCw className={cx("w-4 h-4", status.kind === "loading" && "animate-spin")} />
+        </IconButton>
       </div>
 
-      <div className="space-y-4">
-        {/* Input Amount */}
-        <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5">Importo</label>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 font-medium">
-              {CURRENCY_SYMBOLS[fromCurrency]}
-            </span>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-100 focus:outline-none focus:border-zinc-700 font-medium text-lg transition-all"
-              placeholder="0.00"
-              id="input-currency-amount"
-            />
-          </div>
-        </div>
+      {status.kind === "error" && <Notice tone="warn">Impossibile contattare il servizio di cambio: i risultati usano valori indicativi fissi.</Notice>}
 
-        {/* Currency Selectors */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">Da</label>
-            <select
-              value={fromCurrency}
-              onChange={(e) => setFromCurrency(e.target.value)}
-              className="w-full px-3 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-medium"
-              id="select-currency-from"
-            >
-              {Object.keys(rates).map((code) => (
-                <option key={code} value={code}>
-                  {code} - {CURRENCY_NAMES[code]}
-                </option>
-              ))}
-            </select>
-          </div>
+      <Field label="Importo">
+        <TextInput type="number" inputMode="decimal" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} prefixText={CURRENCIES[from].symbol} />
+      </Field>
 
-          <div className="pt-5">
-            <button
-              onClick={handleSwap}
-              className="p-2.5 transition-all rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 active:scale-95"
-              id="btn-currency-swap"
-            >
-              <ArrowLeftRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-zinc-400 mb-1.5">A</label>
-            <select
-              value={toCurrency}
-              onChange={(e) => setToCurrency(e.target.value)}
-              className="w-full px-3 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-200 text-sm focus:outline-none focus:border-zinc-700 font-medium"
-              id="select-currency-to"
-            >
-              {Object.keys(rates).map((code) => (
-                <option key={code} value={code}>
-                  {code} - {CURRENCY_NAMES[code]}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Result Area */}
-        <div className="p-4 bg-zinc-900/50 border border-zinc-800/80 rounded-xl space-y-2 relative group overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500/80"></div>
-          <div className="flex justify-between items-start">
-            <div>
-              <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">Risultato</span>
-              <div className="text-2xl font-semibold text-zinc-100 font-display mt-1">
-                {parseFloat(amount || "0").toLocaleString("it-IT", { minimumFractionDigits: 2 })} {fromCurrency} =
-              </div>
-              <div className="text-3xl font-bold text-indigo-400 font-display mt-0.5">
-                {convertedValue.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 4 })} {toCurrency}
-              </div>
-            </div>
-            <button
-              onClick={handleCopy}
-              className="p-2 text-zinc-400 hover:text-zinc-200 transition-colors bg-zinc-800/50 hover:bg-zinc-800 rounded-lg"
-              title="Copia risultato"
-              id="btn-currency-copy"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Conversions Table / Rates Info */}
-        <div className="bg-zinc-900/30 rounded-xl p-3 border border-zinc-800/40">
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-medium mb-2 px-1">
-            <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Tassi di Cambio Riferimento (1 EUR)</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {Object.entries(rates)
-              .filter(([code]) => code !== "EUR")
-              .slice(0, 4)
-              .map(([code, val]) => (
-                <div key={code} className="flex justify-between py-1 px-2 bg-zinc-900/40 rounded-lg border border-zinc-800/20">
-                  <span className="text-zinc-500 font-medium">{code}</span>
-                  <span className="text-zinc-300 font-mono font-medium">{(val as number).toFixed(4)}</span>
-                </div>
-              ))}
-          </div>
-        </div>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+        <Field label="Da">
+          <Select value={from} onChange={(e) => setFrom(e.target.value)}>
+            {Object.entries(CURRENCIES).map(([code, c]) => <option key={code} value={code}>{code} · {c.name}</option>)}
+          </Select>
+        </Field>
+        <IconButton onClick={() => { setFrom(to); setTo(from); }} title="Inverti valute" className="mb-1"><ArrowLeftRight className="w-4 h-4" /></IconButton>
+        <Field label="A">
+          <Select value={to} onChange={(e) => setTo(e.target.value)}>
+            {Object.entries(CURRENCIES).map(([code, c]) => <option key={code} value={code}>{code} · {c.name}</option>)}
+          </Select>
+        </Field>
       </div>
-    </div>
+
+      <ResultCard
+        label={valid ? `${fmtNumber(value, 2)} ${from} =` : "Risultato"}
+        value={valid ? `${fmtNumber(converted, 4)} ${to}` : "—"}
+        copyText={valid ? `${fmtNumber(value, 2)} ${from} = ${fmtNumber(converted, 2)} ${to}` : ""}
+      >
+        <Row label="Tasso" value={`1 ${from} = ${fmtNumber(rate, 6)} ${to}`} />
+      </ResultCard>
+
+      <Panel className="space-y-2">
+        <SectionTitle>Riferimento (1 EUR)</SectionTitle>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 pt-1">
+          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").map((code) => <Row key={code} label={code} value={fmtNumber(rates[code], 4)} />)}
+        </div>
+      </Panel>
+    </Stack>
   );
 }
