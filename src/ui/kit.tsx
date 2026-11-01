@@ -254,7 +254,8 @@ export const InfoContext = createContext(false);
 export function Notice({ tone = "info", children }: { tone?: "info" | "error" | "success" | "warn"; children: ReactNode }) {
   const u = useUi();
   const showInfo = useContext(InfoContext);
-  if (!showInfo) return null;
+  // Only explanations hide behind the (i) button: errors and warnings must always be seen.
+  if (tone === "info" && !showInfo) return null;
   const tones = {
     info: cx(u.panel, u.subtle),
     error: "bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl",

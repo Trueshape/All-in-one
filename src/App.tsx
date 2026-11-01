@@ -4,18 +4,33 @@ import { TOOLS } from "./tools/registry";
 import { getThemeClasses, type Theme } from "./theme";
 import Landing from "./Landing";
 import ToolModal from "./ToolModal";
-import { I18nContext, makeI18n, type Lang } from "./i18n";
+import { I18nContext, LOCALES, makeI18n, type Lang } from "./i18n";
+
+const THEMES: Theme[] = ["artistic", "immersive", "sophisticated"];
+
+// Storage can be blocked (private modes, embedded browsers) or full: the app must still start.
+const readStorage = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const writeStorage = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // blocked or full: settings last for this session only
+  }
+};
 
 export default function App() {
   const [activeToolId, setActiveToolId] = useState<string | null>(null);
 
-  // Real-time Clock State
-  const [time, setTime] = useState<Date>(new Date());
-
   // Theme Switching State
   const [activeTheme, setActiveTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem("utilita365_theme");
-    return (saved as Theme) || "artistic";
+    const saved = readStorage("utilita365_theme");
+    return THEMES.find((t) => t === saved) ?? "artistic";
   });
 
   // Info notices: off by default, switched on/off from the modal header for every tool
@@ -23,18 +38,18 @@ export default function App() {
 
   // Interface language, remembered between visits
   const [lang, setLang] = useState<Lang>(() => {
-    const saved = localStorage.getItem("utilita365_lang");
+    const saved = readStorage("utilita365_lang");
     return saved === "en" || saved === "es" || saved === "de" || saved === "fr" ? saved : "it";
   });
   useEffect(() => {
-    localStorage.setItem("utilita365_lang", lang);
+    writeStorage("utilita365_lang", lang);
     document.documentElement.lang = lang;
   }, [lang]);
   const i18n = makeI18n(lang, setLang);
 
   // Favorite Tools State
   const [favoriteTools, setFavoriteTools] = useState<Record<string, boolean>>(() => {
-    const saved = localStorage.getItem("utilita365_favorite_tools");
+    const saved = readStorage("utilita365_favorite_tools");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -45,7 +60,7 @@ export default function App() {
 
   // Custom Tool Names State
   const [customToolNames, setCustomToolNames] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem("utilita365_custom_tool_names");
+    const saved = readStorage("utilita365_custom_tool_names");
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -58,31 +73,26 @@ export default function App() {
   const [tempToolName, setTempToolName] = useState<string>("");
 
   useEffect(() => {
-    localStorage.setItem("utilita365_custom_tool_names", JSON.stringify(customToolNames));
+    writeStorage("utilita365_custom_tool_names", JSON.stringify(customToolNames));
   }, [customToolNames]);
 
   useEffect(() => {
     if (activeToolId) {
       const activeTool = TOOLS.find((t) => t.id === activeToolId);
       if (activeTool) {
-        setTempToolName(customToolNames[activeToolId] || activeTool.name);
+        setTempToolName(customToolNames[activeToolId] || i18n.toolText(activeTool).name);
       }
     }
     setEditingToolName(false);
   }, [activeToolId]);
 
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   // Save changes to localStorage
   useEffect(() => {
-    localStorage.setItem("utilita365_theme", activeTheme);
+    writeStorage("utilita365_theme", activeTheme);
   }, [activeTheme]);
 
   useEffect(() => {
-    localStorage.setItem("utilita365_favorite_tools", JSON.stringify(favoriteTools));
+    writeStorage("utilita365_favorite_tools", JSON.stringify(favoriteTools));
   }, [favoriteTools]);
 
   const toggleFavorite = (id: string, e?: React.MouseEvent) => {
@@ -95,9 +105,9 @@ export default function App() {
 
   // Always sort the tools alphabetically by name (taking custom names into account)
   const orderedTools = [...TOOLS].sort((a, b) => {
-    const nameA = customToolNames[a.id] || a.name;
-    const nameB = customToolNames[b.id] || b.name;
-    return nameA.localeCompare(nameB, "it");
+    const nameA = customToolNames[a.id] || i18n.toolText(a).name;
+    const nameB = customToolNames[b.id] || i18n.toolText(b).name;
+    return nameA.localeCompare(nameB, LOCALES[lang]);
   });
 
   const activeToolIndex = activeToolId
@@ -158,7 +168,6 @@ export default function App() {
         toggleFavorite={toggleFavorite}
         customToolNames={customToolNames}
         setCustomToolNames={setCustomToolNames}
-        time={time}
         onOpenTool={setActiveToolId}
       />
 

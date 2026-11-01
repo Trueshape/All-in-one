@@ -44,7 +44,7 @@ export default function CodiceFiscaleInverse() {
             </Panel>
             <Panel className="flex items-center gap-3">
               <Calendar className={cx("w-5 h-5 shrink-0", u.accent)} />
-              <div><span className={u.statLabel}>Nascita</span><div className={cx("text-sm font-semibold", u.text)}>{result.day} {result.monthName} {result.year}</div></div>
+              <div><span className={u.statLabel}>Nascita</span><div className={cx("text-sm font-semibold", u.text)}>{result.day} {result.monthName} {result.year}{result.alternativeYear ? ` (o ${result.alternativeYear})` : ""}</div></div>
             </Panel>
             <Panel className="flex items-center gap-3">
               <MapPin className={cx("w-5 h-5 shrink-0", u.accent)} />

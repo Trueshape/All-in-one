@@ -25,7 +25,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Clicca sul cuore sui tool per salvarli qui.", back: "Indietro", category: "Categoria", tool_one: "STRUMENTO", tool_many: "STRUMENTI",
     none_found: "NESSUNO STRUMENTO TROVATO NEL SISTEMA.", reset_filters: "RIPRISTINA FILTRI", rename: "Rinomina", rename_tool: "Rinomina strumento", save: "Salva",
     fav_add: "Aggiungi ai preferiti", fav_remove: "Rimuovi dai preferiti", info_show: "Mostra spiegazioni", info_hide: "Nascondi spiegazioni",
-    prev: "Precedente", next: "Successivo", tool_of: "STRUMENTO", language: "Lingua",
+    prev: "Precedente", next: "Successivo", tool_of: "STRUMENTO", language: "Lingua", settings: "Impostazioni", settings_close: "Chiudi impostazioni",
   },
   en: {
     nav_all: "All tools", nav_calcolo: "Calculators", nav_convertitori: "Converters", nav_produttivita: "Productivity", nav_creative: "Utilities", nav_preferiti: "Favorites",
@@ -35,7 +35,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Click the heart on a tool to save it here.", back: "Back", category: "Category", tool_one: "TOOL", tool_many: "TOOLS",
     none_found: "NO TOOL FOUND.", reset_filters: "RESET FILTERS", rename: "Rename", rename_tool: "Rename tool", save: "Save",
     fav_add: "Add to favorites", fav_remove: "Remove from favorites", info_show: "Show explanations", info_hide: "Hide explanations",
-    prev: "Previous", next: "Next", tool_of: "TOOL", language: "Language",
+    prev: "Previous", next: "Next", tool_of: "TOOL", language: "Language", settings: "Settings", settings_close: "Close settings",
   },
   es: {
     nav_all: "Todas las herramientas", nav_calcolo: "Cálculos", nav_convertitori: "Conversores", nav_produttivita: "Productividad", nav_creative: "Utilidades", nav_preferiti: "Favoritos",
@@ -45,7 +45,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Haz clic en el corazón de una herramienta para guardarla aquí.", back: "Atrás", category: "Categoría", tool_one: "HERRAMIENTA", tool_many: "HERRAMIENTAS",
     none_found: "NO SE ENCONTRÓ NINGUNA HERRAMIENTA.", reset_filters: "RESTABLECER FILTROS", rename: "Renombrar", rename_tool: "Renombrar herramienta", save: "Guardar",
     fav_add: "Añadir a favoritos", fav_remove: "Quitar de favoritos", info_show: "Mostrar explicaciones", info_hide: "Ocultar explicaciones",
-    prev: "Anterior", next: "Siguiente", tool_of: "HERRAMIENTA", language: "Idioma",
+    prev: "Anterior", next: "Siguiente", tool_of: "HERRAMIENTA", language: "Idioma", settings: "Ajustes", settings_close: "Cerrar ajustes",
   },
   de: {
     nav_all: "Alle Tools", nav_calcolo: "Rechner", nav_convertitori: "Umrechner", nav_produttivita: "Produktivität", nav_creative: "Hilfsmittel", nav_preferiti: "Favoriten",
@@ -55,7 +55,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Klicke auf das Herz eines Tools, um es hier zu speichern.", back: "Zurück", category: "Kategorie", tool_one: "TOOL", tool_many: "TOOLS",
     none_found: "KEIN TOOL GEFUNDEN.", reset_filters: "FILTER ZURÜCKSETZEN", rename: "Umbenennen", rename_tool: "Tool umbenennen", save: "Speichern",
     fav_add: "Zu Favoriten hinzufügen", fav_remove: "Aus Favoriten entfernen", info_show: "Erklärungen anzeigen", info_hide: "Erklärungen ausblenden",
-    prev: "Zurück", next: "Weiter", tool_of: "TOOL", language: "Sprache",
+    prev: "Zurück", next: "Weiter", tool_of: "TOOL", language: "Sprache", settings: "Einstellungen", settings_close: "Einstellungen schließen",
   },
   fr: {
     nav_all: "Tous les outils", nav_calcolo: "Calculs", nav_convertitori: "Convertisseurs", nav_produttivita: "Productivité", nav_creative: "Utilitaires", nav_preferiti: "Favoris",
@@ -65,7 +65,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Clique sur le cœur d’un outil pour l’enregistrer ici.", back: "Retour", category: "Catégorie", tool_one: "OUTIL", tool_many: "OUTILS",
     none_found: "AUCUN OUTIL TROUVÉ.", reset_filters: "RÉINITIALISER LES FILTRES", rename: "Renommer", rename_tool: "Renommer l’outil", save: "Enregistrer",
     fav_add: "Ajouter aux favoris", fav_remove: "Retirer des favoris", info_show: "Afficher les explications", info_hide: "Masquer les explications",
-    prev: "Précédent", next: "Suivant", tool_of: "OUTIL", language: "Langue",
+    prev: "Précédent", next: "Suivant", tool_of: "OUTIL", language: "Langue", settings: "Paramètres", settings_close: "Fermer les paramètres",
   },
 };
 

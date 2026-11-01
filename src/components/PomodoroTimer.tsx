@@ -91,7 +91,7 @@ function Pomodoro() {
 
       <div className="flex justify-center gap-3">
         <IconButton onClick={() => { setRunning(false); setLeft(PHASES[phase].seconds); }} title="Reset" className="border-current"><RotateCcw className="w-5 h-5" /></IconButton>
-        <Button variant="primary" onClick={() => setRunning((r) => !r)} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
+        <Button variant="primary" onClick={() => { if (left === 0) setLeft(PHASES[phase].seconds); setRunning((r) => !r); }} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
           {running ? "Pausa" : left === 0 ? "Ricomincia" : "Avvia"}
         </Button>
       </div>

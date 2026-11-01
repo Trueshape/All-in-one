@@ -73,6 +73,18 @@ export function reducer(s: Calc, a: Action): Calc {
     }
     case "unary": {
       if (s.error) return s;
+      // A function with no number to work on does nothing (constants and ± still apply).
+      if (s.entry === null && !["pi", "e", "neg"].includes(a.fn)) return s;
+      // "200 + 10 %" means 10% of 200: the percentage is taken on what is left of the + or −.
+      const op = s.tokens[s.tokens.length - 1];
+      if (a.fn === "percent" && s.entry !== null && (op === "+" || op === "-")) {
+        try {
+          const base = evaluate(s.tokens.slice(0, -1));
+          return { ...s, entry: formatResult((base * Number(s.entry)) / 100), computed: true };
+        } catch {
+          // no usable left side: fall through to the plain "÷ 100"
+        }
+      }
       try {
         const input = s.entry ?? (a.fn === "neg" ? "-0" : "0");
         if (a.fn === "neg" && s.entry === null) return { ...s, entry: "-0" };

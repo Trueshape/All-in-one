@@ -73,11 +73,6 @@ export default function QrGenerator() {
     return d;
   }, [matrix]);
 
-  const svgMarkup = matrix
-    ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="${bg}"/><path d="${path}" fill="${fg}"/></svg>`
-    : "";
-
-
   const downloadPng = () => {
     if (!matrix) return;
     const scale = Math.ceil(1024 / size);

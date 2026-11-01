@@ -6,6 +6,7 @@ import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
 import { UiContext, UI_TOKENS } from "./ui/tokens";
 import { InfoContext } from "./ui/kit";
+import { useI18n } from "./i18n";
 
 interface ToolModalProps {
   activeTheme: Theme;
@@ -47,6 +48,21 @@ export default function ToolModal({
   onToggleInfo,
 }: ToolModalProps) {
   const tc = getThemeClasses(activeTheme);
+  const { t, toolText } = useI18n();
+
+  // An empty name, or the default one, removes the custom name instead of freezing the default in the current language.
+  const commitName = () => {
+    if (!activeTool) return;
+    const id = activeTool.id;
+    const name = tempToolName.trim();
+    setCustomToolNames((prev) => {
+      const next = { ...prev };
+      if (!name || name === toolText(activeTool).name) delete next[id];
+      else next[id] = name;
+      return next;
+    });
+    setEditingToolName(false);
+  };
   const [showSettings, setShowSettings] = useState(false);
   // Settings belong to one tool: close them when the open tool changes.
   useEffect(() => setShowSettings(false), [activeTool?.id]);
@@ -87,11 +103,7 @@ export default function ToolModal({
                         onChange={(e) => setTempToolName(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            setCustomToolNames((prev) => ({
-                              ...prev,
-                              [activeTool.id]: tempToolName.trim() || activeTool.name,
-                            }));
-                            setEditingToolName(false);
+                            commitName();
                           } else if (e.key === "Escape") {
                             setEditingToolName(false);
                           }
@@ -99,11 +111,7 @@ export default function ToolModal({
                         className={`text-xl font-light font-display bg-zinc-900 border ${tc.borderClass} px-2 py-0.5 rounded text-zinc-100 focus:outline-none focus:border-zinc-500 max-w-[200px] sm:max-w-[350px]`}
                         autoFocus
                         onBlur={() => {
-                          setCustomToolNames((prev) => ({
-                            ...prev,
-                            [activeTool.id]: tempToolName.trim() || activeTool.name,
-                          }));
-                          setEditingToolName(false);
+                          commitName();
                         }}
                       />
                       <button
@@ -112,14 +120,10 @@ export default function ToolModal({
                           e.preventDefault();
                         }}
                         onClick={() => {
-                          setCustomToolNames((prev) => ({
-                            ...prev,
-                            [activeTool.id]: tempToolName.trim() || activeTool.name,
-                          }));
-                          setEditingToolName(false);
+                          commitName();
                         }}
                         className="p-1 text-zinc-400 hover:text-emerald-400 transition-colors"
-                        title="Salva"
+                        title={t("save")}
                       >
                         <Check className="w-4 h-4" />
                       </button>
@@ -127,15 +131,15 @@ export default function ToolModal({
                   ) : (
                     <div className="flex items-center gap-2 group/title">
                       <h2 className="text-xl font-light font-display text-zinc-100">
-                        {customToolNames[activeTool.id] || activeTool.name}
+                        {customToolNames[activeTool.id] || toolText(activeTool).name}
                       </h2>
                       <button
                         onClick={() => {
-                          setTempToolName(customToolNames[activeTool.id] || activeTool.name);
+                          setTempToolName(customToolNames[activeTool.id] || toolText(activeTool).name);
                           setEditingToolName(true);
                         }}
                         className="p-1 opacity-0 group-hover/title:opacity-100 focus:opacity-100 text-zinc-500 hover:text-zinc-200 transition-all cursor-pointer"
-                        title="Rinomina strumento"
+                        title={t("rename_tool")}
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
@@ -153,7 +157,7 @@ export default function ToolModal({
                   <button
                     onClick={() => setShowSettings(!showSettings)}
                     className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic} ${showSettings ? `${UI_TOKENS[activeTheme].accent} border-current` : ""}`}
-                    title={showSettings ? "Chiudi impostazioni" : "Impostazioni"}
+                    title={showSettings ? t("settings_close") : t("settings")}
                     aria-pressed={showSettings}
                     id="btn-toggle-settings"
                   >
@@ -164,7 +168,7 @@ export default function ToolModal({
                 <button
                   onClick={onToggleInfo}
                   className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic} ${showInfo ? `${UI_TOKENS[activeTheme].accent} border-current` : ""}`}
-                  title={showInfo ? "Nascondi spiegazioni" : "Mostra spiegazioni"}
+                  title={showInfo ? t("info_hide") : t("info_show")}
                   aria-pressed={showInfo}
                   id="btn-toggle-info"
                 >
@@ -174,7 +178,7 @@ export default function ToolModal({
                 <button
                   onClick={() => toggleFavorite(activeTool.id)}
                   className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic}`}
-                  title={!!favoriteTools[activeTool.id] ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"}
+                  title={!!favoriteTools[activeTool.id] ? t("fav_remove") : t("fav_add")}
                   id="btn-toggle-favorite-modal"
                 >
                   <Heart className={`w-4 h-4 ${!!favoriteTools[activeTool.id] ? "fill-current text-red-500" : "text-zinc-400"}`} />
@@ -209,11 +213,11 @@ export default function ToolModal({
                 id="btn-prev-tool"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span>Precedente</span>
+                <span>{t("prev")}</span>
               </button>
 
               <span className="text-[10px] text-zinc-500 font-mono tracking-widest">
-                STRUMENTO {activeToolIndex + 1} / {toolCount}
+                {t("tool_of")} {activeToolIndex + 1} / {toolCount}
               </span>
 
               <button
@@ -221,7 +225,7 @@ export default function ToolModal({
                 className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-200 transition-colors font-mono uppercase text-[10px] tracking-wider"
                 id="btn-next-tool"
               >
-                <span>Successivo</span>
+                <span>{t("next")}</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

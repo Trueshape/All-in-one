@@ -92,6 +92,8 @@ export interface Decoded {
   day: number;
   monthName: string;
   year: number;
+  /** The same two digits read as 19xx, when "year" is 20xx (a code alone cannot tell the century). */
+  alternativeYear: number | null;
   belfiore: string;
   place: string | null;
   checkValid: boolean;
@@ -116,7 +118,8 @@ export function decode(raw: string): Decoded | { error: string } {
 
   const yy = Number(undoOmocodia(code.slice(6, 8)));
   const currentYY = new Date().getFullYear() % 100;
-  const year = (yy <= currentYY ? 2000 : 1900) + yy;
+  const recent = yy <= currentYY;
+  const year = (recent ? 2000 : 1900) + yy;
 
   const belfiore = code[11] + undoOmocodia(code.slice(12, 15));
   const expectedCheck = checkChar(code.slice(0, 15));
@@ -127,6 +130,7 @@ export function decode(raw: string): Decoded | { error: string } {
     day,
     monthName: MONTH_NAMES[monthIndex],
     year,
+    alternativeYear: recent ? 1900 + yy : null,
     belfiore,
     place: placeName(belfiore),
     checkValid: expectedCheck === code[15],

@@ -10,12 +10,18 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 5182;
 
-  app.use(express.json({ limit: "20mb" }));
+  // Translate bodies are at most 5000 characters: anything bigger is refused before it is parsed.
+  app.use(express.json({ limit: "32kb" }));
 
   // Simple in-memory rate limit for the translate route: max 20 requests per IP per minute
   const RATE_WINDOW_MS = 60_000;
   const RATE_MAX = 20;
   const hits = new Map<string, { count: number; start: number }>();
+  // Forget IPs whose window has ended, so the map does not grow forever.
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of hits) if (now - entry.start > RATE_WINDOW_MS) hits.delete(ip);
+  }, RATE_WINDOW_MS).unref();
   const rateLimited = (ip: string) => {
     const now = Date.now();
     const entry = hits.get(ip);
@@ -28,6 +34,8 @@ async function startServer() {
   };
 
   const MAX_TEXT_LENGTH = 5000;
+  // The only tones the page can send, with the wording used in the prompt.
+  const TONES: Record<string, string> = { natural: "Naturale/Standard", formal: "Formale", informal: "Informale", technical: "Tecnico" };
   const ALLOWED_LANGS = new Set(["auto", "it", "en", "es", "fr", "de", "pt", "ru", "zh", "ja", "ko", "ar", "nl", "pl", "sv", "tr", "el"]);
 
   // API Route: Translation powered by Gemini API
@@ -48,6 +56,10 @@ async function startServer() {
         return res.status(400).json({ error: "Lingua non valida" });
       }
 
+      if (tone !== undefined && (typeof tone !== "string" || !Object.hasOwn(TONES, tone))) {
+        return res.status(400).json({ error: "Tono non valido" });
+      }
+
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
         return res.status(500).json({ error: "GEMINI_API_KEY non configurata" });
@@ -59,7 +71,7 @@ async function startServer() {
 Traduci il seguente testo.
 Lingua Origine: ${sourceLang === "auto" ? "Rileva automaticamente" : sourceLang}
 Lingua Destinazione: ${targetLang}
-Tono di voce richiesto: ${tone || "Naturale/Standard"}
+Tono di voce richiesto: ${TONES[tone ?? "natural"]}
 
 Testo da tradurre:
 """
@@ -73,7 +85,8 @@ Fornisci unicamente la traduzione finale senza commenti, introduzioni o virgolet
         contents: prompt,
       });
 
-      const translation = response.text?.trim() || text;
+      const translation = response.text?.trim();
+      if (!translation) return res.status(502).json({ error: "Nessuna traduzione ricevuta" });
       res.json({ translation });
     } catch (error: any) {
       console.error("Errore nella traduzione Gemini API:", error);
@@ -87,7 +100,9 @@ Fornisci unicamente la traduzione finale senza commenti, introduzioni o virgolet
   });
 
   // Vite middleware in development vs Static files in production
-  if (process.env.NODE_ENV !== "production") {
+  // "npm start" passes --prod, because NODE_ENV is not set by it (and "VAR=x cmd" does not work on Windows).
+  const isProd = process.env.NODE_ENV === "production" || process.argv.includes("--prod");
+  if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

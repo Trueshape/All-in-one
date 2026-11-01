@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Search,
@@ -16,9 +16,9 @@ import {
   Pencil,
   ChevronLeft,
 } from "lucide-react";
-import { TOOLS } from "./tools/registry";
+import { TOOLS, type ToolItem } from "./tools/registry";
 import { CATEGORY_LABELS, getThemeClasses, type Theme } from "./theme";
-import { LANGS, useI18n, type Lang } from "./i18n";
+import { LANGS, LOCALES, useI18n } from "./i18n";
 import { LangMenu } from "./ui/kit";
 
 interface LandingProps {
@@ -28,7 +28,6 @@ interface LandingProps {
   toggleFavorite: (id: string, e?: React.MouseEvent) => void;
   customToolNames: Record<string, string>;
   setCustomToolNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  time: Date;
   onOpenTool: (id: string) => void;
 }
 
@@ -47,6 +46,42 @@ const getCategoryIcon = (category: string) => {
   }
 };
 
+/** Date and time in the header: owns its one-second tick so the rest of the page does not re-render. */
+function HeaderClock({ tc }: { tc: ReturnType<typeof getThemeClasses> }) {
+  const { lang } = useI18n();
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className={`flex items-center gap-6 text-[10px] font-mono ${tc.clockText} uppercase tracking-wider`}>
+      <div className="hidden md:flex items-center gap-2">
+        <Calendar className="w-3.5 h-3.5 text-zinc-600" />
+        <span>
+          {time.toLocaleDateString(LOCALES[lang], {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          })}
+        </span>
+      </div>
+      <div className={`h-4 w-px bg-zinc-800 hidden md:block ${tc.borderClass}`} />
+      <div className="flex items-center gap-2">
+        <Clock className="w-3.5 h-3.5 text-zinc-600" />
+        <span className={`tabular-nums ${tc.clockTime}`}>
+          {time.toLocaleTimeString(LOCALES[lang], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function Landing({
   activeTheme,
   setActiveTheme,
@@ -54,7 +89,6 @@ export default function Landing({
   toggleFavorite,
   customToolNames,
   setCustomToolNames,
-  time,
   onOpenTool,
 }: LandingProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -63,22 +97,41 @@ export default function Landing({
   const [editingCardToolId, setEditingCardToolId] = useState<string | null>(null);
   const [tempCardToolName, setTempCardToolName] = useState<string>("");
 
-  const { t, lang, setLang } = useI18n();
+  const { t, lang, setLang, toolText } = useI18n();
   const tc = getThemeClasses(activeTheme);
+  const nameOf = (tool: ToolItem) => customToolNames[tool.id] || toolText(tool).name;
+  const byName = (a: ToolItem, b: ToolItem) => nameOf(a).localeCompare(nameOf(b), LOCALES[lang]);
+
+  // An empty name, or the default one, removes the custom name instead of freezing the default in the current language.
+  const commitCardName = (tool: ToolItem) => {
+    const name = tempCardToolName.trim();
+    setCustomToolNames((prev) => {
+      const next = { ...prev };
+      if (!name || name === toolText(tool).name) delete next[tool.id];
+      else next[tool.id] = name;
+      return next;
+    });
+    setEditingCardToolId(null);
+  };
+
+  // Cards are real controls for the keyboard too: Enter or Space on the card itself runs the click action.
+  const keyActivate = (action: () => void) => (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      action();
+    }
+  };
+  const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500";
 
   // Always sort the tools alphabetically by name (taking custom names into account)
-  const orderedTools = [...TOOLS].sort((a, b) => {
-    const nameA = customToolNames[a.id] || a.name;
-    const nameB = customToolNames[b.id] || b.name;
-    return nameA.localeCompare(nameB, "it");
-  });
+  const orderedTools = [...TOOLS].sort(byName);
 
   // Filter tools based on query and selected category tab
   const filteredTools = orderedTools.filter((tool) => {
-    const displayName = customToolNames[tool.id] || tool.name;
-    const matchesSearch =
-      displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tool.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = nameOf(tool).toLowerCase().includes(query) || toolText(tool).description.toLowerCase().includes(query);
     const matchesTab =
       activeTab === "all" ||
       (activeTab === "preferiti" ? !!favoriteTools[tool.id] : tool.category === activeTab);
@@ -159,7 +212,7 @@ export default function Landing({
             >
               <div className="flex items-center gap-2">
                 <Palette className="w-3.5 h-3.5" />
-                <span className="hidden md:inline-block">Stile:</span>
+                <span className="hidden md:inline-block">{t("style")}</span>
                 <span className="font-bold">
                   {activeTheme === "artistic" ? "Artistic Flair" : activeTheme === "immersive" ? "Immersive UI" : "Sophisticated"}
                 </span>
@@ -184,26 +237,26 @@ export default function Landing({
                     } overflow-hidden`}
                   >
                     <div className={`p-2 border-b ${tc.borderClass} bg-zinc-950/20 text-[9px] font-mono tracking-widest text-zinc-500 uppercase`}>
-                      Seleziona Interfaccia
+                      {t("select_interface")}
                     </div>
                     <div className="p-1.5 flex flex-col gap-1">
                       {[
                         {
                           id: "artistic",
                           name: "Artistic Flair",
-                          desc: "Minimale, stampo editoriale",
+                          desc: t("theme_artistic"),
                           accent: "bg-zinc-100",
                         },
                         {
                           id: "immersive",
                           name: "Immersive UI",
-                          desc: "Terminale cyber, dettagli neon, fosfori",
+                          desc: t("theme_immersive"),
                           accent: "bg-emerald-500",
                         },
                         {
                           id: "sophisticated",
                           name: "Sophisticated Dark",
-                          desc: "Premium dark, angoli morbidi, sfumature",
+                          desc: t("theme_sophisticated"),
                           accent: "bg-violet-500",
                         },
                       ].map((t) => (
@@ -241,29 +294,7 @@ export default function Landing({
           </div>
         </div>
 
-        <div className={`flex items-center gap-6 text-[10px] font-mono ${tc.clockText} uppercase tracking-wider`}>
-          <div className="hidden md:flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 text-zinc-600" />
-            <span>
-              {time.toLocaleDateString("it-IT", {
-                weekday: "short",
-                day: "numeric",
-                month: "short",
-              })}
-            </span>
-          </div>
-          <div className={`h-4 w-px bg-zinc-800 hidden md:block ${tc.borderClass}`} />
-          <div className="flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-zinc-600" />
-            <span className={`tabular-nums ${tc.clockTime}`}>
-              {time.toLocaleTimeString("it-IT", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })}
-            </span>
-          </div>
-        </div>
+        <HeaderClock tc={tc} />
       </div>
 
       {/* Main Content Workspace */}
@@ -274,10 +305,10 @@ export default function Landing({
               <h2 className={`text-xs font-mono uppercase tracking-[0.25em] ${
                 activeTheme === "immersive" ? "text-emerald-500" : activeTheme === "sophisticated" ? "text-violet-400" : "text-zinc-400"
               }`}>
-                {activeTheme === "immersive" ? "01 // SELEZIONA CATEGORIA" : "Seleziona Categoria"}
+                {activeTheme === "immersive" ? `01 // ${t("select_category").toUpperCase()}` : t("select_category")}
               </h2>
               <p className="text-xs text-zinc-500 font-sans">
-                Esplora i diversi strumenti raggruppati per tipologia di utilizzo.
+                {t("select_category_sub")}
               </p>
             </div>
 
@@ -285,35 +316,35 @@ export default function Landing({
               {[
                 {
                   id: "calcolo",
-                  name: "Calcoli",
+                  name: t("nav_calcolo"),
                   description: "Formule scientifiche, conteggi di precisione e calcolo delle mance.",
                   icon: Calculator,
                   count: TOOLS.filter(t => t.category === "calcolo").length,
                 },
                 {
                   id: "convertitori",
-                  name: "Convertitori",
+                  name: t("nav_convertitori"),
                   description: "Tassi di cambio valute, unità di misura, maiuscole e immagini.",
                   icon: ArrowLeftRight,
                   count: TOOLS.filter(t => t.category === "convertitori").length,
                 },
                 {
                   id: "produttivita",
-                  name: "Produttività",
+                  name: t("nav_produttivita"),
                   description: "Pomodoro, timer, orologi mondiali, generatori e analisi testi.",
                   icon: Timer,
                   count: TOOLS.filter(t => t.category === "produttivita").length,
                 },
                 {
                   id: "creative",
-                  name: "Utilità",
+                  name: t("nav_creative"),
                   description: "Decisioni casuali, picker colori, markdown e tag per Discord.",
                   icon: Palette,
                   count: TOOLS.filter(t => t.category === "creative").length,
                 },
                 {
                   id: "preferiti",
-                  name: "Preferiti",
+                  name: t("nav_preferiti"),
                   description: "I tuoi strumenti preferiti salvati per un accesso rapido.",
                   icon: Heart,
                   count: Object.keys(favoriteTools).filter(id => !!favoriteTools[id]).length,
@@ -325,17 +356,16 @@ export default function Landing({
                 const categoryTools = (isPreferiti
                   ? TOOLS.filter(t => !!favoriteTools[t.id])
                   : TOOLS.filter(t => t.category === category.id)
-                ).sort((a, b) => {
-                  const nameA = customToolNames[a.id] || a.name;
-                  const nameB = customToolNames[b.id] || b.name;
-                  return nameA.localeCompare(nameB, "it");
-                });
+                ).sort(byName);
                 return (
                   <motion.div
                     key={category.id}
                     layoutId={`cat-${category.id}`}
                     onClick={() => setActiveTab(category.id)}
-                    className={`${tc.card} flex flex-col justify-between h-auto min-h-[160px] cursor-pointer group`}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={keyActivate(() => setActiveTab(category.id))}
+                    className={`${tc.card} ${focusRing} flex flex-col justify-between h-auto min-h-[160px] cursor-pointer group`}
                     id={`card-category-${category.id}`}
                     whileHover={{
                       backgroundColor: activeTheme === "immersive" ? "rgba(16, 185, 129, 0.05)" : activeTheme === "sophisticated" ? "rgba(139, 92, 246, 0.04)" : "rgba(24, 24, 27, 0.2)",
@@ -354,7 +384,7 @@ export default function Landing({
 
                       <div className="flex items-center gap-2 mt-0.5 shrink-0">
                         <span className="text-[10px] font-mono text-zinc-500 opacity-80 group-hover:opacity-100 transition-opacity">
-                          {category.count} {category.count === 1 ? "tool" : "tools"}
+                          {category.count} {(category.count === 1 ? t("tool_one") : t("tool_many")).toLowerCase()}
                         </span>
                         <Icon className={`w-4 h-4 ${tc.iconAccent} group-hover:text-zinc-200 transition-colors`} />
                       </div>
@@ -369,7 +399,10 @@ export default function Landing({
                               e.stopPropagation();
                               onOpenTool(tool.id);
                             }}
-                            className="text-[11px] font-mono text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5 transition-colors cursor-pointer group/item"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={keyActivate(() => onOpenTool(tool.id))}
+                            className={`text-[11px] font-mono text-zinc-400 hover:text-zinc-100 flex items-center gap-1.5 transition-colors cursor-pointer group/item ${focusRing}`}
                           >
                             <span className={`transition-transform duration-200 group-hover/item:translate-x-0.5 text-[8px] ${
                               activeTheme === "immersive" ? "text-emerald-500/70" : activeTheme === "sophisticated" ? "text-violet-400/70" : "text-zinc-500"
@@ -377,13 +410,13 @@ export default function Landing({
                               →
                             </span>
                             <span className="group-hover/item:underline">
-                              {customToolNames[tool.id] || tool.name}
+                              {nameOf(tool)}
                             </span>
                           </div>
                         ))
                       ) : isPreferiti ? (
                         <p className="text-[10px] font-mono text-zinc-500/80 leading-normal">
-                          Clicca sul cuore sui tool per salvarli qui.
+                          {t("favorites_empty")}
                         </p>
                       ) : null}
                     </div>
@@ -404,20 +437,20 @@ export default function Landing({
                     id="btn-back-to-categories"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
-                    <span>Indietro</span>
+                    <span>{t("back")}</span>
                   </button>
                   <div className="flex flex-col">
-                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest leading-none">Categoria</span>
+                    <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest leading-none">{t("category")}</span>
                     <span className={`text-[11px] font-bold font-mono tracking-wider uppercase mt-1 ${
                       activeTheme === "immersive" ? "text-emerald-400" : activeTheme === "sophisticated" ? "text-violet-300" : "text-zinc-200"
                     }`}>
-                      {CATEGORY_LABELS[activeTab]}
+                      {t(`nav_${activeTab}`)}
                     </span>
                   </div>
                 </div>
                 {/* Total tools count */}
                 <div className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">
-                  {filteredTools.length} {filteredTools.length === 1 ? "STRUMENTO" : "STRUMENTI"}
+                  {filteredTools.length} {filteredTools.length === 1 ? t("tool_one") : t("tool_many")}
                 </div>
               </div>
             )}
@@ -437,7 +470,10 @@ export default function Landing({
                           onOpenTool(tool.id);
                         }
                       }}
-                      className={`${tc.card} flex flex-col justify-between h-36 cursor-pointer group`}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={keyActivate(() => { if (editingCardToolId !== tool.id) onOpenTool(tool.id); })}
+                      className={`${tc.card} ${focusRing} flex flex-col justify-between h-36 cursor-pointer group`}
                       id={`card-tool-${tool.id}`}
                       whileHover={editingCardToolId === tool.id ? undefined : {
                         backgroundColor: activeTheme === "immersive" ? "rgba(16, 185, 129, 0.05)" : activeTheme === "sophisticated" ? "rgba(139, 92, 246, 0.04)" : "rgba(24, 24, 27, 0.2)",
@@ -465,10 +501,10 @@ export default function Landing({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setEditingCardToolId(tool.id);
-                                setTempCardToolName(customToolNames[tool.id] || tool.name);
+                                setTempCardToolName(nameOf(tool));
                               }}
                               className="p-1 text-zinc-500 hover:text-zinc-200 transition-colors rounded cursor-pointer"
-                              title="Rinomina"
+                              title={t("rename")}
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
@@ -484,7 +520,7 @@ export default function Landing({
                                   ? "text-red-500 hover:text-red-400 bg-red-500/10"
                                   : "text-zinc-500 hover:text-zinc-200"
                               }`}
-                              title={!!favoriteTools[tool.id] ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"}
+                              title={!!favoriteTools[tool.id] ? t("fav_remove") : t("fav_add")}
                             >
                               <Heart className={`w-3.5 h-3.5 ${!!favoriteTools[tool.id] ? "fill-current text-red-500" : ""}`} />
                             </button>
@@ -506,11 +542,7 @@ export default function Landing({
                               onChange={(e) => setTempCardToolName(e.target.value)}
                               onKeyDown={(e) => {
                                 if (e.key === "Enter") {
-                                  setCustomToolNames((prev) => ({
-                                    ...prev,
-                                    [tool.id]: tempCardToolName.trim() || tool.name,
-                                  }));
-                                  setEditingCardToolId(null);
+                                  commitCardName(tool);
                                 } else if (e.key === "Escape") {
                                   setEditingCardToolId(null);
                                 }
@@ -518,21 +550,17 @@ export default function Landing({
                               className={`w-full text-base font-medium font-mono bg-zinc-900 border ${tc.borderClass} px-2 py-0.5 rounded text-zinc-100 focus:outline-none focus:border-zinc-500`}
                               autoFocus
                               onBlur={() => {
-                                setCustomToolNames((prev) => ({
-                                  ...prev,
-                                  [tool.id]: tempCardToolName.trim() || tool.name,
-                                }));
-                                setEditingCardToolId(null);
+                                commitCardName(tool);
                               }}
                             />
                           </div>
                         ) : (
                           <h2 className={`${tc.cardTitle} mb-1 select-none`}>
-                            {customToolNames[tool.id] || tool.name}
+                            {nameOf(tool)}
                           </h2>
                         )}
                         <p className={`${tc.cardDesc} select-none`}>
-                          {tool.description}
+                          {toolText(tool).description}
                         </p>
                       </div>
                     </motion.div>
@@ -542,7 +570,7 @@ export default function Landing({
 
               {filteredTools.length === 0 && (
                 <div className={`col-span-full py-24 text-center ${activeTheme === "immersive" ? "bg-[#030812]" : activeTheme === "sophisticated" ? "bg-slate-900/40" : "bg-[#0a0a0a]"}`}>
-                  <p className="text-sm text-zinc-500 font-mono">NESSUNO STRUMENTO TROVATO NEL SISTEMA.</p>
+                  <p className="text-sm text-zinc-500 font-mono">{t("none_found")}</p>
                   <button
                     onClick={() => {
                       setSearchQuery("");
@@ -551,7 +579,7 @@ export default function Landing({
                     className={`mt-4 px-4 py-2 border ${tc.borderClass} ${tc.btnClassic} text-xs font-mono transition-all`}
                     id="btn-reset-filters"
                   >
-                    RIPRISTINA FILTRI
+                    {t("reset_filters")}
                   </button>
                 </div>
               )}
@@ -561,8 +589,7 @@ export default function Landing({
       </main>
 
       {/* Footer */}
-      <footer className={`h-12 border-t ${tc.borderClass} flex items-center justify-between px-6 sm:px-8 ${tc.footer} text-[9px] uppercase tracking-[0.3em] shrink-0 z-10`}>
-        <div className="flex-1 hidden sm:block">CPU: 4% — MEM: 124MB — LAT: 12ms</div>
+      <footer className={`h-12 border-t ${tc.borderClass} flex items-center justify-end px-6 sm:px-8 ${tc.footer} text-[9px] uppercase tracking-[0.3em] shrink-0 z-10`}>
         <div className="text-zinc-500 font-mono">© 2026 Design Minimalista • Built for Productivity</div>
       </footer>
     </>

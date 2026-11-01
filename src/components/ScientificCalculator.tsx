@@ -149,6 +149,8 @@ export default function ScientificCalculator({ showSettings = false }: { showSet
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // Enter on a focused button (close, favorite, settings…) must activate that button, not "=".
+      if (e.key === "Enter" && el?.closest("button:not([data-calc-key]), a")) return;
       const key = e.key;
       const find = (pred: (x: Key) => boolean) => keys.find(pred);
       let found: Key | undefined;
@@ -238,6 +240,7 @@ export default function ScientificCalculator({ showSettings = false }: { showSet
           <button
             key={`${mode}-${key.label}`}
             type="button"
+            data-calc-key
             onClick={() => press(key)}
             style={{
               gridColumn: key.x + 1,

@@ -48,6 +48,20 @@ const contrastWith = (rgb: Rgb, other: Rgb) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
+function Swatch({ color, onCopy, onUse }: { color: string; onCopy: (text: string) => void; onUse: (color: string) => void }) {
+  const u = useUi();
+  return (
+    <button
+      type="button"
+      onClick={() => onCopy(color.toUpperCase())}
+      onDoubleClick={() => onUse(color)}
+      title={`${color.toUpperCase()} · clic: copia · doppio clic: usa`}
+      className={cx("w-9 h-9 border cursor-pointer shrink-0", u.divider, u.id === "sophisticated" ? "rounded-lg" : u.id === "artistic" ? "rounded" : "")}
+      style={{ backgroundColor: color }}
+    />
+  );
+}
+
 export default function ColorPicker() {
   const u = useUi();
   const [hex, setHex] = useState("#8b5cf6");
@@ -93,17 +107,6 @@ export default function ColorPicker() {
   const onWhite = contrastWith(rgb, [255, 255, 255]);
   const onBlack = contrastWith(rgb, [0, 0, 0]);
 
-  const Swatch = ({ color, size = "w-9 h-9" }: { color: string; size?: string }) => (
-    <button
-      type="button"
-      onClick={() => copy(color.toUpperCase())}
-      onDoubleClick={() => apply(color)}
-      title={`${color.toUpperCase()} · clic: copia · doppio clic: usa`}
-      className={cx(size, "border cursor-pointer shrink-0", u.divider, u.id === "sophisticated" ? "rounded-lg" : u.id === "artistic" ? "rounded" : "")}
-      style={{ backgroundColor: color }}
-    />
-  );
-
   return (
     <Stack>
       <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-5 items-start">
@@ -145,7 +148,7 @@ export default function ColorPicker() {
           {palettes.map((p) => (
             <div key={p.name} className="space-y-1.5">
               <span className={u.statLabel}>{p.name}</span>
-              <div className="flex gap-2">{p.colors.map((c, i) => <Swatch key={`${c}-${i}`} color={c} />)}</div>
+              <div className="flex gap-2">{p.colors.map((c, i) => <Swatch key={`${c}-${i}`} color={c} onCopy={copy} onUse={apply} />)}</div>
             </div>
           ))}
         </div>

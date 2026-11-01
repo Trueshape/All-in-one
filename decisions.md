@@ -12,3 +12,14 @@
 - 2026-10-29 — Rimosse le finte funzioni: traduttore senza dizionario di ripiego, crypto senza rumore casuale sui prezzi, NASDAQ marcato come dati dimostrativi — non mostrare come reale ciò che non lo è.
 - 2026-10-29 — Aggiunti `@types/react` e `@types/react-dom` — il type-check ora copre davvero i componenti.
 - 2026-10-29 — Calcolatrice scientifica sostituita da una griglia fissa 7×5 con modalità "Semplice" (forma e dimensione dei tasti regolabili); eliminati l'editor del layout e `calcLayout.ts`, la logica dei tasti vive in `calcState.ts` — un solo layout curato è più semplice da mantenere dell'editor drag-and-drop.
+- 2026-11-01 — Lettura e scrittura di `localStorage` protette con try/catch e tema validato — con lo storage bloccato l'app partiva con la pagina bianca.
+- 2026-11-01 — Traduttore: corpo massimo 32 kB, tono ammesso solo tra quattro valori, risposta vuota = errore 502, mappa del rate-limit ripulita — il server ascolta su `0.0.0.0` e prima accettava 20 MB.
+- 2026-11-01 — `npm start` passa `--prod` — `NODE_ENV=production cmd` non funziona su Windows e senza di esso il server serviva Vite di sviluppo.
+- 2026-11-01 — Aggiunti test con il runner di Node (`npm test`) e `npm run lint` + `npm test` nel workflow di Pages — la build di Vite non controlla i tipi.
+- 2026-11-01 — Tasto % come percentuale dell'operando di sinistra dopo + o −; le funzioni senza numero vengono ignorate — `200 + 10 %` dava 200,1.
+- 2026-11-01 — Orologio dell'header in un componente a sé — prima ridisegnava ogni secondo tutta la pagina e lo strumento aperto.
+- 2026-11-01 — Rimossi `autoprefixer`, il duplicato di `vite`, l'alias `@`, la config di AI Studio e `metadata.json` — non usati da nessuno.
+- 2026-11-01 — Il bottone (i) nasconde solo gli avvisi informativi: errori e avvisi di attenzione restano sempre visibili — prima anche i messaggi di errore (traduttore, immagini) sparivano.
+- 2026-11-01 — Landing e modale usano le traduzioni (nomi e descrizioni degli strumenti, etichette, data e ora); un nome personalizzato uguale a quello di default viene tolto, non salvato — prima cambiare lingua lasciava metà pagina in italiano e la matita fissava il nome italiano.
+- 2026-11-01 — Schede, categorie e voci dei tool apribili da tastiera (Invio/Spazio) — erano `div` con solo `onClick`.
+- 2026-11-01 — Tolta la riga finta "CPU / MEM / LAT" dal footer — non erano misure reali.
