@@ -197,7 +197,7 @@ export default function BackgroundRemover() {
       a.href = url;
       a.download = `${loaded.name}-senza-sfondo.png`;
       a.click();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     }, "image/png");
   };
 

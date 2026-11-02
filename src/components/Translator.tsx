@@ -6,22 +6,22 @@ import { useUi } from "../ui/tokens";
 const MAX_CHARS = 5000; // keep in sync with MAX_TEXT_LENGTH in server.ts
 
 const LANGUAGES = [
-  { code: "it", name: "Italiano", flag: "🇮🇹" },
-  { code: "en", name: "Inglese", flag: "🇬🇧" },
-  { code: "es", name: "Spagnolo", flag: "🇪🇸" },
-  { code: "fr", name: "Francese", flag: "🇫🇷" },
-  { code: "de", name: "Tedesco", flag: "🇩🇪" },
-  { code: "pt", name: "Portoghese", flag: "🇵🇹" },
-  { code: "ru", name: "Russo", flag: "🇷🇺" },
-  { code: "zh", name: "Cinese (semplificato)", flag: "🇨🇳" },
-  { code: "ja", name: "Giapponese", flag: "🇯🇵" },
-  { code: "ko", name: "Coreano", flag: "🇰🇷" },
-  { code: "ar", name: "Arabo", flag: "🇸🇦" },
-  { code: "nl", name: "Olandese", flag: "🇳🇱" },
-  { code: "pl", name: "Polacco", flag: "🇵🇱" },
-  { code: "sv", name: "Svedese", flag: "🇸🇪" },
-  { code: "tr", name: "Turco", flag: "🇹🇷" },
-  { code: "el", name: "Greco", flag: "🇬🇷" },
+  { code: "it", name: "Italiano" },
+  { code: "en", name: "Inglese" },
+  { code: "es", name: "Spagnolo" },
+  { code: "fr", name: "Francese" },
+  { code: "de", name: "Tedesco" },
+  { code: "pt", name: "Portoghese" },
+  { code: "ru", name: "Russo" },
+  { code: "zh", name: "Cinese (semplificato)" },
+  { code: "ja", name: "Giapponese" },
+  { code: "ko", name: "Coreano" },
+  { code: "ar", name: "Arabo" },
+  { code: "nl", name: "Olandese" },
+  { code: "pl", name: "Polacco" },
+  { code: "sv", name: "Svedese" },
+  { code: "tr", name: "Turco" },
+  { code: "el", name: "Greco" },
 ];
 
 const TONES = [
@@ -96,8 +96,6 @@ function TranslatorInner() {
     window.speechSynthesis.speak(utterance);
   };
 
-  const langLabel = (code: string) => LANGUAGES.find((l) => l.code === code);
-
   return (
     <Stack>
       <Chips fill value={tone} onChange={setTone} options={TONES} />
@@ -105,11 +103,11 @@ function TranslatorInner() {
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <Select value={from} onChange={(e) => setFrom(e.target.value)} aria-label="Lingua di origine">
           <option value="auto">🌐 Rileva lingua</option>
-          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
         </Select>
         <IconButton onClick={swap} disabled={from === "auto"} title="Inverti lingue"><ArrowLeftRight className="w-4 h-4" /></IconButton>
         <Select value={to} onChange={(e) => setTo(e.target.value)} aria-label="Lingua di destinazione">
-          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
         </Select>
       </div>
 
@@ -146,9 +144,9 @@ function TranslatorInner() {
           <SectionTitle><span className="inline-flex items-center gap-2"><History className="w-3.5 h-3.5" /> Recenti</span></SectionTitle>
           {history.map((item, i) => (
             <button key={i} type="button" onClick={() => { setSource(item.source); setResult(item.translated); setFrom(item.from); setTo(item.to); }} className={cx("w-full flex items-center justify-between gap-3 px-3 py-2 text-left text-xs cursor-pointer", u.panel)}>
-              <span className={cx("truncate", u.subtle)}>{langLabel(item.from)?.flag ?? "🌐"} {item.source}</span>
+              <span className={cx("truncate", u.subtle)}>{item.source}</span>
               <span className={u.muted}>→</span>
-              <span className={cx("truncate font-semibold", u.text)}>{langLabel(item.to)?.flag} {item.translated}</span>
+              <span className={cx("truncate font-semibold", u.text)}>{item.translated}</span>
             </button>
           ))}
         </div>

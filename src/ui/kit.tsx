@@ -466,7 +466,39 @@ export function LangMenu<T extends string>({
   );
 }
 
-/** Country flag as a small image (ISO code), so it renders the same on every OS. */
+const STRIPE_FLAGS: Record<string, { colors: string[]; vertical: boolean; weights?: number[] }> = {
+  it: { colors: ["#009246", "#ffffff", "#ce2b37"], vertical: true },
+  fr: { colors: ["#0055a4", "#ffffff", "#ef4135"], vertical: true },
+  de: { colors: ["#000000", "#dd0000", "#ffce00"], vertical: false },
+  es: { colors: ["#aa151b", "#f1bf00", "#aa151b"], vertical: false, weights: [1, 2, 1] },
+};
+
+/** Small inline flag (it, fr, de, es, gb): no external request, and it looks the same on every OS. */
 function Flag({ code }: { code: string }) {
-  return <img src={`https://flagcdn.com/w40/${code}.png`} srcSet={`https://flagcdn.com/w80/${code}.png 2x`} alt="" width={20} height={14} className="h-3.5 w-5 shrink-0 rounded-[3px] object-cover" />;
+  const cls = "h-3.5 w-5 shrink-0 rounded-[3px]";
+  const stripes = STRIPE_FLAGS[code];
+  if (stripes) {
+    const weights = stripes.weights ?? stripes.colors.map(() => 1);
+    const total = weights.reduce((a, b) => a + b, 0);
+    let at = 0;
+    return (
+      <svg viewBox="0 0 30 20" preserveAspectRatio="none" className={cls} aria-hidden>
+        {stripes.colors.map((color, i) => {
+          const size = (weights[i] / total) * (stripes.vertical ? 30 : 20);
+          const start = at;
+          at += size;
+          return <rect key={i} fill={color} x={stripes.vertical ? start : 0} y={stripes.vertical ? 0 : start} width={stripes.vertical ? size : 30} height={stripes.vertical ? 20 : size} />;
+        })}
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 60 30" preserveAspectRatio="none" className={cls} aria-hidden>
+      <rect width="60" height="30" fill="#012169" />
+      <path d="M0 0L60 30M60 0L0 30" stroke="#ffffff" strokeWidth="6" />
+      <path d="M0 0L60 30M60 0L0 30" stroke="#c8102e" strokeWidth="2" />
+      <path d="M30 0V30M0 15H60" stroke="#ffffff" strokeWidth="10" />
+      <path d="M30 0V30M0 15H60" stroke="#c8102e" strokeWidth="6" />
+    </svg>
+  );
 }

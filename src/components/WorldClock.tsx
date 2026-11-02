@@ -4,13 +4,13 @@ import { Notice, Panel, Slider, Button, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const CITIES = [
-  { name: "Roma", country: "Italia", flag: "🇮🇹", zone: "Europe/Rome" },
-  { name: "Londra", country: "Regno Unito", flag: "🇬🇧", zone: "Europe/London" },
-  { name: "New York", country: "USA", flag: "🇺🇸", zone: "America/New_York" },
-  { name: "Los Angeles", country: "USA", flag: "🇺🇸", zone: "America/Los_Angeles" },
-  { name: "Tokyo", country: "Giappone", flag: "🇯🇵", zone: "Asia/Tokyo" },
-  { name: "Sydney", country: "Australia", flag: "🇦🇺", zone: "Australia/Sydney" },
-  { name: "Dubai", country: "Emirati Arabi", flag: "🇦🇪", zone: "Asia/Dubai" },
+  { name: "Roma", country: "Italia", zone: "Europe/Rome" },
+  { name: "Londra", country: "Regno Unito", zone: "Europe/London" },
+  { name: "New York", country: "USA", zone: "America/New_York" },
+  { name: "Los Angeles", country: "USA", zone: "America/Los_Angeles" },
+  { name: "Tokyo", country: "Giappone", zone: "Asia/Tokyo" },
+  { name: "Sydney", country: "Australia", zone: "Australia/Sydney" },
+  { name: "Dubai", country: "Emirati Arabi", zone: "Asia/Dubai" },
 ];
 
 export default function WorldClock() {
@@ -62,7 +62,7 @@ export default function WorldClock() {
             <Panel key={city.zone} className="flex flex-col justify-between gap-5">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <span className={cx("block text-[10px]", u.muted)}>{city.flag} {city.country}</span>
+                  <span className={cx("block text-[10px]", u.muted)}>{city.country}</span>
                   <span className={cx("block text-sm font-semibold truncate", u.text)}>{city.name}</span>
                 </div>
                 {day ? <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" /> : <Moon className={cx("w-3.5 h-3.5 shrink-0", u.accent)} />}

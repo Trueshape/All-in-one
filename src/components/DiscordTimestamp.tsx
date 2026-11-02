@@ -62,7 +62,11 @@ export default function DiscordTimestamp() {
   const formatted = input ? MARKUP.find((m) => m.id === markupId)!.wrap(input) : "";
 
   const copyTag = async (tag: string) => {
-    await navigator.clipboard.writeText(tag);
+    try {
+      await navigator.clipboard.writeText(tag);
+    } catch {
+      return; // clipboard blocked or unavailable: nothing was copied, so no "copied" mark
+    }
     setCopiedTag(tag);
     setTimeout(() => setCopiedTag((t) => (t === tag ? null : t)), 1800);
   };

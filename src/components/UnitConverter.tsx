@@ -101,6 +101,10 @@ const CATEGORIES: Record<string, Category> = {
   },
 };
 
+/** Up to 8 decimals, but a tiny non-zero value (1 mg in tonnes) keeps 4 significant digits instead of showing 0. */
+const fmtUnit = (n: number) =>
+  n !== 0 && Math.abs(n) < 0.0001 ? new Intl.NumberFormat("it-IT", { maximumSignificantDigits: 4 }).format(n) : fmtNumber(n, 8);
+
 const toCelsius = (v: number, from: string) => (from === "F" ? ((v - 32) * 5) / 9 : from === "K" ? v - 273.15 : v);
 const fromCelsius = (c: number, to: string) => (to === "F" ? (c * 9) / 5 + 32 : to === "K" ? c + 273.15 : c);
 
@@ -137,7 +141,7 @@ export default function UnitConverter() {
     setTo(from);
   };
 
-  const text = valid ? `${fmtNumber(number, 8)} ${fromSymbol} = ${fmtNumber(result, 8)} ${toSymbol}` : "";
+  const text = valid ? `${fmtUnit(number)} ${fromSymbol} = ${fmtUnit(result)} ${toSymbol}` : "";
 
   return (
     <Stack>
@@ -165,8 +169,8 @@ export default function UnitConverter() {
         label="Conversione"
         value={valid ? (
           <span className="block">
-            <span className="block text-lg font-semibold font-display text-zinc-100">{fmtNumber(number, 8)} {fromSymbol} =</span>
-            <span className="block text-2xl font-bold font-display" style={{ color: u.accentHex }}>{fmtNumber(result, 8)} {toSymbol}</span>
+            <span className="block text-lg font-semibold font-display text-zinc-100">{fmtUnit(number)} {fromSymbol} =</span>
+            <span className="block text-2xl font-bold font-display" style={{ color: u.accentHex }}>{fmtUnit(result)} {toSymbol}</span>
           </span>
         ) : "—"}
         copyText={text}

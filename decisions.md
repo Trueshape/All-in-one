@@ -23,3 +23,5 @@
 - 2026-11-01 — Landing e modale usano le traduzioni (nomi e descrizioni degli strumenti, etichette, data e ora); un nome personalizzato uguale a quello di default viene tolto, non salvato — prima cambiare lingua lasciava metà pagina in italiano e la matita fissava il nome italiano.
 - 2026-11-01 — Schede, categorie e voci dei tool apribili da tastiera (Invio/Spazio) — erano `div` con solo `onClick`.
 - 2026-11-01 — Tolta la riga finta "CPU / MEM / LAT" dal footer — non erano misure reali.
+- 2026-11-01 — Bandiere come SVG inline nel menu lingua e niente bandiere emoji nel Traduttore e nell'Orologio — nessuna richiesta a flagcdn.com (il visitatore non viene comunicato a terzi) e su Windows le emoji appaiono come lettere.
+- 2026-11-01 — Date delle attività in locale, conferma prima di rimuovere le completate, id senza `crypto.randomUUID` in contesti non sicuri, URL di download revocato dopo 1 s — bug di fuso orario, perdita di dati e compatibilità.

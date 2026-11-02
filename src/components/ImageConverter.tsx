@@ -125,7 +125,7 @@ export default function ImageConverter() {
         a.href = url;
         a.download = `${source.name}_convertito.${format === "jpeg" ? "jpg" : format}`;
         a.click();
-        URL.revokeObjectURL(url);
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       },
       `image/${format}`,
       format === "png" ? undefined : quality / 100,

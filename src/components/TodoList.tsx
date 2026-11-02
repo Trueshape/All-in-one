@@ -36,8 +36,18 @@ const CATEGORIES: Array<{ id: Category; label: string }> = [
   { id: "progetti", label: "Progetti" },
 ];
 
-const uid = () => crypto.randomUUID();
-const today = () => new Date().toISOString().slice(0, 10);
+// randomUUID exists only in secure contexts (https or localhost): fall back for plain http on a local network.
+const uid = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+const pad = (n: number) => String(n).padStart(2, "0");
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+/** "YYYY-MM-DD" shown as a local date (new Date(str) would read it as UTC and can shift the day). */
+const dueLabel = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("it-IT");
+};
 
 function loadTasks(): Task[] {
   try {
@@ -238,7 +248,7 @@ export default function TodoList() {
                       <span className={cx("text-sm font-medium break-words", task.completed ? cx("line-through", u.muted) : u.text)}>{task.title}</span>
                       {task.priority === "alta" && <span className="text-[10px] font-bold px-1.5 py-0.5 border border-red-500/40 text-red-300 bg-red-500/10">ALTA</span>}
                       <span className={cx("text-[10px] px-1.5 py-0.5 border", u.divider, u.muted)}>{CATEGORIES.find((c) => c.id === task.category)?.label}</span>
-                      {task.dueDate && <span className={cx("text-[10px] px-1.5 py-0.5 border", overdue ? "border-red-500/40 text-red-300" : cx(u.divider, u.muted))}>{overdue ? "Scaduta " : "Scade "}{new Date(task.dueDate).toLocaleDateString("it-IT")}</span>}
+                      {task.dueDate && <span className={cx("text-[10px] px-1.5 py-0.5 border", overdue ? "border-red-500/40 text-red-300" : cx(u.divider, u.muted))}>{overdue ? "Scaduta " : "Scade "}{dueLabel(task.dueDate)}</span>}
                     </div>
                     {task.notes && <p className={cx("text-xs line-clamp-2", u.muted)}>{task.notes}</p>}
                     {task.subtasks.length > 0 && !isOpen && <p className={cx("text-[11px]", u.muted)}>Sotto-attività {subDone}/{task.subtasks.length}</p>}
@@ -276,7 +286,7 @@ export default function TodoList() {
       {tasks.length > 0 && (
         <div className={cx("flex items-center justify-between pt-3 border-t", u.divider)}>
           <Button size="sm" variant="ghost" onClick={() => setTasks((prev) => prev.map((t) => ({ ...t, completed: true })))}>Segna tutte completate</Button>
-          <Button size="sm" variant="ghost" disabled={!done} onClick={() => setTasks((prev) => prev.filter((t) => !t.completed))}>Rimuovi completate</Button>
+          <Button size="sm" variant="ghost" disabled={!done} onClick={() => { if (window.confirm(`Rimuovere ${done} ${done === 1 ? "attività completata" : "attività completate"}?`)) setTasks((prev) => prev.filter((t) => !t.completed)); }}>Rimuovi completate</Button>
         </div>
       )}
 
