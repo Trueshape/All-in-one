@@ -50,3 +50,4 @@
 - 2026-11-03 — L'Orologio Mondiale mostra i fusi come UTC (UTC+1, UTC-5, UTC+5:30) al posto di GMT/CET — una sola notazione per tutte le città e senza sigle locali.
 - 2026-11-03 — Timer Pomodoro: Avvia al centro e Reset accanto; il tempo si modifica con un clic sul numero (minuti oppure mm:ss, ogni fase ricorda il suo); le fasi sono ordinate per durata (Pausa, Lunga, Focus), ordine fisso anche se cambi i tempi — così i pulsanti non si spostano.
 - 2026-11-03 — La finestra del Tabellone si allarga con i turni (e in altezza con le partite) fino ai limiti del browser, cioè larghezza della finestra meno il padding e 52% dell'altezza per il tabellone; oltre scorre in entrambe le direzioni — così 32 partecipanti restano leggibili senza uscire dallo schermo (regola 2560×1440).
+- 2026-11-03 — Il Tabellone accetta fino a 256 partecipanti (prima 32): 8 turni, che stanno nella larghezza di una finestra 2560 e scorrono in altezza dentro il loro riquadro.

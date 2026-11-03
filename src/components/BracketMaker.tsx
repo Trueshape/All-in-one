@@ -6,7 +6,7 @@ import { buildBracket, champion } from "../lib/bracket";
 import type { Picks } from "../lib/bracket";
 
 const STORAGE = "utilita365_bracket";
-const MAX_PLAYERS = 32;
+const MAX_PLAYERS = 256;
 
 const roundTitle = (matches: number, index: number) =>
   matches === 1 ? "Finale" : matches === 2 ? "Semifinali" : matches === 4 ? "Quarti di finale" : matches === 8 ? "Ottavi di finale" : `Turno ${index + 1}`;

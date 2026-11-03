@@ -401,7 +401,7 @@ export const TOOLS: ToolItem[] = [
   {
     id: "bracket_maker",
     name: "Tabellone a Eliminazione",
-    description: "Crea un torneo a eliminazione diretta da 2 a 32 partecipanti, con teste di serie, turni di riposo e vincitore.",
+    description: "Crea un torneo a eliminazione diretta da 2 a 256 partecipanti, con teste di serie, turni di riposo e vincitore.",
     icon: Trophy,
     colorClass: "border-amber-900/30 hover:border-amber-500/50",
     glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",

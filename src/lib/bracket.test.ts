@@ -27,6 +27,16 @@ test("a pick whose player is no longer in the match is ignored", () => {
   assert.equal(champion(rounds), null);
 });
 
+test("256 players make 8 rounds with 128 first-round matches and no byes", () => {
+  const names = Array.from({ length: 256 }, (_, i) => `P${i + 1}`);
+  const rounds = buildBracket(names);
+  assert.equal(rounds.length, 8);
+  assert.equal(rounds[0].length, 128);
+  assert.ok(rounds[0].every((m) => !m.bye));
+  // The top seed meets the bottom seed first.
+  assert.deepEqual([rounds[0][0].a, rounds[0][0].b], ["P1", "P256"]);
+});
+
 test("fewer than 2 players make no bracket", () => {
   assert.deepEqual(buildBracket(["A"]), []);
 });
