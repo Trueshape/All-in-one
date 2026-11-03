@@ -46,6 +46,20 @@
 }
 
 
+/* Geometry preview: the shape pops in when you pick it, the guide ring slowly flows. */
+@keyframes shape-pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes dash-flow {
+  to { stroke-dashoffset: -12; }
+}
+.shape-pop { animation: shape-pop 0.35s ease-out; }
+.dash-flow { animation: dash-flow 2.5s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .shape-pop, .dash-flow { animation: none; }
+}
+
 /* Decision maker: dice tumble while rolling */
 @keyframes dice-tumble {
   0% { transform: rotateX(0deg) rotateY(0deg) translateY(0); }

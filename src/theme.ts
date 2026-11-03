@@ -111,6 +111,7 @@ export const getToolModalSize = (toolId: string): string => {
     case "markdown":
       return "max-w-4xl";
     case "compound_interest_calc":
+    case "geometry_calc":
     case "circle_calc":
     case "age":
     case "scientific_calc":

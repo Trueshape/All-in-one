@@ -30,6 +30,7 @@ import {
   Gift,
   Calculator,
   Circle,
+  Shapes,
   Maximize,
   Type,
   TrendingUp,
@@ -44,7 +45,6 @@ import {
   Coins,
   ShieldCheck,
   Wand2,
-  CheckSquare,
   Languages,
   ListTodo,
   BarChart3,
@@ -71,6 +71,7 @@ const WorldClock = lazy(() => import("../components/WorldClock"));
 const AgeCalculator = lazy(() => import("../components/AgeCalculator"));
 const ScientificCalculator = lazy(() => import("../components/ScientificCalculator"));
 const CircleCalculator = lazy(() => import("../components/CircleCalculator"));
+const GeometryCalculator = lazy(() => import("../components/GeometryCalculator"));
 const AspectRatioCalculator = lazy(() => import("../components/AspectRatioCalculator"));
 const CaseConverter = lazy(() => import("../components/CaseConverter"));
 const CompoundInterestCalculator = lazy(() => import("../components/CompoundInterestCalculator"));
@@ -80,7 +81,6 @@ const DiscordTimestamp = lazy(() => import("../components/DiscordTimestamp"));
 const CodiceFiscaleCalculator = lazy(() => import("../components/CodiceFiscaleCalculator"));
 const CryptoAndNasdaqTracker = lazy(() => import("../components/CryptoAndNasdaqTracker"));
 const IbanValidator = lazy(() => import("../components/IbanValidator"));
-const TodoList = lazy(() => import("../components/TodoList"));
 const Translator = lazy(() => import("../components/Translator"));
 const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
 const SvgPatternGenerator = lazy(() => import("../components/SvgPatternGenerator"));
@@ -245,6 +245,17 @@ export const TOOLS: ToolItem[] = [
     component: CircleCalculator,
   },
   {
+    id: "geometry_calc",
+    name: "Geometria",
+    description: "Perimetro, area, superficie e volume di quadrato, rettangolo, triangolo, cubo, parallelepipedo, cilindro e sfera.",
+    icon: Shapes,
+    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
+    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
+    iconColor: "text-emerald-400 bg-emerald-500/10",
+    category: "calcolo",
+    component: GeometryCalculator,
+  },
+  {
     id: "aspect_ratio_calc",
     name: "Aspect ratio calculator",
     description: "Calcola rapporti d'aspetto, ridimensiona risoluzioni e simula anteprime di schermo in tempo reale.",
@@ -342,17 +353,6 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-emerald-400 bg-emerald-500/10",
     category: "calcolo",
     component: IbanValidator,
-  },
-  {
-    id: "todo_checklist",
-    name: "To Do List & Checklist",
-    description: "Organizza le tue attività quotidiane, mansioni, sotto-check e scadenze con priorità e progresso.",
-    icon: CheckSquare,
-    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
-    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
-    iconColor: "text-emerald-400 bg-emerald-500/10",
-    category: "produttivita",
-    component: TodoList,
   },
   {
     id: "translator",

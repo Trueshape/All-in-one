@@ -11,6 +11,7 @@ const CITIES = [
   { name: "Tokyo", country: "Giappone", zone: "Asia/Tokyo" },
   { name: "Sydney", country: "Australia", zone: "Australia/Sydney" },
   { name: "Dubai", country: "Emirati Arabi", zone: "Asia/Dubai" },
+  { name: "San Paolo", country: "Brasile", zone: "America/Sao_Paulo" },
 ];
 
 export default function WorldClock() {

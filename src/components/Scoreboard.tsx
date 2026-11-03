@@ -6,7 +6,7 @@ import { useUi } from "../ui/tokens";
 const STORAGE = "utilita365_scoreboard";
 const MAX_TEAMS = 6;
 const COLORS = ["#ef4444", "#3b82f6", "#22c55e", "#f59e0b", "#a855f7", "#ec4899"];
-const STEPS = [-1, 1, 2, 3];
+const STEPS = [-1, 1];
 
 interface Team {
   id: number;
@@ -74,14 +74,18 @@ export default function Scoreboard() {
                   <IconButton onClick={() => update((prev) => prev.filter((x) => x.id !== t.id))} title="Rimuovi squadra"><X className="w-4 h-4" /></IconButton>
                 )}
               </div>
-              <div
-                className={cx("font-black tabular-nums leading-none", full ? "text-[12vw]" : "text-6xl sm:text-7xl")}
+              <button
+                type="button"
+                onClick={() => add(t.id, 1)}
+                onContextMenu={(e) => { e.preventDefault(); add(t.id, -1); }}
+                title="Clic sinistro +1 · clic destro −1"
+                aria-label={`${t.name}: ${t.score} punti. Clic sinistro aggiunge 1, clic destro toglie 1`}
+                className={cx("w-full py-2 rounded-xl font-black tabular-nums leading-none cursor-pointer select-none hover:bg-white/5 transition-colors", full ? "text-[12vw]" : "text-6xl sm:text-7xl")}
                 style={{ color: t.score === leader && leader !== 0 && teams.filter((x) => x.score === leader).length === 1 ? COLORS[i] : undefined }}
-                aria-live="polite"
               >
                 {t.score}
-              </div>
-              <div className="grid grid-cols-4 gap-1.5">
+              </button>
+              <div className="grid grid-cols-2 gap-1.5">
                 {STEPS.map((s) => (
                   <button key={s} type="button" onClick={() => add(t.id, s)} className={cx(u.chip, "justify-center", full && "!py-3 !text-lg")}>{s > 0 ? `+${s}` : s}</button>
                 ))}
@@ -97,6 +101,7 @@ export default function Scoreboard() {
           <Button icon={full ? <Minimize className="w-3.5 h-3.5" /> : <Maximize className="w-3.5 h-3.5" />} onClick={toggleFull}>{full ? "Esci da schermo intero" : "Schermo intero"}</Button>
         </div>
       </div>
+      {!full && <p className="text-[11px] text-center text-zinc-500">Clic sinistro sul punteggio: +1 · clic destro: −1</p>}
       <Notice>I punteggi vengono salvati in questo browser. In schermo intero i numeri diventano molto grandi, adatti a proiettore o TV.</Notice>
     </Stack>
   );

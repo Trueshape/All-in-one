@@ -41,3 +41,9 @@
 - 2026-11-03 — Il Convertitore di Unità mostra anche il valore in tutte le altre unità della categoria, sotto il risultato principale (che resta il focus); un clic su una riga la imposta come unità di arrivo.
 - 2026-11-03 — Barre di scorrimento scure e sottili in tutto il sito (`src/index.css`) al posto di quelle chiare di default del browser.
 - 2026-11-03 — Convertitore di Valuta e di Unità sono un solo strumento a schede (`currency` mantiene il suo id: preferiti e nomi personalizzati restano validi) — stessa struttura (valore, da, a, risultato). Provato su richiesta: si può annullare con `git revert` del commit.
+- 2026-11-03 — Annullata l'unione Timer + To Do List e rimossa la To Do List (su richiesta); Timer & Pomodoro resta uno strumento a sé.
+- 2026-11-03 — Gli strumenti della categoria Calcoli non hanno più "calcolo / calcolatore / calcolatrice" nel nome, in tutte le lingue (Indice BMI, Età, Scientifica, Cerchio, Aspect Ratio, Interessi Composti, Codice Fiscale) — la categoria dice già che sono calcoli, e i nomi corti si leggono meglio.
+- 2026-11-03 — Nuovo strumento Geometria in Calcoli: una forma alla volta (quadrato, rettangolo, triangolo, cubo, parallelepipedo, cilindro, sfera), stessa struttura del Calcolo circonferenza, nome senza "calcolo" come per gli altri.
+- 2026-11-03 — Geometria ha un'anteprima disegnata per ogni forma (come il cerchio): cambia con le misure, entra con una breve animazione e l'anello guida scorre piano; con `prefers-reduced-motion` le animazioni si fermano.
+- 2026-11-03 — Aggiunto San Paolo (America/Sao_Paulo) all'Orologio Mondiale: era l'unica area grande senza un fuso (Sud America); le città sono 8, che riempiono la griglia.
+- 2026-11-03 — Segnapunti: tolti +2 e +3; il punteggio è un grande pulsante (clic sinistro +1, clic destro −1), restano −1/+1 per tastiera e touch — più veloce durante una partita.
