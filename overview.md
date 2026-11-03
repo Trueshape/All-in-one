@@ -9,7 +9,8 @@
 - `src/components/` — un file per strumento, tutti costruiti con il kit in `src/ui/`.
 - `src/ui/tokens.ts` — token di stile per tema (colori, font, bordi) usati dagli strumenti.
 - `src/ui/kit.tsx` — componenti condivisi: campi, bottoni, slider, pannelli, risultati, avvisi.
-- `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `chromaKey.ts`, `marketData.ts`. Accanto a `markdown`, `calcEngine`, `calcState` e `codiceFiscale` ci sono i test `*.test.ts` (`npm test`).
+- `src/ui/ImageDrop.tsx` — caricamento di un'immagine (trascina o scegli) e hook `useImageSource`, usati dagli strumenti per immagini.
+- `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `chromaKey.ts`, `marketData.ts`, `color.ts` (conversioni e armonie), `palette.ts` (colori dominanti), `imageOps.ts` (ricampionamento, nitidezza, filtri), `imageEncoders.ts` (BMP, TIFF, ICO), `barcode.ts` (Code 128, EAN-13), `pattern.ts` (pattern SVG), `bracket.ts` (tabellone a eliminazione), `passwordModes.ts` e `wordlist.ts` (frasi, pronunciabili, PIN, token). Ogni modulo con logica ha il suo `*.test.ts` (`npm test`).
 - `src/index.css`, `src/main.tsx`, `src/vite-env.d.ts` — stili globali, entry React, tipi Vite.
 - `server.ts` — server Express locale: serve Vite in sviluppo e l'API `/api/translate` (Gemini). Non è usato su Pages.
 - `vite.config.ts` — config Vite; `base` cambia con `VITE_PUBLIC=1` (sottocartella `/All-in-one/` per Pages).

@@ -25,3 +25,9 @@
 - 2026-11-01 — Tolta la riga finta "CPU / MEM / LAT" dal footer — non erano misure reali.
 - 2026-11-01 — Bandiere come SVG inline nel menu lingua e niente bandiere emoji nel Traduttore e nell'Orologio — nessuna richiesta a flagcdn.com (il visitatore non viene comunicato a terzi) e su Windows le emoji appaiono come lettere.
 - 2026-11-01 — Date delle attività in locale, conferma prima di rimuovere le completate, id senza `crypto.randomUUID` in contesti non sicuri, URL di download revocato dopo 1 s — bug di fuso orario, perdita di dati e compatibilità.
+- 2026-11-03 — Nuovi strumenti senza dipendenze nuove: tutta la logica (palette, armonie, barcode, pattern, tabellone, BMP/TIFF/ICO) è in `src/lib` con test — il sito pubblico resta una build statica leggera.
+- 2026-11-03 — Ingrandimento immagini con ricampionamento a passi di ×2 e nitidezza nel browser, senza modelli di IA — non esiste un backend nel sito pubblico; la nota nello strumento dice che non inventa dettagli.
+- 2026-11-03 — Il convertitore scrive PNG, JPG, WEBP, BMP, TIFF e ICO; AVIF resta solo in lettura — il canvas dei browser non sa codificarlo (il risultato tornava PNG).
+- 2026-11-03 — Nessun generatore di chat false (Instagram, Facebook, Telegram, Discord, Messenger) — riprodurrebbe grafica e marchi di servizi reali e può produrre screenshot ingannevoli.
+- 2026-11-03 — Generatore di password con più algoritmi (casuale, frase di parole, pronunciabile, PIN, token); la robustezza è calcolata dai bit reali di ogni metodo — la frase da 4 parole risulta "debole", e va bene così.
+- 2026-11-03 — Non ancora fatti: editor PDF (serve una libreria come `pdf-lib`, da decidere) e da scrittura a mano a font (generare un font richiede una libreria dedicata).

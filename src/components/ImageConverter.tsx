@@ -3,8 +3,16 @@ import type { ChangeEvent, DragEvent } from "react";
 import { Download, ImagePlus, Trash2 } from "lucide-react";
 import { Field, TextInput, Toggle, Chips, Slider, Button, IconButton, Panel, SectionTitle, Notice, Stack, Row, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { encodeBmp, encodeIco, encodeTiff } from "../lib/imageEncoders";
 
-type Format = "jpeg" | "png" | "webp";
+type Format = "jpeg" | "png" | "webp" | "bmp" | "tiff" | "ico";
+
+const EXTENSION: Record<Format, string> = { jpeg: "jpg", png: "png", webp: "webp", bmp: "bmp", tiff: "tif", ico: "ico" };
+const FORMATS: Array<{ value: Format; label: string }> = [
+  { value: "jpeg", label: "JPG" }, { value: "png", label: "PNG" }, { value: "webp", label: "WEBP" },
+  { value: "bmp", label: "BMP" }, { value: "tiff", label: "TIFF" }, { value: "ico", label: "ICO" },
+];
+const LOSSY: Format[] = ["jpeg", "webp"];
 
 interface Source {
   url: string;
@@ -96,6 +104,10 @@ export default function ImageConverter() {
       setError(`Dimensioni non valide: usa valori tra 1 e ${MAX_SIDE} px.`);
       return;
     }
+    if (format === "ico" && (w > 256 || h > 256)) {
+      setError("Il formato ICO arriva a 256 × 256 px: riduci larghezza e altezza.");
+      return;
+    }
     setError(null);
     setBusy(true);
     const canvas = document.createElement("canvas");
@@ -112,23 +124,34 @@ export default function ImageConverter() {
       ctx.fillRect(0, 0, w, h);
     }
     ctx.drawImage(image.current, 0, 0, w, h);
+    const done = (blob: Blob | null) => {
+      setBusy(false);
+      if (!blob) {
+        setError("Questo browser non supporta il formato scelto.");
+        return;
+      }
+      setOutputSize(blob.size);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${source.name}_convertito.${EXTENSION[format]}`;
+      a.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    if (format === "bmp" || format === "tiff") {
+      const pixels = ctx.getImageData(0, 0, w, h);
+      done(new Blob([format === "bmp" ? encodeBmp(pixels) : encodeTiff(pixels)], { type: format === "bmp" ? "image/bmp" : "image/tiff" }));
+      return;
+    }
+    const mime = format === "ico" ? "image/png" : `image/${format}`;
     canvas.toBlob(
-      (blob) => {
-        setBusy(false);
-        if (!blob) {
-          setError("Questo browser non supporta il formato scelto.");
-          return;
-        }
-        setOutputSize(blob.size);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${source.name}_convertito.${format === "jpeg" ? "jpg" : format}`;
-        a.click();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      async (blob) => {
+        // A type the browser cannot encode silently comes back as PNG.
+        if (!blob || blob.type !== mime) return done(null);
+        done(format === "ico" ? new Blob([encodeIco(new Uint8Array(await blob.arrayBuffer()), w, h)], { type: "image/x-icon" }) : blob);
       },
-      `image/${format}`,
-      format === "png" ? undefined : quality / 100,
+      mime,
+      LOSSY.includes(format) ? quality / 100 : undefined,
     );
   };
 
@@ -148,7 +171,7 @@ export default function ImageConverter() {
             >
               <ImagePlus className="w-7 h-7" />
               <span className={cx("text-xs font-semibold", u.text)}>Seleziona o trascina un'immagine</span>
-              <span className="text-[11px]">PNG, JPG, WEBP, GIF</span>
+              <span className="text-[11px]">PNG, JPG, WEBP, GIF, BMP, AVIF, ICO</span>
             </button>
           ) : (
             <Panel className="space-y-3">
@@ -172,9 +195,9 @@ export default function ImageConverter() {
           </div>
           <Toggle checked={lock} onChange={setLock} label="Mantieni proporzioni" />
           <Field label="Formato">
-            <Chips fill value={format} onChange={setFormat} options={[{ value: "jpeg", label: "JPG" }, { value: "png", label: "PNG" }, { value: "webp", label: "WEBP" }]} />
+            <Chips value={format} onChange={setFormat} options={FORMATS} />
           </Field>
-          {format !== "png" && <Slider label="Qualità" value={quality} min={10} max={100} onChange={setQuality} display={`${quality}%`} />}
+          {LOSSY.includes(format) && <Slider label="Qualità" value={quality} min={10} max={100} onChange={setQuality} display={`${quality}%`} />}
           <Button variant="primary" className="w-full" disabled={!source || busy} icon={<Download className="w-3.5 h-3.5" />} onClick={save}>
             {busy ? "Elaborazione..." : "Converti e scarica"}
           </Button>

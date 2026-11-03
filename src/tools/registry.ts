@@ -49,6 +49,15 @@ import {
   Languages,
   ListTodo,
   BarChart3,
+  Scaling,
+  ZoomIn,
+  Pipette,
+  Blend,
+  Grid3x3,
+  Gamepad2,
+  ScanBarcode,
+  Trophy,
+  Medal,
 } from "lucide-react";
 
 // Import Components
@@ -78,6 +87,15 @@ const IbanValidator = lazy(() => import("../components/IbanValidator"));
 const BackgroundRemover = lazy(() => import("../components/BackgroundRemover"));
 const TodoList = lazy(() => import("../components/TodoList"));
 const Translator = lazy(() => import("../components/Translator"));
+const ImageResizer = lazy(() => import("../components/ImageResizer"));
+const ImageUpscaler = lazy(() => import("../components/ImageUpscaler"));
+const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
+const ColorCombinations = lazy(() => import("../components/ColorCombinations"));
+const SvgPatternGenerator = lazy(() => import("../components/SvgPatternGenerator"));
+const PixelArt = lazy(() => import("../components/PixelArt"));
+const BarcodeGenerator = lazy(() => import("../components/BarcodeGenerator"));
+const BracketMaker = lazy(() => import("../components/BracketMaker"));
+const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
 export interface ToolItem {
   id: string;
@@ -293,7 +311,7 @@ export const TOOLS: ToolItem[] = [
   {
     id: "image_converter",
     name: "Convertitore immagini",
-    description: "Converti al volo immagini tra formati PNG, JPEG, WEBP con opzioni di ridimensionamento e compressione locale.",
+    description: "Converti al volo immagini tra PNG, JPG, WEBP, BMP, TIFF e ICO con opzioni di ridimensionamento e compressione locale.",
     icon: Image,
     colorClass: "border-amber-900/30 hover:border-amber-500/50",
     glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
@@ -377,6 +395,105 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-cyan-400 bg-cyan-500/10",
     category: "convertitori",
     component: Translator,
+  },
+  {
+    id: "image_resizer",
+    name: "Ridimensiona Immagini",
+    description: "Riduci risoluzione, qualità o entrambe e vedi subito il peso del file risultante.",
+    icon: Scaling,
+    colorClass: "border-cyan-900/30 hover:border-cyan-500/50",
+    glowClass: "shadow-cyan-950/20 hover:shadow-cyan-500/5",
+    iconColor: "text-cyan-400 bg-cyan-500/10",
+    category: "convertitori",
+    component: ImageResizer,
+  },
+  {
+    id: "image_upscaler",
+    name: "Ingrandisci Immagini",
+    description: "Ingrandisci ×2, ×3 o ×4 con ricampionamento di qualità, nitidezza e filtri applicati sull'immagine grande.",
+    icon: ZoomIn,
+    colorClass: "border-purple-900/30 hover:border-purple-500/50",
+    glowClass: "shadow-purple-950/20 hover:shadow-purple-500/5",
+    iconColor: "text-purple-400 bg-purple-500/10",
+    category: "creative",
+    component: ImageUpscaler,
+  },
+  {
+    id: "color_extractor",
+    name: "Estrattore di Colori",
+    description: "Ricava i colori principali di un'immagine, con percentuali, codici HEX/RGB e variabili CSS.",
+    icon: Pipette,
+    colorClass: "border-amber-900/30 hover:border-amber-500/50",
+    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
+    iconColor: "text-amber-400 bg-amber-500/10",
+    category: "creative",
+    component: ColorExtractor,
+  },
+  {
+    id: "color_combos",
+    name: "Combinazioni di Colori",
+    description: "Armonie complementari, analoghe, triadi, tetradi e split-complementari, più sfumature e contrasto tra due colori.",
+    icon: Blend,
+    colorClass: "border-pink-900/30 hover:border-pink-500/50",
+    glowClass: "shadow-pink-950/20 hover:shadow-pink-500/5",
+    iconColor: "text-pink-400 bg-pink-500/10",
+    category: "creative",
+    component: ColorCombinations,
+  },
+  {
+    id: "svg_pattern",
+    name: "Generatore di Pattern SVG",
+    description: "Crea motivi ripetuti (pois, onde, griglie, scacchi) con colori e rotazione a scelta, da scaricare in SVG o PNG.",
+    icon: Grid3x3,
+    colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
+    glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
+    iconColor: "text-indigo-400 bg-indigo-500/10",
+    category: "creative",
+    component: SvgPatternGenerator,
+  },
+  {
+    id: "pixel_art",
+    name: "Convertitore Pixel Art",
+    description: "Trasforma una foto in pixel art: dimensione del pixel, palette adattiva o retro (Game Boy, PICO-8) e dithering.",
+    icon: Gamepad2,
+    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
+    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
+    iconColor: "text-emerald-400 bg-emerald-500/10",
+    category: "creative",
+    component: PixelArt,
+  },
+  {
+    id: "barcode",
+    name: "Generatore Codici a Barre",
+    description: "Crea codici a barre Code 128 ed EAN-13 con colori e altezza regolabili, da scaricare in SVG o PNG.",
+    icon: ScanBarcode,
+    colorClass: "border-zinc-900/30 hover:border-zinc-500/50",
+    glowClass: "shadow-zinc-950/20 hover:shadow-zinc-500/5",
+    iconColor: "text-zinc-400 bg-zinc-500/10",
+    category: "creative",
+    component: BarcodeGenerator,
+  },
+  {
+    id: "bracket_maker",
+    name: "Tabellone a Eliminazione",
+    description: "Crea un torneo a eliminazione diretta da 2 a 32 partecipanti, con teste di serie, turni di riposo e vincitore.",
+    icon: Trophy,
+    colorClass: "border-amber-900/30 hover:border-amber-500/50",
+    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
+    iconColor: "text-amber-400 bg-amber-500/10",
+    category: "produttivita",
+    component: BracketMaker,
+  },
+  {
+    id: "scoreboard",
+    name: "Segnapunti Online",
+    description: "Tieni i punti di 2-6 squadre con annulla e schermo intero, ideale per giochi, sport e serate con gli amici.",
+    icon: Medal,
+    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
+    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
+    iconColor: "text-emerald-400 bg-emerald-500/10",
+    category: "produttivita",
+    component: Scoreboard,
   },
 ];
 
