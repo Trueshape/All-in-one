@@ -41,4 +41,3 @@
 - 2026-11-03 — Il Convertitore di Unità mostra anche il valore in tutte le altre unità della categoria, sotto il risultato principale (che resta il focus); un clic su una riga la imposta come unità di arrivo.
 - 2026-11-03 — Barre di scorrimento scure e sottili in tutto il sito (`src/index.css`) al posto di quelle chiare di default del browser.
 - 2026-11-03 — Convertitore di Valuta e di Unità sono un solo strumento a schede (`currency` mantiene il suo id: preferiti e nomi personalizzati restano validi) — stessa struttura (valore, da, a, risultato). Provato su richiesta: si può annullare con `git revert` del commit.
-- 2026-11-03 — Timer & Pomodoro e To Do List sono un solo strumento a schede (`timer` mantiene il suo id): entrambe le schede restano montate, così il timer continua a girare mentre guardi le attività. Provato su richiesta: si può annullare con `git revert` del commit.
