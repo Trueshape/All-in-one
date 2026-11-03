@@ -44,7 +44,6 @@ import {
   Coins,
   ShieldCheck,
   Wand2,
-  CheckSquare,
   Languages,
   ListTodo,
   BarChart3,
@@ -61,7 +60,7 @@ import {
 const MeasureConverters = lazy(() => import("../components/MeasureConverters"));
 const PasswordGenerator = lazy(() => import("../components/PasswordGenerator"));
 const TipCalculator = lazy(() => import("../components/TipCalculator"));
-const PomodoroTimer = lazy(() => import("../components/PomodoroTimer"));
+const FocusTools = lazy(() => import("../components/FocusTools"));
 const CodeGenerator = lazy(() => import("../components/CodeGenerator"));
 const ColorPicker = lazy(() => import("../components/ColorPicker"));
 const DecisionMaker = lazy(() => import("../components/DecisionMaker"));
@@ -80,7 +79,6 @@ const DiscordTimestamp = lazy(() => import("../components/DiscordTimestamp"));
 const CodiceFiscaleCalculator = lazy(() => import("../components/CodiceFiscaleCalculator"));
 const CryptoAndNasdaqTracker = lazy(() => import("../components/CryptoAndNasdaqTracker"));
 const IbanValidator = lazy(() => import("../components/IbanValidator"));
-const TodoList = lazy(() => import("../components/TodoList"));
 const Translator = lazy(() => import("../components/Translator"));
 const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
 const SvgPatternGenerator = lazy(() => import("../components/SvgPatternGenerator"));
@@ -136,14 +134,14 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "timer",
-    name: "Timer & Pomodoro",
-    description: "Gestisci sessioni di focus con la tecnica Pomodoro o usa il cronometro di precisione.",
+    name: "Timer e Attività",
+    description: "Sessioni di focus con Pomodoro e cronometro, più la lista delle attività con scadenze e priorità.",
     icon: Timer,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
     glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
     iconColor: "text-rose-400 bg-rose-500/10",
     category: "produttivita",
-    component: PomodoroTimer,
+    component: FocusTools,
   },
   {
     id: "qr",
@@ -342,17 +340,6 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-emerald-400 bg-emerald-500/10",
     category: "calcolo",
     component: IbanValidator,
-  },
-  {
-    id: "todo_checklist",
-    name: "To Do List & Checklist",
-    description: "Organizza le tue attività quotidiane, mansioni, sotto-check e scadenze con priorità e progresso.",
-    icon: CheckSquare,
-    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
-    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
-    iconColor: "text-emerald-400 bg-emerald-500/10",
-    category: "produttivita",
-    component: TodoList,
   },
   {
     id: "translator",
