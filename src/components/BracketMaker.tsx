@@ -93,7 +93,7 @@ export default function BracketMaker() {
               <Trophy className="w-5 h-5" /> Vincitore: {winner}
             </div>
           )}
-          <div className="overflow-x-auto pb-2">
+          <div className="overflow-auto pb-2 max-h-[52vh]">
             <div className="flex gap-6 min-w-max">
               {rounds.map((matches, r) => (
                 <div key={r} className="flex flex-col w-44 shrink-0">

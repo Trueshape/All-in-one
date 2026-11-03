@@ -8,6 +8,10 @@ import { UiContext, UI_TOKENS } from "./ui/tokens";
 import { InfoContext } from "./ui/kit";
 import { useI18n } from "./i18n";
 
+/** Fixed-width sizes replace the default max width; a size that starts with w-fit also drops w-full so the window can follow its content. */
+const sizeClass = (container: string, size: string) =>
+  size.startsWith("w-fit") ? container.replace("w-full max-w-xl", size) : container.replace("max-w-xl", size);
+
 interface ToolModalProps {
   activeTheme: Theme;
   activeTool: ToolItem | null;
@@ -87,7 +91,7 @@ export default function ToolModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.98, opacity: 0, y: 10 }}
             transition={{ type: "spring", damping: 30, stiffness: 400 }}
-            className={tc.modalContainer.replace("max-w-xl", getToolModalSize(activeTool.id))}
+            className={sizeClass(tc.modalContainer, getToolModalSize(activeTool.id))}
             id="expanded-tool-container"
           >
             {/* Modal header details */}

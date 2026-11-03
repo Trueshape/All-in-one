@@ -106,6 +106,8 @@ export const getToolModalSize = (toolId: string): string => {
       return "max-w-[880px] w-[92vw]";
     case "color":
       return "max-w-6xl";
+    case "bracket_maker":
+      return "w-fit min-w-[min(36rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)]";
     case "case_converter":
     case "text_diff":
     case "markdown":
