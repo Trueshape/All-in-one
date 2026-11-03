@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Download, Trash2 } from "lucide-react";
 import { Field, TextInput, Toggle, Chips, Segmented, Slider, Button, IconButton, Panel, SectionTitle, Notice, Stack, Row, cx } from "../ui/kit";
-import { ImageDrop, useImageSource } from "../ui/ImageDrop";
+import { ImageDrop } from "../ui/ImageDrop";
+import type { ImageSourceState } from "../ui/ImageDrop";
 import { useUi } from "../ui/tokens";
 import { MAX_PIXELS, MAX_SIDE, download, formatBytes, resample, toBlob } from "../lib/imageOps";
 
@@ -17,9 +18,9 @@ interface Result {
   height: number;
 }
 
-export default function ImageResizer() {
+export default function ImageResizer({ image }: { image: ImageSourceState }) {
   const u = useUi();
-  const { source, error, setError, load, clear } = useImageSource();
+  const { source, error, setError, load, clear } = image;
   const [mode, setMode] = useState<Mode>("size");
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");

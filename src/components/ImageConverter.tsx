@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import type { ChangeEvent, DragEvent } from "react";
-import { Download, ImagePlus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, Trash2 } from "lucide-react";
 import { Field, TextInput, Toggle, Chips, Slider, Button, IconButton, Panel, SectionTitle, Notice, Stack, Row, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { ImageDrop } from "../ui/ImageDrop";
+import type { ImageSourceState } from "../ui/ImageDrop";
 import { encodeBmp, encodeIco, encodeTiff } from "../lib/imageEncoders";
+import { MAX_SIDE, formatBytes } from "../lib/imageOps";
 
 type Format = "jpeg" | "png" | "webp" | "bmp" | "tiff" | "ico";
 
@@ -14,67 +16,23 @@ const FORMATS: Array<{ value: Format; label: string }> = [
 ];
 const LOSSY: Format[] = ["jpeg", "webp"];
 
-interface Source {
-  url: string;
-  name: string;
-  width: number;
-  height: number;
-  size: number;
-}
-
-const MAX_SIDE = 8192;
-
-const formatSize = (bytes: number) => {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-};
-
-export default function ImageConverter() {
+export default function ImageConverter({ image }: { image: ImageSourceState }) {
   const u = useUi();
-  const [source, setSource] = useState<Source | null>(null);
+  const { source, error, setError, load, clear } = image;
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
   const [lock, setLock] = useState(true);
   const [format, setFormat] = useState<Format>("jpeg");
   const [quality, setQuality] = useState(90);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [outputSize, setOutputSize] = useState<number | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const input = useRef<HTMLInputElement>(null);
-  const image = useRef<HTMLImageElement>(null);
 
-  useEffect(() => () => { if (source) URL.revokeObjectURL(source.url); }, [source]);
-
-  const load = (file: File | undefined) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("Il file selezionato non è un'immagine.");
-      return;
-    }
-    setError(null);
+  // A new image (or none) resets the size fields.
+  useEffect(() => {
+    setWidth(source ? String(source.width) : "");
+    setHeight(source ? String(source.height) : "");
     setOutputSize(null);
-    const url = URL.createObjectURL(file);
-    const probe = new Image();
-    probe.onload = () => {
-      setSource({ url, name: file.name.replace(/\.[^.]+$/, "") || "immagine", width: probe.naturalWidth, height: probe.naturalHeight, size: file.size });
-      setWidth(String(probe.naturalWidth));
-      setHeight(String(probe.naturalHeight));
-    };
-    probe.onerror = () => {
-      URL.revokeObjectURL(url);
-      setError("Impossibile leggere l'immagine.");
-    };
-    probe.src = url;
-  };
-
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => load(e.target.files?.[0]);
-  const onDrop = (e: DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    load(e.dataTransfer.files?.[0]);
-  };
+  }, [source]);
 
   const onWidth = (value: string) => {
     setWidth(value);
@@ -87,17 +45,8 @@ export default function ImageConverter() {
     if (lock && source && h > 0) setWidth(String(Math.round((h * source.width) / source.height)));
   };
 
-  const clear = () => {
-    setSource(null);
-    setWidth("");
-    setHeight("");
-    setOutputSize(null);
-    setError(null);
-    if (input.current) input.current.value = "";
-  };
-
   const save = () => {
-    if (!source || !image.current) return;
+    if (!source) return;
     const w = Math.round(parseFloat(width));
     const h = Math.round(parseFloat(height));
     if (!(w > 0 && h > 0) || w > MAX_SIDE || h > MAX_SIDE) {
@@ -123,7 +72,7 @@ export default function ImageConverter() {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, w, h);
     }
-    ctx.drawImage(image.current, 0, 0, w, h);
+    ctx.drawImage(source.image, 0, 0, w, h);
     const done = (blob: Blob | null) => {
       setBusy(false);
       if (!blob) {
@@ -161,30 +110,18 @@ export default function ImageConverter() {
         <div className="space-y-2">
           <SectionTitle right={source && <IconButton onClick={clear} title="Rimuovi immagine"><Trash2 className="w-4 h-4" /></IconButton>}>Immagine</SectionTitle>
           {!source ? (
-            <button
-              type="button"
-              onClick={() => input.current?.click()}
-              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={onDrop}
-              className={cx("w-full h-56 flex flex-col items-center justify-center gap-2 border-2 border-dashed cursor-pointer transition-colors", u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
-            >
-              <ImagePlus className="w-7 h-7" />
-              <span className={cx("text-xs font-semibold", u.text)}>Seleziona o trascina un'immagine</span>
-              <span className="text-[11px]">PNG, JPG, WEBP, GIF, BMP, AVIF, ICO</span>
-            </button>
+            <ImageDrop onFile={load} />
           ) : (
             <Panel className="space-y-3">
               <div className="h-44 flex items-center justify-center">
-                <img ref={image} src={source.url} alt="Anteprima dell'immagine caricata" className="max-h-44 max-w-full object-contain" />
+                <img src={source.url} alt="Anteprima dell'immagine caricata" className="max-h-44 max-w-full object-contain" />
               </div>
               <div className={cx("pt-3 border-t space-y-1.5", u.divider)}>
                 <Row label="Risoluzione" value={`${source.width} × ${source.height} px`} />
-                <Row label="Peso" value={formatSize(source.size)} />
+                <Row label="Peso" value={formatBytes(source.size)} />
               </div>
             </Panel>
           )}
-          <input ref={input} type="file" accept="image/*" onChange={onFile} className="hidden" />
         </div>
 
         <div className="space-y-4">
@@ -201,7 +138,7 @@ export default function ImageConverter() {
           <Button variant="primary" className="w-full" disabled={!source || busy} icon={<Download className="w-3.5 h-3.5" />} onClick={save}>
             {busy ? "Elaborazione..." : "Converti e scarica"}
           </Button>
-          {outputSize !== null && <p className={cx("text-xs", u.muted)}>File generato: {formatSize(outputSize)}</p>}
+          {outputSize !== null && <p className={cx("text-xs", u.muted)}>File generato: {formatBytes(outputSize)}</p>}
         </div>
       </div>
 

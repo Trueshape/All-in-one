@@ -15,6 +15,7 @@ import {
   Heart,
   Pencil,
   ChevronLeft,
+  Image as ImageIcon,
 } from "lucide-react";
 import { TOOLS, type ToolItem } from "./tools/registry";
 import { CATEGORY_LABELS, getThemeClasses, type Theme } from "./theme";
@@ -35,6 +36,8 @@ const getCategoryIcon = (category: string) => {
   switch (category) {
     case "convertitori":
       return ArrowLeftRight;
+    case "immagini":
+      return ImageIcon;
     case "calcolo":
       return Calculator;
     case "produttivita":
@@ -324,9 +327,16 @@ export default function Landing({
                 {
                   id: "convertitori",
                   name: t("nav_convertitori"),
-                  description: "Tassi di cambio valute, unità di misura, maiuscole e immagini.",
+                  description: "Tassi di cambio valute, unità di misura, maiuscole e traduzioni.",
                   icon: ArrowLeftRight,
                   count: TOOLS.filter(t => t.category === "convertitori").length,
+                },
+                {
+                  id: "immagini",
+                  name: t("nav_immagini"),
+                  description: "Converti, ridimensiona e ingrandisci immagini; colori, palette e pattern.",
+                  icon: ImageIcon,
+                  count: TOOLS.filter(t => t.category === "immagini").length,
                 },
                 {
                   id: "produttivita",

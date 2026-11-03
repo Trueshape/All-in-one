@@ -145,9 +145,9 @@ export default function CryptoAndNasdaqTracker() {
             ]} />
           </div>
 
-          <div className={cx("overflow-x-auto", u.panel)}>
+          <div className={cx("overflow-auto max-h-[420px]", u.panel)}>
             <table className="w-full min-w-[640px] text-xs">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-black/80 backdrop-blur">
                 <tr className={cx("border-b", u.divider)}>
                   <th className={cx(th, "w-10 text-center")}>#</th>
                   <th className={th}>Nome</th>

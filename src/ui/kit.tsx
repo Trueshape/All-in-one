@@ -1,5 +1,6 @@
-import { useState, useCallback, useRef, useEffect, createContext, useContext } from "react";
-import type { ReactNode, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, ButtonHTMLAttributes } from "react";
+import { useState, useCallback, useRef, useEffect, useId, createContext, useContext, Children, isValidElement } from "react";
+import type { ReactNode, InputHTMLAttributes, TextareaHTMLAttributes, ButtonHTMLAttributes, KeyboardEvent as ReactKeyboardEvent } from "react";
+import { createPortal } from "react-dom";
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Info, X } from "lucide-react";
 import { useUi } from "./tokens";
 
@@ -56,12 +57,184 @@ export function TextArea({ className, ...rest }: TextareaHTMLAttributes<HTMLText
   return <textarea {...rest} className={cx(u.input, "resize-y", className)} />;
 }
 
-export function Select({ className, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
+type SelectProps = {
+  value: string;
+  onChange: (e: { target: { value: string } }) => void;
+  /** <option value="...">label</option> elements, like a native select. */
+  children: ReactNode;
+  className?: string;
+  disabled?: boolean;
+  id?: string;
+  "aria-label"?: string;
+};
+
+/** Background of the open list: the same as the tool modal of each theme, so the list reads as part of it. */
+const LIST_BG = { artistic: "bg-[#0a0a0a]", immersive: "bg-[#030812]", sophisticated: "bg-slate-900" } as const;
+const LIST_MAX = 280;
+
+/**
+ * Drop-down drawn with the site's own tokens instead of the browser's native list. It takes <option>
+ * children and calls onChange with { target: { value } }, so it is a drop-in for <select>.
+ * The list is a portal on <body>: it is not clipped by the modal's scroll area.
+ */
+export function Select({ value, onChange, children, className, disabled, id, "aria-label": ariaLabel }: SelectProps) {
   const u = useUi();
+  const listId = useId();
+  const button = useRef<HTMLButtonElement>(null);
+  const list = useRef<HTMLUListElement>(null);
+  const typed = useRef({ text: "", at: 0 });
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const [box, setBox] = useState<{ left: number; width: number; top?: number; bottom?: number; maxHeight: number } | null>(null);
+
+  const options = Children.toArray(children)
+    .filter(isValidElement)
+    .map((el) => {
+      const props = el.props as { value?: string | number; disabled?: boolean; children?: ReactNode };
+      return { value: String(props.value ?? ""), label: props.children, disabled: !!props.disabled };
+    });
+  const selected = options.find((o) => o.value === value);
+  // The radius of the site's fields (square, soft or round), reused for the list.
+  const radius = /rounded(?:-[a-z0-9]+)?/.exec(u.input)?.[0] ?? "";
+
+  const show = () => {
+    const el = button.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const below = window.innerHeight - r.bottom - 12;
+    const above = r.top - 12;
+    const up = below < 180 && above > below;
+    setBox({ left: r.left, width: r.width, maxHeight: Math.min(LIST_MAX, up ? above : below), ...(up ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }) });
+    setActive(Math.max(0, options.findIndex((o) => o.value === value)));
+    setOpen(true);
+  };
+
+  const close = () => setOpen(false);
+
+  const choose = (i: number) => {
+    const option = options[i];
+    if (!option || option.disabled) return;
+    onChange({ target: { value: option.value } });
+    close();
+    button.current?.focus();
+  };
+
+  // Close when the pointer goes elsewhere, or when the page moves under the list.
+  useEffect(() => {
+    if (!open) return;
+    const outside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (!list.current?.contains(target) && !button.current?.contains(target)) close();
+    };
+    const moved = (e: Event) => {
+      if (!list.current?.contains(e.target as Node)) close();
+    };
+    document.addEventListener("mousedown", outside);
+    window.addEventListener("scroll", moved, true);
+    window.addEventListener("resize", close);
+    return () => {
+      document.removeEventListener("mousedown", outside);
+      window.removeEventListener("scroll", moved, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (open) list.current?.children[active]?.scrollIntoView({ block: "nearest" });
+  }, [open, active]);
+
+  const move = (from: number, step: 1 | -1) => {
+    for (let i = from + step; i >= 0 && i < options.length; i += step) if (!options[i].disabled) return i;
+    return from;
+  };
+
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    if (!open) {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+        e.preventDefault();
+        show();
+      }
+      return;
+    }
+    switch (e.key) {
+      case "Escape":
+        // Only close the list: the tool window must stay open.
+        e.preventDefault();
+        e.stopPropagation();
+        e.nativeEvent.stopImmediatePropagation();
+        close();
+        return;
+      case "ArrowDown": e.preventDefault(); setActive((a) => move(a, 1)); return;
+      case "ArrowUp": e.preventDefault(); setActive((a) => move(a, -1)); return;
+      case "Home": e.preventDefault(); setActive(move(-1, 1)); return;
+      case "End": e.preventDefault(); setActive(move(options.length, -1)); return;
+      case "Enter":
+      case " ": e.preventDefault(); choose(active); return;
+      case "Tab": close(); return;
+    }
+    // Typing letters jumps to the next option that starts with them.
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      const now = Date.now();
+      typed.current = { text: now - typed.current.at > 700 ? e.key : typed.current.text + e.key, at: now };
+      const text = typed.current.text.toLowerCase();
+      const hit = options.findIndex((o) => !o.disabled && String(typeof o.label === "string" ? o.label : o.value).toLowerCase().startsWith(text));
+      if (hit >= 0) setActive(hit);
+    }
+  };
+
   return (
-    <select {...rest} className={cx(u.input, "appearance-none cursor-pointer pr-8", className)}>
-      {children}
-    </select>
+    <>
+      <button
+        ref={button}
+        id={id}
+        type="button"
+        role="combobox"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={open ? listId : undefined}
+        disabled={disabled}
+        onClick={() => (open ? close() : show())}
+        onKeyDown={onKeyDown}
+        className={cx(u.input, "flex items-center justify-between gap-2 text-left", disabled ? "cursor-not-allowed" : "cursor-pointer", className)}
+      >
+        <span className="truncate">{selected?.label ?? ""}</span>
+        <ChevronDown className={cx("w-4 h-4 shrink-0 transition-transform", u.muted, open && "rotate-180")} aria-hidden />
+      </button>
+      {open && box && createPortal(
+        <ul
+          ref={list}
+          id={listId}
+          role="listbox"
+          aria-label={ariaLabel}
+          className={cx("fixed z-[70] overflow-y-auto border shadow-2xl py-1", u.divider, LIST_BG[u.id], radius, u.font)}
+          style={{ left: box.left, width: box.width, top: box.top, bottom: box.bottom, maxHeight: box.maxHeight }}
+        >
+          {options.map((o, i) => (
+            <li
+              key={o.value}
+              role="option"
+              aria-selected={o.value === value}
+              aria-disabled={o.disabled || undefined}
+              onMouseEnter={() => !o.disabled && setActive(i)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => choose(i)}
+              className={cx(
+                "flex items-center justify-between gap-2 px-3 py-2 text-sm",
+                o.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer",
+                i === active && !o.disabled && "bg-white/10",
+                o.value === value ? u.accent : u.text,
+              )}
+            >
+              <span className="truncate">{o.label}</span>
+              {o.value === value && <Check className="w-3.5 h-3.5 shrink-0" aria-hidden />}
+            </li>
+          ))}
+        </ul>,
+        document.body,
+      )}
+    </>
   );
 }
 

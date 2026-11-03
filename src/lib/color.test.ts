@@ -18,6 +18,22 @@ test("every harmony keeps the base colour, and the analogous one has it in the m
   assert.equal(byId("#3366cc", "tetradic").length, 4);
 });
 
+test("each harmony knows its base colour and the hue offset of every colour", () => {
+  for (const h of harmonies("#3366cc")) {
+    assert.equal(h.colors[h.base], "#3366cc", h.id);
+    assert.equal(h.offsets[h.base], 0, h.id);
+    assert.equal(h.offsets.length, h.colors.length, h.id);
+  }
+});
+
+test("accented analogous is the three neighbours plus the complement", () => {
+  assert.deepEqual(byId("#ff0000", "accented"), ["#ff0080", "#ff0000", "#ff8000", "#00ffff"]);
+});
+
+test("there are eight harmonies", () => {
+  assert.equal(harmonies("#ff0000").length, 8);
+});
+
 test("an invalid hex gives no harmonies", () => {
   assert.deepEqual(harmonies("nope"), []);
 });

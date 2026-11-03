@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Download, Trash2 } from "lucide-react";
 import { Field, Chips, Slider, Button, IconButton, Panel, SectionTitle, Notice, Stack, Row, cx } from "../ui/kit";
-import { ImageDrop, useImageSource } from "../ui/ImageDrop";
+import { ImageDrop } from "../ui/ImageDrop";
+import type { ImageSourceState } from "../ui/ImageDrop";
 import { useUi } from "../ui/tokens";
 import { MAX_SIDE, adjust, download, formatBytes, readPixels, resample, sharpen, toBlob, writePixels } from "../lib/imageOps";
 
@@ -17,9 +18,9 @@ interface Result {
   height: number;
 }
 
-export default function ImageUpscaler() {
+export default function ImageUpscaler({ image }: { image: ImageSourceState }) {
   const u = useUi();
-  const { source, error, setError, load, clear } = useImageSource();
+  const { source, error, setError, load, clear } = image;
   const [scale, setScale] = useState(2);
   const [sharp, setSharp] = useState(40);
   const [brightness, setBrightness] = useState(0);

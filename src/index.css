@@ -11,6 +11,31 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+/* Scrollbars: thin, dark, rounded thumb that lights up on hover (the browser default is light and wide). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
+@supports not (scrollbar-color: auto) {
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #71717a;
+    background-clip: content-box;
+  }
+}
+
 /* Custom styles for animations and hidden scrollbars */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

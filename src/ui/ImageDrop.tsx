@@ -47,6 +47,8 @@ export function useImageSource() {
   return { source, error, setError, load, clear };
 }
 
+export type ImageSourceState = ReturnType<typeof useImageSource>;
+
 export function ImageDrop({ onFile, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF" }: { onFile: (file: File | undefined) => void; hint?: string }) {
   const u = useUi();
   const input = useRef<HTMLInputElement>(null);

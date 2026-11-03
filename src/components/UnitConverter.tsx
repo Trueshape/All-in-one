@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { useUi } from "../ui/tokens";
-import { Notice, Field, TextInput, Select, Tabs, IconButton, ResultCard, Row, Stack, fmtNumber } from "../ui/kit";
+import { Notice, Field, TextInput, Select, Tabs, IconButton, ResultCard, Row, Stack, fmtNumber, cx } from "../ui/kit";
 
 interface Unit {
   name: string;
@@ -175,6 +175,27 @@ export default function UnitConverter() {
         ) : "—"}
         copyText={text}
       />
+
+      {valid && (
+        <div className={cx("p-3 space-y-2 rounded-xl", u.panel)}>
+          <div className={cx("px-1 text-xs font-medium", u.subtle)}>{number === 1 ? `1 ${fromSymbol} in tutte le unità` : `${fmtUnit(number)} ${fromSymbol} in tutte le unità`}</div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            {keys.filter((k) => k !== from).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setTo(k)}
+                title={`${cat.units[k].name}: usa come unità di arrivo`}
+                className={cx("flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-left", u.panelInset, k === to && "ring-1")}
+                style={k === to ? { boxShadow: `inset 0 0 0 1px ${u.accentHex}` } : undefined}
+              >
+                <span className={cx("font-medium", k === to ? u.accent : u.muted)}>{cat.units[k].symbol}</span>
+                <span className={cx("font-mono font-semibold truncate", u.text)}>{fmtUnit(convert(category, number, from, k))}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <Notice>Ogni unità è riportata a un’unità base della categoria tramite un fattore fisso. La temperatura usa formule dedicate.</Notice>
     </Stack>
   );

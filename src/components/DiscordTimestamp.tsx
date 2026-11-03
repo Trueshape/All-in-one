@@ -112,7 +112,7 @@ export default function DiscordTimestamp() {
           <Field label="Testo">
             <TextArea rows={4} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Scrivi il testo da formattare..." />
           </Field>
-          <Chips fill value={markupId} onChange={setMarkupId} options={MARKUP.map((m) => ({ value: m.id, label: m.label }))} />
+          <Chips value={markupId} onChange={setMarkupId} options={MARKUP.map((m) => ({ value: m.id, label: m.label }))} />
           <Panel inset className="relative min-h-[88px]">
             <span className={u.statLabel}>Risultato</span>
             <pre className={cx("mt-1 pr-8 text-xs font-mono whitespace-pre-wrap break-all select-all", u.text)}>{formatted || "—"}</pre>

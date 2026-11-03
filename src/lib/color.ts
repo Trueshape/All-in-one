@@ -51,32 +51,38 @@ export function mixRgb(a: Rgb, b: Rgb, t: number): Rgb {
 }
 
 export interface Harmony {
-  id: "complementary" | "analogous" | "split" | "triadic" | "tetradic" | "square" | "monochromatic";
-  /** The first colour is always the base colour. */
+  id: "complementary" | "analogous" | "accented" | "split" | "triadic" | "tetradic" | "square" | "monochromatic";
   colors: string[];
+  /** Index in `colors` of the colour the harmony was built from. */
+  base: number;
+  /** Hue distance in degrees of each colour from the base one. */
+  offsets: number[];
 }
 
 const HUE_OFFSETS: Array<[Exclude<Harmony["id"], "monochromatic">, number[]]> = [
   ["complementary", [0, 180]],
   ["analogous", [-30, 0, 30]],
+  ["accented", [-30, 0, 30, 180]],
   ["split", [0, 150, 210]],
   ["triadic", [0, 120, 240]],
   ["tetradic", [0, 60, 180, 240]],
   ["square", [0, 90, 180, 270]],
 ];
 
-export function harmonies(hex: string): Harmony[] {
+/** Pass `hsl` when you have it: it avoids the rounding that going through hex would add while a wheel is dragged. */
+export function harmonies(hex: string, hsl?: [number, number, number]): Harmony[] {
   const rgb = hexToRgb(hex);
   if (!rgb) return [];
-  const [h, s, l] = rgbToHsl(rgb);
+  const [h, s, l] = hsl ?? rgbToHsl(rgb);
   const base = rgbToHex(rgb);
   const rotate = (deg: number) => hslToHex((((h + deg) % 360) + 360) % 360, s, l);
   const list: Harmony[] = HUE_OFFSETS.map(([id, offsets]) => ({
     id,
-    // The analogous set keeps the base in the middle; everywhere else it comes first.
     colors: offsets.map((deg) => (deg === 0 ? base : rotate(deg))),
+    base: offsets.indexOf(0),
+    offsets,
   }));
   const lightness = [l - 30, l - 15, l, l + 15, l + 30].map((v) => clamp(v, 6, 96));
-  list.push({ id: "monochromatic", colors: lightness.map((v, i) => (i === 2 ? base : hslToHex(h, s, v))) });
+  list.push({ id: "monochromatic", colors: lightness.map((v, i) => (i === 2 ? base : hslToHex(h, s, v))), base: 2, offsets: lightness.map(() => 0) });
   return list;
 }

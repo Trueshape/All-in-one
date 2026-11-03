@@ -2,6 +2,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   all: "Tutti i Tool",
   calcolo: "Calcoli",
   convertitori: "Convertitori",
+  immagini: "Immagini",
   produttivita: "Produttività",
   creative: "Utilità",
   preferiti: "Preferiti",
@@ -103,6 +104,8 @@ export const getToolModalSize = (toolId: string): string => {
   switch (toolId) {
     case "aspect_ratio_calc":
       return "max-w-[880px] w-[92vw]";
+    case "color":
+      return "max-w-6xl";
     case "case_converter":
     case "text_diff":
     case "markdown":
