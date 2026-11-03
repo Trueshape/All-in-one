@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Trash2 } from "lucide-react";
-import { Field, TextArea, Button, Panel, SectionTitle, Notice, Stack, Toggle, cx } from "../ui/kit";
+import { Field, Button, Panel, SectionTitle, Notice, Stack, Toggle, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 type Op = { type: "same" | "add" | "del"; text: string; a?: number; b?: number };
@@ -44,6 +44,40 @@ function diffLines(a: string[], b: string[], norm: (s: string) => string): Op[] 
   return ops;
 }
 
+const linesIn = (text: string) => (text ? text.split("\n").length : 0);
+
+const LINE = 20;
+
+/** Text area with a line-number gutter. Lines never wrap (they scroll sideways), so each number sits next to its line. */
+function LineEditor({ value, onChange, placeholder, label }: { value: string; onChange: (value: string) => void; placeholder: string; label: string }) {
+  const u = useUi();
+  const gutter = useRef<HTMLDivElement>(null);
+  const count = Math.max(1, linesIn(value));
+  return (
+    <div className={cx(u.input, "flex p-0 overflow-hidden")}>
+      <div
+        ref={gutter}
+        aria-hidden
+        className={cx("shrink-0 overflow-hidden select-none text-right font-mono border-r py-2.5 pl-2 pr-2", u.divider, u.muted)}
+        style={{ height: LINE * 7 + 20, fontSize: 12, lineHeight: `${LINE}px`, minWidth: `${String(count).length + 2}ch` }}
+      >
+        {Array.from({ length: count }, (_, i) => <div key={i}>{i + 1}</div>)}
+      </div>
+      <textarea
+        aria-label={label}
+        wrap="off"
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        onScroll={(e) => { if (gutter.current) gutter.current.scrollTop = e.currentTarget.scrollTop; }}
+        spellCheck={false}
+        className="flex-1 min-w-0 bg-transparent resize-none focus:outline-none font-mono whitespace-pre overflow-auto py-2.5 px-3"
+        style={{ height: LINE * 7 + 20, fontSize: 12, lineHeight: `${LINE}px` }}
+      />
+    </div>
+  );
+}
+
 export default function TextDiff() {
   const u = useUi();
   const [textA, setTextA] = useState("");
@@ -81,11 +115,11 @@ export default function TextDiff() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Testo originale (A)">
-          <TextArea rows={7} value={textA} onChange={(e) => setTextA(e.target.value)} placeholder="Incolla qui la prima versione..." />
+        <Field label={`Testo originale (A) · ${linesIn(textA)} ${linesIn(textA) === 1 ? "riga" : "righe"}`}>
+          <LineEditor label="Testo originale (A)" value={textA} onChange={setTextA} placeholder="Incolla qui la prima versione..." />
         </Field>
-        <Field label="Testo modificato (B)">
-          <TextArea rows={7} value={textB} onChange={(e) => setTextB(e.target.value)} placeholder="Incolla qui la nuova versione..." />
+        <Field label={`Testo modificato (B) · ${linesIn(textB)} ${linesIn(textB) === 1 ? "riga" : "righe"}`}>
+          <LineEditor label="Testo modificato (B)" value={textB} onChange={setTextB} placeholder="Incolla qui la nuova versione..." />
         </Field>
       </div>
 
@@ -98,6 +132,12 @@ export default function TextDiff() {
             <span className="text-emerald-400">+{added}</span> <span className="text-red-400">−{removed}</span>
           </span>
         </div>
+        {ops.length > 0 && (
+          <div className={cx("flex gap-3 px-3 py-1 border-b font-mono text-[10px] uppercase tracking-wider", u.divider, u.muted)}>
+            <span className="w-7 text-right shrink-0">A</span>
+            <span className="w-7 text-right shrink-0">B</span>
+          </div>
+        )}
         <div className="max-h-[300px] overflow-y-auto font-mono text-[11px] leading-relaxed">
           {ops.length === 0 ? (
             <p className={cx("p-8 text-center", u.muted)}>Inserisci del testo nelle due aree per vedere le differenze riga per riga.</p>
