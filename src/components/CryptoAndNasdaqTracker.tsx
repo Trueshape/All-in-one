@@ -153,7 +153,7 @@ export default function CryptoAndNasdaqTracker() {
                   <th className={th}>Nome</th>
                   <th className={cx(th, "text-right")}>Prezzo</th>
                   <th className={cx(th, "text-right")}>24h</th>
-                  <th className={cx(th, "text-right hidden md:table-cell")}>Cap. di mercato</th>
+                  <th className={cx(th, "text-right")}>Cap. di mercato</th>
                   <th className={cx(th, "text-center w-28")}>7 giorni</th>
                 </tr>
               </thead>
@@ -170,7 +170,7 @@ export default function CryptoAndNasdaqTracker() {
                     </td>
                     <td className={cx(td, "text-right font-mono font-semibold", u.text)}>{price(c.current_price)}</td>
                     <td className={cx(td, "text-right")}><Change value={c.price_change_percentage_24h || 0} /></td>
-                    <td className={cx(td, "text-right hidden md:table-cell", u.muted)}>{compact(c.market_cap)}</td>
+                    <td className={cx(td, "text-right", u.muted)}>{compact(c.market_cap)}</td>
                     <td className={cx(td, "text-center")}><div className="flex justify-center"><Sparkline prices={c.sparkline_in_7d?.price ?? []} up={(c.price_change_percentage_7d_in_currency ?? c.price_change_percentage_24h) >= 0} /></div></td>
                   </tr>
                 ))}
@@ -206,10 +206,10 @@ export default function CryptoAndNasdaqTracker() {
                 <tr className={cx("border-b", u.divider)}>
                   <th className={th}>Ticker</th>
                   <th className={th}>Azienda</th>
-                  <th className={cx(th, "hidden sm:table-cell")}>Settore</th>
+                  <th className={th}>Settore</th>
                   <th className={cx(th, "text-right")}>Prezzo</th>
                   <th className={cx(th, "text-right")}>Var.</th>
-                  <th className={cx(th, "text-right hidden md:table-cell")}>Cap.</th>
+                  <th className={cx(th, "text-right")}>Cap.</th>
                 </tr>
               </thead>
               <tbody>
@@ -217,10 +217,10 @@ export default function CryptoAndNasdaqTracker() {
                   <tr key={s.symbol} className={cx("border-b last:border-0", u.divider)}>
                     <td className={cx(td, "font-bold", u.accent)}>{s.symbol}</td>
                     <td className={cx(td, u.text)}>{s.name}</td>
-                    <td className={cx(td, "hidden sm:table-cell", u.muted)}>{s.sector}</td>
+                    <td className={cx(td, u.muted)}>{s.sector}</td>
                     <td className={cx(td, "text-right font-mono font-semibold", u.text)}>{price(s.price)}</td>
                     <td className={cx(td, "text-right")}><Change value={s.changePercent} /></td>
-                    <td className={cx(td, "text-right hidden md:table-cell", u.muted)}>{s.marketCap}</td>
+                    <td className={cx(td, "text-right", u.muted)}>{s.marketCap}</td>
                   </tr>
                 ))}
               </tbody>
