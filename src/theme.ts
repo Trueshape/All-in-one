@@ -118,7 +118,6 @@ export const getToolModalSize = (toolId: string): string => {
     case "discord_timestamp":
       return "max-w-3xl";
     case "currency":
-    case "unit":
     case "timer":
     case "password":
     case "tip":

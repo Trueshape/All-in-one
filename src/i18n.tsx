@@ -74,8 +74,7 @@ type ToolText = { name: string; description: string };
 /** Tool names and descriptions for the non-Italian languages (Italian comes from the registry). */
 const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
   en: {
-    currency: { name: "Currency converter", description: "Real-time exchange rates for the main world currencies." },
-    unit: { name: "Unit converter", description: "Convert length, weight, temperature, area and volume." },
+    currency: { name: "Currencies & units", description: "Convert currencies with live rates and measures of length, weight, area, volume, speed, energy and temperature." },
     password: { name: "Password generator", description: "Create high-security passwords with adjustable options and length." },
     tip: { name: "Tips and discounts", description: "Work out discounts and tips, and split the bill per person." },
     timer: { name: "Timer & Pomodoro", description: "Run focus sessions with the Pomodoro technique or use the precision stopwatch." },
@@ -106,8 +105,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     scoreboard: { name: "Online scoreboard", description: "Keep score for 2-6 teams with undo and full screen, great for games, sports and nights with friends." },
   },
   es: {
-    currency: { name: "Conversor de divisas", description: "Tipos de cambio en tiempo real de las principales monedas del mundo." },
-    unit: { name: "Conversor de unidades", description: "Convierte medidas de longitud, peso, temperatura, área y volumen." },
+    currency: { name: "Divisas y unidades", description: "Convierte divisas con tipos en vivo y medidas de longitud, peso, área, volumen, velocidad, energía y temperatura." },
     password: { name: "Generador de contraseñas", description: "Crea contraseñas muy seguras con opciones y longitud ajustables." },
     tip: { name: "Propinas y descuentos", description: "Calcula descuentos y propinas, y divide la cuenta por persona." },
     timer: { name: "Temporizador y Pomodoro", description: "Gestiona sesiones de enfoque con la técnica Pomodoro o usa el cronómetro de precisión." },
@@ -138,8 +136,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     scoreboard: { name: "Marcador online", description: "Lleva los puntos de 2 a 6 equipos con deshacer y pantalla completa, ideal para juegos y deporte." },
   },
   de: {
-    currency: { name: "Währungsrechner", description: "Aktuelle Wechselkurse der wichtigsten Weltwährungen." },
-    unit: { name: "Einheitenumrechner", description: "Rechne Länge, Gewicht, Temperatur, Fläche und Volumen um." },
+    currency: { name: "Währungen & Einheiten", description: "Rechne Währungen mit aktuellen Kursen und Maße für Länge, Gewicht, Fläche, Volumen, Tempo, Energie und Temperatur um." },
     password: { name: "Passwort-Generator", description: "Erstelle sichere Passwörter mit einstellbaren Optionen und Länge." },
     tip: { name: "Trinkgeld und Rabatte", description: "Berechne Rabatte und Trinkgeld und teile die Rechnung pro Person." },
     timer: { name: "Timer & Pomodoro", description: "Fokussiert arbeiten mit der Pomodoro-Technik oder der Stoppuhr." },
@@ -170,8 +167,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     scoreboard: { name: "Online-Anzeigetafel", description: "Zähle Punkte für 2-6 Teams mit Rückgängig und Vollbild, ideal für Spiele und Sport." },
   },
   fr: {
-    currency: { name: "Convertisseur de devises", description: "Taux de change en temps réel des principales monnaies du monde." },
-    unit: { name: "Convertisseur d’unités", description: "Convertis longueur, poids, température, surface et volume." },
+    currency: { name: "Devises et unités", description: "Convertis des devises aux taux en direct et des mesures de longueur, poids, surface, volume, vitesse, énergie et température." },
     password: { name: "Générateur de mots de passe", description: "Crée des mots de passe très sûrs avec des options et une longueur réglables." },
     tip: { name: "Pourboires et remises", description: "Calcule remises et pourboires, et partage l’addition par personne." },
     timer: { name: "Minuteur & Pomodoro", description: "Gère des sessions de concentration avec la technique Pomodoro ou le chronomètre." },

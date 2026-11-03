@@ -11,6 +11,7 @@
 - `src/ui/kit.tsx` — componenti condivisi: campi, bottoni, slider, pannelli, risultati, avvisi.
 - `src/ui/ColorWheel.tsx` — ruota dei colori (trascinabile con mouse o frecce, oppure solo di sola lettura) e nomi delle armonie.
 - `src/components/CodeGenerator.tsx` — Generatore Codici: scheda QR code o codice a barre (`QrGenerator`, `BarcodeGenerator`).
+- `src/components/MeasureConverters.tsx` — Valute e Unità: schede `CurrencyConverter` e `UnitConverter`.
 - `src/components/ImageTools.tsx` — strumento Immagini: schede Converti, Ridimensiona, Ingrandisci (`ImageConverter`, `ImageResizer`, `ImageUpscaler`) con un'unica immagine caricata.
 - `src/ui/ImageDrop.tsx` — caricamento di un'immagine (trascina o scegli) e hook `useImageSource`, usati dagli strumenti per immagini.
 - `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `marketData.ts`, `color.ts` (conversioni e armonie), `palette.ts` (colori dominanti), `imageOps.ts` (ricampionamento, nitidezza, filtri), `imageEncoders.ts` (BMP, TIFF, ICO), `barcode.ts` (Code 128, EAN-13), `pattern.ts` (pattern SVG), `bracket.ts` (tabellone a eliminazione), `passwordModes.ts` e `wordlist.ts` (frasi, pronunciabili, PIN, token). Ogni modulo con logica ha il suo `*.test.ts` (`npm test`).

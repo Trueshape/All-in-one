@@ -2,7 +2,6 @@ import React, { useState, useEffect, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeftRight,
-  Ruler,
   KeyRound,
   Percent,
   Timer,
@@ -59,8 +58,7 @@ import {
 } from "lucide-react";
 
 // Import Components
-const CurrencyConverter = lazy(() => import("../components/CurrencyConverter"));
-const UnitConverter = lazy(() => import("../components/UnitConverter"));
+const MeasureConverters = lazy(() => import("../components/MeasureConverters"));
 const PasswordGenerator = lazy(() => import("../components/PasswordGenerator"));
 const TipCalculator = lazy(() => import("../components/TipCalculator"));
 const PomodoroTimer = lazy(() => import("../components/PomodoroTimer"));
@@ -105,25 +103,14 @@ export interface ToolItem {
 export const TOOLS: ToolItem[] = [
   {
     id: "currency",
-    name: "Convertitore di Valuta",
-    description: "Tassi di cambio aggiornati in tempo reale per le principali monete mondiali.",
+    name: "Valute e Unità",
+    description: "Converti valute con tassi aggiornati e misure di lunghezza, peso, area, volume, velocità, energia e temperatura.",
     icon: ArrowLeftRight,
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
     glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
     iconColor: "text-indigo-400 bg-indigo-500/10",
     category: "convertitori",
-    component: CurrencyConverter,
-  },
-  {
-    id: "unit",
-    name: "Convertitore di Unità",
-    description: "Converti misure di lunghezza, peso, temperatura, area e volume.",
-    icon: Ruler,
-    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
-    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
-    iconColor: "text-emerald-400 bg-emerald-500/10",
-    category: "convertitori",
-    component: UnitConverter,
+    component: MeasureConverters,
   },
   {
     id: "password",
