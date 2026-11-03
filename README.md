@@ -9,7 +9,8 @@ Strumenti quotidiani (calcoli, convertitori, produttività, utilità), in un'uni
 1. Installa Node.js (versione LTS).
 2. Nella cartella del progetto: `npm install`.
 3. Per il Traduttore: crea `.env.local` con `GEMINI_API_KEY=la-tua-chiave` (non va nel repo).
-4. Avvia: `npm run dev`, poi apri http://localhost:3000.
+4. Avvia: `npm run dev`, poi apri http://localhost:5182.
+5. Controlli prima di pubblicare: `npm run lint` (tipi) e `npm test` (test della logica).
 
 ## Pubblicazione
 

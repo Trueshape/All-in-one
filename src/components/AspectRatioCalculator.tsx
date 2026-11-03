@@ -1,189 +1,120 @@
-import React, { useState, useEffect } from "react";
-import { Maximize, Info } from "lucide-react";
+import { useState } from "react";
+import { Lock, LockOpen, Maximize } from "lucide-react";
+import { Notice, Field, TextInput, Chips, Panel, SectionTitle, Stack, cx } from "../ui/kit";
+import { useUi } from "../ui/tokens";
+
+const PRESETS = [
+  { label: "16:9", w: 16, h: 9 },
+  { label: "9:16", w: 9, h: 16 },
+  { label: "4:3", w: 4, h: 3 },
+  { label: "1:1", w: 1, h: 1 },
+  { label: "21:9", w: 21, h: 9 },
+  { label: "16:10", w: 16, h: 10 },
+];
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+const simplify = (w: number, h: number) => {
+  const d = gcd(Math.round(w), Math.round(h)) || 1;
+  return { w: Math.round(w) / d, h: Math.round(h) / d };
+};
 
 export default function AspectRatioCalculator() {
-  const [width, setWidth] = useState<string>("1920");
-  const [height, setHeight] = useState<string>("1080");
-  const [lockRatio, setLockRatio] = useState<boolean>(true);
-  const [ratioWidth, setRatioWidth] = useState<string>("16");
-  const [ratioHeight, setRatioHeight] = useState<string>("9");
+  const u = useUi();
+  const [width, setWidth] = useState("1920");
+  const [height, setHeight] = useState("1080");
+  // Locked: the two sides always keep the selected ratio. Unlocked: each side is free.
+  const [locked, setLocked] = useState(true);
+  const [ratio, setRatio] = useState({ w: 16, h: 9 });
 
-  // Helper to find Great Common Divisor
-  const findGcd = (a: number, b: number): number => {
-    return b === 0 ? a : findGcd(b, a % b);
+  const w = parseFloat(width);
+  const h = parseFloat(height);
+  const valid = w > 0 && h > 0;
+  const current = valid ? simplify(w, h) : null;
+
+  const onWidth = (value: string) => {
+    setWidth(value);
+    const next = parseFloat(value);
+    if (locked && next > 0) setHeight(String(Math.round((next * ratio.h) / ratio.w)));
+    else if (!locked && next > 0 && h > 0) setRatio(simplify(next, h));
   };
 
-  const getSimplifiedRatio = () => {
-    const w = parseFloat(width);
-    const h = parseFloat(height);
-    if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) return "N/D";
-    const gcd = findGcd(Math.round(w), Math.round(h));
-    return `${Math.round(w) / gcd}:${Math.round(h) / gcd}`;
+  const onHeight = (value: string) => {
+    setHeight(value);
+    const next = parseFloat(value);
+    if (locked && next > 0) setWidth(String(Math.round((next * ratio.w) / ratio.h)));
+    else if (!locked && next > 0 && w > 0) setRatio(simplify(w, next));
   };
 
-  const currentRatio = getSimplifiedRatio();
-
-  const handleWidthChange = (val: string) => {
-    setWidth(val);
-    const w = parseFloat(val);
-    if (!isNaN(w) && w > 0 && lockRatio) {
-      const rw = parseFloat(ratioWidth);
-      const rh = parseFloat(ratioHeight);
-      if (rw > 0 && rh > 0) {
-        setHeight(String(Math.round((w * rh) / rw)));
-      }
-    }
+  // Locking takes the ratio currently shown on the fields
+  const toggleLock = () => {
+    setLocked((l) => {
+      if (!l && current) setRatio(current);
+      return !l;
+    });
   };
 
-  const handleHeightChange = (val: string) => {
-    setHeight(val);
-    const h = parseFloat(val);
-    if (!isNaN(h) && h > 0 && lockRatio) {
-      const rw = parseFloat(ratioWidth);
-      const rh = parseFloat(ratioHeight);
-      if (rw > 0 && rh > 0) {
-        setWidth(String(Math.round((h * rw) / rh)));
-      }
-    }
+  // A preset sets the ratio and resizes the height from the current width (the locked side)
+  const applyPreset = (p: { w: number; h: number }) => {
+    setRatio({ w: p.w, h: p.h });
+    setLocked(true);
+    if (w > 0) setHeight(String(Math.round((w * p.h) / p.w)));
   };
 
-  const applyPreset = (presetW: number, presetH: number) => {
-    setRatioWidth(String(presetW));
-    setRatioHeight(String(presetH));
-    const w = parseFloat(width);
-    if (w > 0) {
-      setHeight(String(Math.round((w * presetH) / presetW)));
-    }
-  };
-
-  useEffect(() => {
-    const w = parseFloat(width);
-    const h = parseFloat(height);
-    if (w > 0 && h > 0) {
-      const gcd = findGcd(Math.round(w), Math.round(h));
-      setRatioWidth(String(Math.round(w) / gcd));
-      setRatioHeight(String(Math.round(h) / gcd));
-    }
-  }, [lockRatio]);
-
-  const wNum = parseFloat(width) || 16;
-  const hNum = parseFloat(height) || 9;
-  const maxW = 340;
-  const maxH = 180;
-  const visualScale = Math.min(maxW / wNum, maxH / hNum) || 1;
-  const visualWidth = wNum * visualScale;
-  const visualHeight = hNum * visualScale;
+  const activeRatio = locked ? `${ratio.w}:${ratio.h}` : "";
+  const previewW = valid ? w : 16;
+  const previewH = valid ? h : 9;
+  const scale = Math.min(480 / previewW, 230 / previewH);
 
   return (
-    <div className="space-y-6">
-      {/* Inputs, checkbox and presets */}
-      <div className="space-y-6">
-        <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider block">
-          Risoluzione e Proporzioni
-        </span>
-
-        <div className="grid grid-cols-2 gap-5">
-          <div>
-            <label className="text-sm font-mono text-zinc-400 block mb-1.5">Larghezza</label>
-            <input
-              type="number"
-              value={width}
-              onChange={(e) => handleWidthChange(e.target.value)}
-              className="w-full bg-zinc-950/40 border border-zinc-800 rounded px-4 py-2.5 text-sm font-mono text-zinc-200 focus:outline-none focus:border-zinc-700"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-mono text-zinc-400 block mb-1.5">Altezza</label>
-            <input
-              type="number"
-              value={height}
-              onChange={(e) => handleHeightChange(e.target.value)}
-              className="w-full bg-zinc-950/40 border border-zinc-800 rounded px-4 py-2.5 text-sm font-mono text-zinc-200 focus:outline-none focus:border-zinc-700"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 bg-zinc-900/40 border border-zinc-800/60 p-3.5 rounded">
-          <input
-            type="checkbox"
-            id="lock-ratio"
-            checked={lockRatio}
-            onChange={(e) => setLockRatio(e.target.checked)}
-            className="rounded bg-zinc-950 border-zinc-850 text-indigo-500 focus:ring-0 focus:ring-offset-0 w-4.5 h-4.5"
-          />
-          <label htmlFor="lock-ratio" className="text-sm font-mono text-zinc-300 cursor-pointer select-none">
-            Mantieni proporzioni (<strong className="text-indigo-400 font-bold not-italic">{ratioWidth}:{ratioHeight}</strong>)
-          </label>
-        </div>
-
-        <div>
-          <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider block mb-3">
-            Preset Comuni Aspect Ratio
-          </span>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: "16:9", w: 16, h: 9, description: "Panoramico" },
-              { label: "9:16", w: 9, h: 16, description: "Verticale" },
-              { label: "4:3", w: 4, h: 3, description: "Standard" },
-              { label: "1:1", w: 1, h: 1, description: "Quadrato" },
-              { label: "21:9", w: 21, h: 9, description: "Cinema" },
-              { label: "16:10", w: 16, h: 10, description: "Desktop" },
-            ].map((preset) => {
-              const isActive = parseFloat(ratioWidth) === preset.w && parseFloat(ratioHeight) === preset.h;
-              return (
-                <button
-                  key={preset.label}
-                  onClick={() => applyPreset(preset.w, preset.h)}
-                  className={`px-2 py-2 text-xs font-mono rounded text-center transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-indigo-500/10 border border-indigo-500 text-indigo-400 font-bold"
-                      : "bg-zinc-950/40 border border-transparent text-zinc-400 hover:bg-zinc-900/60 hover:text-zinc-200"
-                  }`}
-                  title={`${preset.label} (${preset.description})`}
-                >
-                  {preset.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+    <Stack>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
+        <Field label="Larghezza (px)">
+          <TextInput type="number" min="0" step={locked ? ratio.w : 1} value={width} onChange={(e) => onWidth(e.target.value)} />
+        </Field>
+        <button
+          type="button"
+          onClick={toggleLock}
+          aria-pressed={locked}
+          aria-label={locked ? "Sblocca proporzioni" : "Blocca proporzioni"}
+          title={locked ? `Proporzioni bloccate (${ratio.w}:${ratio.h})` : "Proporzioni libere"}
+          className={cx("mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border cursor-pointer transition-colors", locked ? u.tag : u.btnSecondary)}
+          style={locked ? { color: u.accentHex, borderColor: u.accentHex } : undefined}
+        >
+          {locked ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
+        </button>
+        <Field label="Altezza (px)">
+          <TextInput type="number" min="0" step={locked ? ratio.h : 1} value={height} onChange={(e) => onHeight(e.target.value)} />
+        </Field>
       </div>
 
-      {/* Screen Simulation Block Below */}
-      <div className="bg-zinc-950/20 border border-zinc-800 rounded p-6 flex flex-col justify-between items-center min-h-[240px] mt-6">
-        <div className="w-full flex justify-between items-center mb-4">
-          <span className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
-            Simulazione Schermo
-          </span>
-        </div>
+      <div className="space-y-2">
+        <SectionTitle>Preset comuni</SectionTitle>
+        <Chips
+          fill
+          value={activeRatio}
+          onChange={(value) => {
+            const p = PRESETS.find((x) => x.label === value);
+            if (p) applyPreset(p);
+          }}
+          options={PRESETS.map((p) => ({ value: p.label, label: p.label }))}
+        />
+      </div>
 
-        {/* Scaled Preview Box */}
-        <div className="w-full flex-1 flex items-center justify-center bg-zinc-950/50 rounded-lg p-5 border border-zinc-900">
+      <Panel inset className="flex flex-col items-center gap-3">
+        <span className={`${u.statLabel} self-start`}>Anteprima</span>
+        <div className="h-[270px] w-full flex items-center justify-center">
           <div
-            style={{
-              width: `${visualWidth}px`,
-              height: `${visualHeight}px`,
-            }}
-            className="border-2 border-indigo-500/80 bg-indigo-500/10 rounded flex flex-col items-center justify-center text-center p-3 transition-all duration-300 relative shadow-lg shadow-indigo-950/10"
+            className="flex flex-col items-center justify-center gap-1 border-2 transition-all duration-300"
+            style={{ width: Math.max(180, previewW * scale), height: previewH * scale, borderColor: u.accentHex, background: `${u.accentHex}14` }}
           >
-            <Maximize className="w-5 h-5 text-indigo-400 mb-1.5" />
-            <span className="text-xs sm:text-sm font-mono font-bold text-zinc-100 not-italic">
-              {width} x {height}
-            </span>
-            <span className="text-[10px] sm:text-xs font-mono text-indigo-300 mt-1 not-italic">
-              Ratio: {currentRatio}
-            </span>
+            <Maximize className={`w-4 h-4 ${u.accent}`} />
+            <span className={`text-xs font-mono font-bold ${u.text}`}>{valid ? `${width} × ${height}` : "—"}</span>
+            <span className={`text-[10px] font-mono ${u.muted}`}>Rapporto {current ? `${current.w}:${current.h}` : "N/D"}</span>
           </div>
         </div>
-      </div>
-
-      <div className="p-3 bg-zinc-900/40 border border-zinc-800/60 rounded flex gap-2.5 text-xs text-zinc-400 mt-4">
-        <Info className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />
-        <p className="leading-relaxed font-sans">
-          L'Aspect Ratio descrive il rapporto matematico tra la larghezza e l'altezza di un'immagine o schermo. 
-          Attivando la proporzione bloccata, qualsiasi variazione di larghezza o altezza ricalcolerà la misura opposta.
-        </p>
-      </div>
-    </div>
+      </Panel>
+      <Notice>Con il lucchetto chiuso, cambiando un lato l’altro si ricalcola sul rapporto attivo. Con il lucchetto aperto i due lati sono indipendenti.</Notice>
+    </Stack>
   );
 }

@@ -1,7 +1,16 @@
 # Overview dei file
 
 - `index.html` — entry HTML di Vite (monta `src/main.tsx`).
-- `src/` — app React: `App.tsx` (shell, modali, menu), `components/` (un file per strumento, caricati in lazy), `index.css`, `vite-env.d.ts` (tipi Vite).
+- `src/App.tsx` — stato globale (tema, preferiti, nomi personalizzati) e collegamento tra landing e modale.
+- `src/Landing.tsx` — landing page: header, ricerca, selettore stile, categorie, schede, footer.
+- `src/ToolModal.tsx` — modale che ospita lo strumento aperto e fornisce i token di stile.
+- `src/theme.ts` — classi dei tre stili della landing (artistic, immersive, sophisticated) e categorie.
+- `src/tools/registry.ts` — elenco degli strumenti (nome, categoria, componente caricato in lazy).
+- `src/components/` — un file per strumento, tutti costruiti con il kit in `src/ui/`.
+- `src/ui/tokens.ts` — token di stile per tema (colori, font, bordi) usati dagli strumenti.
+- `src/ui/kit.tsx` — componenti condivisi: campi, bottoni, slider, pannelli, risultati, avvisi.
+- `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `chromaKey.ts`, `marketData.ts`. Accanto a `markdown`, `calcEngine`, `calcState` e `codiceFiscale` ci sono i test `*.test.ts` (`npm test`).
+- `src/index.css`, `src/main.tsx`, `src/vite-env.d.ts` — stili globali, entry React, tipi Vite.
 - `server.ts` — server Express locale: serve Vite in sviluppo e l'API `/api/translate` (Gemini). Non è usato su Pages.
 - `vite.config.ts` — config Vite; `base` cambia con `VITE_PUBLIC=1` (sottocartella `/All-in-one/` per Pages).
 - `package.json` / `package-lock.json` — dipendenze e script (`dev`, `build`, `lint`).
@@ -12,4 +21,3 @@
 - `README.md` — cos'è il progetto, come si avvia, come si pubblica su Pages.
 - `CLAUDE.md` — regole per l'AI in questo progetto.
 - `decisions.md` — elenco delle scelte importanti.
-- `metadata.json` — metadati dell'app (origine AI Studio).
