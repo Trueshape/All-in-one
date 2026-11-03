@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Hourglass, ListPlus, Pause, Play, RotateCcw, Timer } from "lucide-react";
 import { Notice, Segmented, Chips, Button, IconButton, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { parseTime } from "../lib/timeInput";
 
 type Phase = "work" | "short" | "long";
 
@@ -10,6 +11,9 @@ const PHASES: Record<Phase, { label: string; short: string; seconds: number }> =
   short: { label: "Pausa breve", short: "Pausa", seconds: 5 * 60 },
   long: { label: "Pausa lunga", short: "Lunga", seconds: 15 * 60 },
 };
+
+/** Shortest first, as the chips are shown. */
+const ORDER: Phase[] = ["short", "long", "work"];
 
 const RADIUS = 88;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -45,9 +49,13 @@ function beep() {
 function Pomodoro() {
   const u = useUi();
   const [phase, setPhase] = useState<Phase>("work");
+  // Each phase keeps its own length, so a time typed in by hand stays after switching phase.
+  const [durations, setDurations] = useState<Record<Phase, number>>({ work: PHASES.work.seconds, short: PHASES.short.seconds, long: PHASES.long.seconds });
   const [left, setLeft] = useState(PHASES.work.seconds);
   const [running, setRunning] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
   const endAt = useRef(0);
+  const total = durations[phase];
 
   // Uses a wall-clock deadline so background-tab throttling does not make the timer drift.
   useEffect(() => {
@@ -68,16 +76,31 @@ function Pomodoro() {
 
   const choose = (next: Phase) => {
     setRunning(false);
+    setEditing(null);
     setPhase(next);
-    setLeft(PHASES[next].seconds);
+    setLeft(durations[next]);
   };
 
-  const progress = left / PHASES[phase].seconds;
+  const startEditing = () => {
+    setRunning(false);
+    setEditing(mmss(left));
+  };
+
+  const commitEditing = () => {
+    if (editing === null) return;
+    const seconds = parseTime(editing);
+    setEditing(null);
+    if (seconds === null) return;
+    setDurations((d) => ({ ...d, [phase]: seconds }));
+    setLeft(seconds);
+  };
+
+  const progress = total ? left / total : 0;
 
   return (
     <div className="space-y-6 text-center">
       <div className="flex justify-center">
-        <Chips fill value={phase} onChange={choose} options={(Object.keys(PHASES) as Phase[]).map((p) => ({ value: p, label: PHASES[p].short }))} />
+        <Chips fill value={phase} onChange={choose} options={ORDER.map((p) => ({ value: p, label: PHASES[p].short }))} />
       </div>
 
       <div className="relative w-48 h-48 mx-auto flex flex-col items-center justify-center">
@@ -85,15 +108,43 @@ function Pomodoro() {
           <circle cx="96" cy="96" r={RADIUS} fill="none" stroke={u.mutedHex} strokeOpacity="0.4" strokeWidth="4" />
           <circle cx="96" cy="96" r={RADIUS} fill="none" stroke={u.accentHex} strokeWidth="4" strokeDasharray={CIRCUMFERENCE} strokeDashoffset={CIRCUMFERENCE * (1 - progress)} className="transition-[stroke-dashoffset] duration-300" />
         </svg>
-        <span className={cx("text-4xl font-bold font-mono tabular-nums", u.text)} role="timer">{mmss(left)}</span>
+        {editing === null ? (
+          <button type="button" onClick={startEditing} title="Clicca per cambiare il tempo" className={cx("text-4xl font-bold font-mono tabular-nums cursor-text rounded-lg px-2 hover:bg-white/5 transition-colors", u.text)} role="timer">{mmss(left)}</button>
+        ) : (
+          <input
+            autoFocus
+            value={editing}
+            onChange={(e) => setEditing(e.target.value)}
+            onFocus={(e) => e.target.select()}
+            onBlur={commitEditing}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitEditing();
+              if (e.key === "Escape") {
+                // Only cancel the edit: the tool window must stay open.
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+                setEditing(null);
+              }
+            }}
+            inputMode="numeric"
+            aria-label="Tempo (minuti oppure mm:ss)"
+            className={cx("w-32 text-center text-4xl font-bold font-mono tabular-nums bg-transparent border-b-2 focus:outline-none", u.text)}
+            style={{ borderColor: u.accentHex }}
+          />
+        )}
         <span className={cx("text-xs mt-1", u.muted)}>{PHASES[phase].label}</span>
       </div>
+      <p className={cx("text-[11px] -mt-3", u.muted)}>Clicca sul tempo per modificarlo (minuti, oppure mm:ss).</p>
 
-      <div className="flex justify-center gap-3">
-        <IconButton onClick={() => { setRunning(false); setLeft(PHASES[phase].seconds); }} title="Reset" className="border-current"><RotateCcw className="w-5 h-5" /></IconButton>
-        <Button variant="primary" onClick={() => { if (left === 0) setLeft(PHASES[phase].seconds); setRunning((r) => !r); }} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
+      {/* Start sits in the middle of the container; reset is beside it, so the button stays centred. */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <span />
+        <Button variant="primary" onClick={() => { if (left === 0) setLeft(total); setRunning((r) => !r); }} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
           {running ? "Pausa" : left === 0 ? "Ricomincia" : "Avvia"}
         </Button>
+        <div className="justify-self-start">
+          <IconButton onClick={() => { setRunning(false); setLeft(total); }} title="Reset" className="border-current"><RotateCcw className="w-5 h-5" /></IconButton>
+        </div>
       </div>
     </div>
   );

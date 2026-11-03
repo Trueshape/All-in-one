@@ -47,3 +47,5 @@
 - 2026-11-03 — Geometria ha un'anteprima disegnata per ogni forma (come il cerchio): cambia con le misure, entra con una breve animazione e l'anello guida scorre piano; con `prefers-reduced-motion` le animazioni si fermano.
 - 2026-11-03 — Aggiunto San Paolo (America/Sao_Paulo) all'Orologio Mondiale: era l'unica area grande senza un fuso (Sud America); le città sono 8, che riempiono la griglia.
 - 2026-11-03 — Segnapunti: tolti +2 e +3; il punteggio è un grande pulsante (clic sinistro +1, clic destro −1), restano −1/+1 per tastiera e touch — più veloce durante una partita.
+- 2026-11-03 — L'Orologio Mondiale mostra i fusi come UTC (UTC+1, UTC-5, UTC+5:30) al posto di GMT/CET — una sola notazione per tutte le città e senza sigle locali.
+- 2026-11-03 — Timer Pomodoro: Avvia al centro e Reset accanto; il tempo si modifica con un clic sul numero (minuti oppure mm:ss, ogni fase ricorda il suo); le fasi sono ordinate per durata (Pausa, Lunga, Focus), ordine fisso anche se cambi i tempi — così i pulsanti non si spostano.

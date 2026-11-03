@@ -14,6 +14,14 @@ const CITIES = [
   { name: "San Paolo", country: "Brasile", zone: "America/Sao_Paulo" },
 ];
 
+/** "GMT+05:30" becomes "UTC+5:30", "GMT-03:00" becomes "UTC-3" and plain "GMT" becomes "UTC". */
+const utcLabel = (raw: string) => {
+  const m = /^GMT(?:([+-])(\d{2}):(\d{2}))?$/.exec(raw);
+  if (!m) return raw;
+  if (!m[1] || (m[2] === "00" && m[3] === "00")) return "UTC";
+  return `UTC${m[1]}${Number(m[2])}${m[3] === "00" ? "" : `:${m[3]}`}`;
+};
+
 export default function WorldClock() {
   const u = useUi();
   const [now, setNow] = useState(() => new Date());
@@ -35,14 +43,14 @@ export default function WorldClock() {
             time: new Intl.DateTimeFormat("it-IT", { timeZone: c.zone, hour: "2-digit", minute: "2-digit", ...(offset === 0 && { second: "2-digit" }), hourCycle: "h23" }),
             date: new Intl.DateTimeFormat("it-IT", { timeZone: c.zone, weekday: "short", day: "numeric", month: "short" }),
             hour: new Intl.DateTimeFormat("en-GB", { timeZone: c.zone, hour: "numeric", hourCycle: "h23" }),
-            zone: new Intl.DateTimeFormat("it-IT", { timeZone: c.zone, timeZoneName: "short" }),
+            zone: new Intl.DateTimeFormat("it-IT", { timeZone: c.zone, timeZoneName: "longOffset" }),
           },
         ]),
       ),
     [offset],
   );
 
-  const zoneLabel = (zone: string) => formatters[zone].zone.formatToParts(shifted).find((p) => p.type === "timeZoneName")?.value ?? "";
+  const zoneLabel = (zone: string) => utcLabel(formatters[zone].zone.formatToParts(shifted).find((p) => p.type === "timeZoneName")?.value ?? "");
 
   return (
     <Stack>
