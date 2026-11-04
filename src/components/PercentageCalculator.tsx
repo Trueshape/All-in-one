@@ -1,58 +1,41 @@
 import { useState } from "react";
-import { Field, TextInput, ResultCard, Panel, SectionTitle, Stack, fmtNumber } from "../ui/kit";
+import { ArrowLeftRight } from "lucide-react";
+import { Field, TextInput, IconButton, ResultCard, Stack, fmtNumber } from "../ui/kit";
 import { percentChange, percentOf, whatPercent, wholeFrom } from "../lib/percent";
 
 const num = (value: string) => (value.trim() === "" ? NaN : Number(value.replace(",", ".")));
-const show = (n: number | null, suffix = "") => (n === null || Number.isNaN(n) ? "—" : `${fmtNumber(n, 4)}${suffix}`);
+const show = (n: number | null, suffix = "") => (n === null || Number.isNaN(n) ? "—" : `${fmtNumber(n, 2)}${suffix}`);
 
-function Pair({ a, b, setA, setB, labelA, labelB, suffixA, suffixB }: { a: string; b: string; setA: (v: string) => void; setB: (v: string) => void; labelA: string; labelB: string; suffixA?: string; suffixB?: string }) {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <Field label={labelA}><TextInput type="number" inputMode="decimal" value={a} onChange={(e) => setA(e.target.value)} suffixText={suffixA} /></Field>
-      <Field label={labelB}><TextInput type="number" inputMode="decimal" value={b} onChange={(e) => setB(e.target.value)} suffixText={suffixB} /></Field>
-    </div>
-  );
-}
-
-/** The four usual percentage questions, all live at once. */
+/** Two numbers in, the four usual percentage answers out, all live. Order matters: A is the first number, B the second. */
 export default function PercentageCalculator() {
-  const [of, setOf] = useState({ x: "15", y: "200" });
-  const [what, setWhat] = useState({ x: "30", y: "200" });
-  const [whole, setWhole] = useState({ x: "30", y: "15" });
-  const [change, setChange] = useState({ from: "80", to: "100" });
+  const [a, setA] = useState("15");
+  const [b, setB] = useState("200");
+  const x = num(a);
+  const y = num(b);
+  const shownA = a || "…";
+  const shownB = b || "…";
+  const change = percentChange(x, y);
 
-  const changeValue = percentChange(num(change.from), num(change.to));
+  const cards = [
+    { label: `Il ${shownA}% di ${shownB} è`, value: show(percentOf(x, y)) },
+    { label: `${shownA} su ${shownB} è il`, value: show(whatPercent(x, y), "%") },
+    { label: `${shownA} è il ${shownB}% di`, value: show(wholeFrom(x, y)) },
+    {
+      label: change === null || Number.isNaN(change) ? `Da ${shownA} a ${shownB}` : change >= 0 ? "Aumento del" : "Diminuzione del",
+      value: show(change === null ? null : Math.abs(change), "%"),
+      copy: show(change, "%"),
+    },
+  ];
 
   return (
     <Stack>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Panel className="space-y-3">
-          <SectionTitle>Quanto è il X% di Y</SectionTitle>
-          <Pair a={of.x} b={of.y} setA={(x) => setOf({ ...of, x })} setB={(y) => setOf({ ...of, y })} labelA="Percentuale" labelB="Numero" suffixA="%" />
-          <ResultCard label={`Il ${of.x || "…"}% di ${of.y || "…"} è`} value={show(percentOf(num(of.x), num(of.y)))} copyText={show(percentOf(num(of.x), num(of.y)))} />
-        </Panel>
-
-        <Panel className="space-y-3">
-          <SectionTitle>X è quanto per cento di Y</SectionTitle>
-          <Pair a={what.x} b={what.y} setA={(x) => setWhat({ ...what, x })} setB={(y) => setWhat({ ...what, y })} labelA="Numero X" labelB="Totale Y" />
-          <ResultCard label={`${what.x || "…"} su ${what.y || "…"} è il`} value={show(whatPercent(num(what.x), num(what.y)), "%")} copyText={show(whatPercent(num(what.x), num(what.y)), "%")} />
-        </Panel>
-
-        <Panel className="space-y-3">
-          <SectionTitle>X è il Y% di quale numero</SectionTitle>
-          <Pair a={whole.x} b={whole.y} setA={(x) => setWhole({ ...whole, x })} setB={(y) => setWhole({ ...whole, y })} labelA="Numero X" labelB="Percentuale" suffixB="%" />
-          <ResultCard label={`${whole.x || "…"} è il ${whole.y || "…"}% di`} value={show(wholeFrom(num(whole.x), num(whole.y)))} copyText={show(wholeFrom(num(whole.x), num(whole.y)))} />
-        </Panel>
-
-        <Panel className="space-y-3">
-          <SectionTitle>Aumento o diminuzione in %</SectionTitle>
-          <Pair a={change.from} b={change.to} setA={(from) => setChange({ ...change, from })} setB={(to) => setChange({ ...change, to })} labelA="Da" labelB="A" />
-          <ResultCard
-            label={changeValue === null || Number.isNaN(changeValue) ? "Variazione" : changeValue >= 0 ? "Aumento del" : "Diminuzione del"}
-            value={show(changeValue === null ? null : Math.abs(changeValue), "%")}
-            copyText={show(changeValue, "%")}
-          />
-        </Panel>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
+        <Field label="Numero A"><TextInput type="number" inputMode="decimal" value={a} onChange={(e) => setA(e.target.value)} /></Field>
+        <IconButton onClick={() => { setA(b); setB(a); }} title="Inverti A e B" className="mb-0.5"><ArrowLeftRight className="w-4 h-4" /></IconButton>
+        <Field label="Numero B"><TextInput type="number" inputMode="decimal" value={b} onChange={(e) => setB(e.target.value)} /></Field>
+      </div>
+      <div className="space-y-3">
+        {cards.map((c) => <ResultCard key={c.label} label={c.label} value={c.value} copyText={c.copy ?? c.value} />)}
       </div>
     </Stack>
   );
