@@ -64,3 +64,4 @@
 - 2026-11-04 — Atlante dei Prefissi: ordinamento cliccando il titolo di qualsiasi colonna (crescente, poi decrescente); i prefissi e i CAP si confrontano cifra per cifra, nell'ordine in cui si digitano. Sostituisce il selettore "Per nome / Per prefisso".
 - 2026-11-04 — L'Atlante dei Prefissi è diviso in due strumenti: Province Italiane (mantiene l'id `italy_codes`, così i preferiti restano validi) e Prefissi Internazionali (`dial_codes`). La tabella con ricerca, ordinamento per colonna e titoli fissi opachi è in `src/ui/LookupTable.tsx`, condivisa dai due.
 - 2026-11-04 — Calcolatore Percentuali: due soli numeri (A e B, con un tasto per invertirli) e le quattro schede dei risultati in colonna, sempre aggiornate; sostituisce le quattro coppie di caselle.
+- 2026-11-04 — Home: da 1500 px di larghezza le sei categorie stanno in una sola riga (sotto restano tre per riga) e l'elenco degli strumenti parte subito sotto il titolo di ogni scheda, non più in fondo.

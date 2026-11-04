@@ -303,7 +303,7 @@ export default function Landing({
       {/* Main Content Workspace */}
       <main className="flex-1 overflow-y-auto px-6 sm:px-8 py-8 no-scrollbar z-10">
         {activeTab === "all" && searchQuery === "" ? (
-          <div className="max-w-7xl mx-auto flex flex-col gap-6">
+          <div className="max-w-7xl min-[1500px]:max-w-[1900px]! mx-auto flex flex-col gap-6">
             <div className="flex flex-col gap-1 select-none invisible" aria-hidden="true">
               <h2 className={`text-xs font-mono uppercase tracking-[0.25em] ${
                 activeTheme === "immersive" ? "text-emerald-500" : activeTheme === "sophisticated" ? "text-violet-400" : "text-zinc-400"
@@ -315,7 +315,7 @@ export default function Landing({
               </p>
             </div>
 
-            <div className={tc.gridContainer}>
+            <div className={`${tc.gridContainer} min-[1500px]:grid-cols-6! min-[1500px]:w-full min-[1500px]:max-w-none!`}>
               {[
                 {
                   id: "calcolo",
@@ -375,7 +375,7 @@ export default function Landing({
                     role="button"
                     tabIndex={0}
                     onKeyDown={keyActivate(() => setActiveTab(category.id))}
-                    className={`${tc.card} ${focusRing} flex flex-col justify-between h-auto min-h-[160px] cursor-pointer group`}
+                    className={`${tc.card} ${focusRing} flex flex-col justify-start h-auto min-h-[160px] cursor-pointer group`}
                     id={`card-category-${category.id}`}
                     whileHover={{
                       backgroundColor: activeTheme === "immersive" ? "rgba(16, 185, 129, 0.05)" : activeTheme === "sophisticated" ? "rgba(139, 92, 246, 0.04)" : "rgba(24, 24, 27, 0.2)",
