@@ -48,11 +48,13 @@ export default function EtaCalculator() {
           </Field>
           <Field label="Ritmo">
             <div className="grid grid-cols-2 items-start gap-3">
-              <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} />
+              <div className="space-y-2">
+                <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} />
+                <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
+              </div>
               <div className="space-y-2">
                 <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="in" />
                 <Chips value={unit} onChange={setUnit} options={UNITS} />
-                <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
               </div>
             </div>
           </Field>
