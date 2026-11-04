@@ -29,12 +29,10 @@ export default function ItalyCodes() {
 
   return (
     <Stack>
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3">
-        <Segmented fill value={tab} onChange={(v) => { setTab(v); setQuery(""); }} options={[{ value: "province", label: `Province (${PROVINCES.length})` }, { value: "dial", label: `Prefissi esteri (${DIAL_CODES.length})` }]} />
-        <Field>
-          <TextInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tab === "province" ? "Nome, sigla, regione, prefisso o CAP" : "Paese, sigla ISO o prefisso (+39)"} aria-label="Cerca" />
-        </Field>
-        <Segmented value={sort} onChange={setSort} options={[{ value: "name", label: "Per nome" }, { value: "prefix", label: "Per prefisso" }]} />
+      <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] items-stretch gap-3">
+        <Segmented fill className="h-full" value={tab} onChange={(v) => { setTab(v); setQuery(""); }} options={[{ value: "province", label: <span className="whitespace-nowrap">{`Province (${PROVINCES.length})`}</span> }, { value: "dial", label: <span className="whitespace-nowrap">{`Prefissi esteri (${DIAL_CODES.length})`}</span> }]} />
+        <TextInput className="h-full" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tab === "province" ? "Nome, sigla, regione, prefisso o CAP" : "Paese, sigla ISO o prefisso (+39)"} aria-label="Cerca" />
+        <Segmented fill className="h-full" value={sort} onChange={setSort} options={[{ value: "name", label: <span className="whitespace-nowrap">Per nome</span> }, { value: "prefix", label: <span className="whitespace-nowrap">Per prefisso</span> }]} />
       </div>
 
       <div className={cx("overflow-auto max-h-[52vh] border", u.divider)}>
