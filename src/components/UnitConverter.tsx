@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { useUi } from "../ui/tokens";
 import DataSizeConverter from "./DataSizeConverter";
-import { Notice, Field, TextInput, Select, Tabs, IconButton, ResultCard, Row, Stack, fmtNumber, cx } from "../ui/kit";
+import { Notice, Field, TextInput, Select, Tabs, IconButton, ResultCard, Row, Stack, fmtUnit, cx } from "../ui/kit";
 
 interface Unit {
   name: string;
@@ -101,10 +101,6 @@ const CATEGORIES: Record<string, Category> = {
     },
   },
 };
-
-/** Up to 8 decimals, but a tiny non-zero value (1 mg in tonnes) keeps 4 significant digits instead of showing 0. */
-const fmtUnit = (n: number) =>
-  n !== 0 && Math.abs(n) < 0.0001 ? new Intl.NumberFormat("it-IT", { maximumSignificantDigits: 4 }).format(n) : fmtNumber(n, 8);
 
 const toCelsius = (v: number, from: string) => (from === "F" ? ((v - 32) * 5) / 9 : from === "K" ? v - 273.15 : v);
 const fromCelsius = (c: number, to: string) => (to === "F" ? (c * 9) / 5 + 32 : to === "K" ? c + 273.15 : c);

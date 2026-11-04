@@ -482,6 +482,10 @@ export function Stack({ children, className }: { children: ReactNode; className?
 export const fmtNumber = (n: number, maxDecimals = 2) =>
   new Intl.NumberFormat("it-IT", { maximumFractionDigits: maxDecimals }).format(n);
 
+/** Up to 8 decimals, but a tiny non-zero value (1 mg in tonnes, 1 byte in PB) keeps 4 significant digits instead of showing 0. */
+export const fmtUnit = (n: number) =>
+  n !== 0 && Math.abs(n) < 0.0001 ? new Intl.NumberFormat("it-IT", { maximumSignificantDigits: 4 }).format(n) : fmtNumber(n, 8);
+
 export { cx };
 
 /** Text tabs with a filled pill for the active option (no outer frame). */
