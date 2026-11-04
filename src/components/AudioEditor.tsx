@@ -142,66 +142,68 @@ export default function AudioEditor() {
   return (
     <Stack>
       <input ref={input} type="file" accept="audio/*,.flac,.ogg,.mp3,.wav" className="hidden" onChange={(e) => { void load(e.target.files?.[0]); e.target.value = ""; }} />
-      {!file ? (
-        <button
-          type="button"
-          onClick={() => input.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
-          className={cx("w-full h-56 flex flex-col items-center justify-center gap-2 border-2 border-dashed cursor-pointer transition-colors", u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
-        >
-          <Music className="w-7 h-7" />
-          <span className={cx("text-xs font-semibold", u.text)}>{busy ?? "Seleziona o trascina un file audio"}</span>
-          <span className="text-[11px]">MP3, WAV, OGG, FLAC</span>
-        </button>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4 min-w-0">
-            <canvas ref={canvas} width={960} height={140} className={cx("w-full h-28 border", u.divider)} />
-            <div className="space-y-1">
-              <Row label="File" value={file.name} />
-              <Row label="Durata" value={`${formatTime(duration)} · ${file.pcm.sampleRate} Hz · ${file.pcm.channels.length === 1 ? "mono" : "stereo"} · ${formatBytes(file.size)}`} />
-            </div>
-            <Segmented fill value={mode} onChange={setMode} options={[{ value: "trim", label: "Ritaglia" }, { value: "split", label: "Dividi" }]} />
-            {mode === "trim" ? (
-              <div className="space-y-3">
-                <Slider label="Inizio" value={start} min={0} max={duration} step={0.1} onChange={changeStart} display={formatTime(start)} />
-                <Slider label="Fine" value={end} min={0} max={duration} step={0.1} onChange={changeEnd} display={formatTime(end)} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4 min-w-0">
+          {!file ? (
+            <button
+              type="button"
+              onClick={() => input.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
+              className={cx("w-full h-44 flex flex-col items-center justify-center gap-2 border-2 border-dashed cursor-pointer transition-colors", u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
+            >
+              <Music className="w-7 h-7" />
+              <span className={cx("text-xs font-semibold", u.text)}>{busy ?? "Seleziona o trascina un file audio"}</span>
+              <span className="text-[11px]">MP3, WAV, OGG, FLAC</span>
+            </button>
+          ) : (
+            <>
+              <canvas ref={canvas} width={960} height={140} className={cx("w-full h-28 border", u.divider)} />
+              <div className="space-y-1">
+                <Row label="File" value={file.name} />
+                <Row label="Durata" value={`${formatTime(duration)} · ${file.pcm.sampleRate} Hz · ${file.pcm.channels.length === 1 ? "mono" : "stereo"} · ${formatBytes(file.size)}`} />
               </div>
-            ) : (
-              <Field label="Parti da (secondi)"><TextInput className="w-32" type="number" inputMode="decimal" min={1} value={every} onChange={(e) => setEvery(e.target.value)} /></Field>
-            )}
-            <Button size="sm" variant="danger" icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => { stop(); setFile(null); }}>Cambia file</Button>
-          </div>
-
-          <div className="space-y-4 min-w-0">
-            <Slider label="Volume" value={volume} min={0} max={300} step={5} onChange={setVolume} display={normalize ? "auto" : `${volume}%`} />
-            <Toggle checked={normalize} onChange={setNormalize} label="Normalizza al massimo" />
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Dissolvenza in entrata (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeIn} onChange={(e) => setFadeIn(e.target.value)} /></Field>
-              <Field label="Dissolvenza in uscita (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeOut} onChange={(e) => setFadeOut(e.target.value)} /></Field>
+            </>
+          )}
+          <Segmented fill value={mode} onChange={setMode} options={[{ value: "trim", label: "Ritaglia" }, { value: "split", label: "Dividi" }]} />
+          {mode === "trim" ? (
+            <div className="space-y-3">
+              <Slider label="Inizio" value={start} min={0} max={duration} step={0.1} onChange={changeStart} display={formatTime(start)} />
+              <Slider label="Fine" value={end} min={0} max={duration} step={0.1} onChange={changeEnd} display={formatTime(end)} />
             </div>
-            <Field label="Formato"><Chips value={format} onChange={setFormat} options={AUDIO_FORMATS.map((f) => ({ value: f.value, label: f.label }))} /></Field>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" disabled={validRanges.length === 0} icon={playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />} onClick={preview}>{playing ? "Stop" : "Ascolta"}</Button>
-              {mode === "trim" && <Button variant="primary" disabled={!!busy || validRanges.length === 0} onClick={() => void save(ranges[0], 0)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>}
-              {busy && <span className={cx("text-xs", u.muted)}>{busy}</span>}
-            </div>
-            {mode === "split" && (
-              <div className={cx("max-h-40 overflow-auto border divide-y", u.divider)}>
-                {validRanges.length === 0 && <p className={cx("p-3 text-xs", u.muted)}>Inserisci la durata di ogni parte.</p>}
-                {validRanges.map((r, i) => (
-                  <div key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 text-xs">
-                    <span className={cx("font-mono", u.muted)}>Parte {i + 1} · {formatTime(r.start)}–{formatTime(r.end)}</span>
-                    <Button size="sm" disabled={!!busy} onClick={() => void save(r, i)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          ) : (
+            <Field label="Parti da (secondi)"><TextInput className="w-32" type="number" inputMode="decimal" min={1} value={every} onChange={(e) => setEvery(e.target.value)} /></Field>
+          )}
+          {file && <Button size="sm" variant="danger" icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => { stop(); setFile(null); setStart(0); setEnd(0); }}>Cambia file</Button>}
         </div>
-      )}
+
+        <div className="space-y-4 min-w-0">
+          <Slider label="Volume" value={volume} min={0} max={300} step={5} onChange={setVolume} display={normalize ? "auto" : `${volume}%`} />
+          <Toggle checked={normalize} onChange={setNormalize} label="Normalizza al massimo" />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Dissolvenza in entrata (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeIn} onChange={(e) => setFadeIn(e.target.value)} /></Field>
+            <Field label="Dissolvenza in uscita (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeOut} onChange={(e) => setFadeOut(e.target.value)} /></Field>
+          </div>
+          <Field label="Formato"><Chips value={format} onChange={setFormat} options={AUDIO_FORMATS.map((f) => ({ value: f.value, label: f.label }))} /></Field>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" disabled={validRanges.length === 0} icon={playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />} onClick={preview}>{playing ? "Stop" : "Ascolta"}</Button>
+            {mode === "trim" && <Button variant="primary" disabled={!!busy || validRanges.length === 0} onClick={() => void save(ranges[0], 0)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>}
+            {file && busy && <span className={cx("text-xs", u.muted)}>{busy}</span>}
+          </div>
+          {mode === "split" && (
+            <div className={cx("max-h-40 overflow-auto border divide-y", u.divider)}>
+              {validRanges.length === 0 && <p className={cx("p-3 text-xs", u.muted)}>{file ? "Inserisci la durata di ogni parte." : "Carica un file per vedere le parti."}</p>}
+              {validRanges.map((r, i) => (
+                <div key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 text-xs">
+                  <span className={cx("font-mono", u.muted)}>Parte {i + 1} · {formatTime(r.start)}–{formatTime(r.end)}</span>
+                  <Button size="sm" disabled={!!busy} onClick={() => void save(r, i)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       {error && <Notice tone="error">{error}</Notice>}
       <Notice>Il file resta sul tuo dispositivo. Volume sopra 100% può distorcere i picchi. Non tutti i browser leggono tutti i formati: se un file non si apre, convertilo prima in WAV o MP3.</Notice>
     </Stack>
