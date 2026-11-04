@@ -4,6 +4,7 @@ import { codesToText, textToCodes } from "./textCodes";
 import { percentChange, percentOf, wholeFrom, whatPercent } from "./percent";
 import { computeEta, formatDuration } from "./eta";
 import { DEFAULT_OPTIONS, asciiArt, renderLine } from "./asciiArt";
+import { fitTile, patternSvg } from "./pattern";
 import { DIAL_CODES, PROVINCES, searchDial, searchProvinces } from "./italyCodes";
 
 test("text to binary and hex, and back", () => {
@@ -112,4 +113,27 @@ test("dialing codes search with or without +", () => {
   assert.ok(searchDial("0049").some((d) => d.iso === "DE"));
   assert.equal(searchDial("it")[0].country.length > 0, true);
   assert.ok(searchDial("giappone").some((d) => d.codes[0] === "81"));
+});
+
+test("fitTile: a square image always holds a whole number of equal tiles", () => {
+  for (const side of [100, 360, 600, 800, 1000, 1024, 4096]) {
+    for (const size of [8, 17, 32, 45, 120]) {
+      const t = fitTile(size, side, side);
+      assert.ok(Number.isInteger(side / t) && t >= 4, `${side} / ${t}`);
+    }
+  }
+  assert.equal(fitTile(32, 1024, 1024), 32);
+  assert.equal(fitTile(30, 1000, 1000), 25);
+});
+
+test("fitTile: rectangles use a common divisor, or fit the width when there is none", () => {
+  assert.equal(fitTile(32, 800, 600), 25);
+  const t = fitTile(32, 801, 600);
+  assert.ok(Math.abs(801 / t - Math.round(801 / t)) < 1e-9);
+});
+
+test("a fitted pattern svg uses the snapped tile size; grid lines run through the middle of the tile", () => {
+  const svg = patternSvg({ type: "grid", size: 30, weight: 4, rotation: 0, fg: "#ffffff", bg: "#000000", width: 1000, height: 1000, fit: true });
+  assert.ok(svg.includes('pattern id="p" width="25" height="25"'));
+  assert.ok(svg.includes("M0 12.5H25M12.5 0V25"));
 });

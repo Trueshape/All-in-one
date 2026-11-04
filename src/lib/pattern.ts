@@ -11,12 +11,34 @@ export interface PatternOptions {
   rotation: number;
   fg: string;
   bg: string;
+  /** Snap the tile so the image holds a whole number of tiles. */
+  fit?: boolean;
   /** Size of the generated image in px. */
   width: number;
   height: number;
 }
 
 const HEX = /^#[0-9a-f]{6}$/i;
+export const MIN_TILE = 4;
+
+const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+
+/**
+ * Tile size closest to `size` that fits the image a whole number of times on both sides, so no tile is cut at the
+ * edges and the spacing is identical everywhere. A square image always has such a size; a rectangle needs a common
+ * divisor of both sides, and when that is too small the tile only fits across the width.
+ */
+export function fitTile(size: number, width: number, height: number): number {
+  const wanted = Math.max(MIN_TILE, size);
+  const g = gcd(Math.round(width), Math.round(height));
+  let best = 0;
+  for (let d = MIN_TILE; d <= g; d++) {
+    if (g % d === 0 && (!best || Math.abs(d - wanted) < Math.abs(best - wanted))) best = d;
+  }
+  if (best) return best;
+  return width / Math.max(1, Math.round(width / wanted));
+}
+
 const n = (v: number) => String(Math.round(v * 100) / 100);
 
 function tile(type: PatternType, s: number, weight: number, fg: string): string {
@@ -26,7 +48,7 @@ function tile(type: PatternType, s: number, weight: number, fg: string): string 
     case "dots":
       return `<circle cx="${n(s / 2)}" cy="${n(s / 2)}" r="${n((s * (0.04 + weight * 0.035)))}" fill="${fg}"/>`;
     case "grid":
-      return `<path d="M0 0H${n(s)}M0 0V${n(s)}" ${line}/>`;
+      return `<path d="M0 ${n(s / 2)}H${n(s)}M${n(s / 2)} 0V${n(s)}" ${line}/>`;
     case "diagonal":
       return `<path d="M${n(-s / 2)} ${n(s / 2)}L${n(s / 2)} ${n(-s / 2)}M0 ${n(s)}L${n(s)} 0M${n(s / 2)} ${n(s * 1.5)}L${n(s * 1.5)} ${n(s / 2)}" ${line}/>`;
     case "waves":
@@ -48,7 +70,7 @@ function tile(type: PatternType, s: number, weight: number, fg: string): string 
 export function patternSvg(o: PatternOptions): string {
   const fg = HEX.test(o.fg) ? o.fg : "#000000";
   const bg = HEX.test(o.bg) ? o.bg : "#ffffff";
-  const s = Math.max(4, o.size);
+  const s = o.fit ? fitTile(o.size, o.width, o.height) : Math.max(MIN_TILE, o.size);
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${o.width}" height="${o.height}" viewBox="0 0 ${o.width} ${o.height}">`,
     `<defs><pattern id="p" width="${n(s)}" height="${n(s)}" patternUnits="userSpaceOnUse" patternTransform="rotate(${n(o.rotation)})">`,

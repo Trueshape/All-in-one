@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { Download, Shuffle } from "lucide-react";
-import { Field, TextInput, Chips, Slider, Button, Panel, SectionTitle, Notice, Stack, CopyButton, cx } from "../ui/kit";
+import { Field, TextInput, Chips, Slider, Toggle, Button, Panel, SectionTitle, Notice, Stack, CopyButton, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import { PATTERN_TYPES, patternSvg } from "../lib/pattern";
+import { PATTERN_TYPES, fitTile, patternSvg } from "../lib/pattern";
 import type { PatternType } from "../lib/pattern";
 import { download, toBlob } from "../lib/imageOps";
 
@@ -31,10 +31,15 @@ export default function SvgPatternGenerator() {
   const [bg, setBg] = useState("#18181b");
   const [width, setWidth] = useState("800");
   const [height, setHeight] = useState("600");
+  const [fit, setFit] = useState(true);
 
   const w = Math.min(MAX_SIDE, Math.max(16, Math.round(Number(width)) || 800));
   const h = Math.min(MAX_SIDE, Math.max(16, Math.round(Number(height)) || 600));
-  const svg = useMemo(() => patternSvg({ type, size, weight, rotation, fg, bg, width: w, height: h }), [type, size, weight, rotation, fg, bg, w, h]);
+  const svg = useMemo(() => patternSvg({ type, size, weight, rotation, fg, bg, width: w, height: h, fit }), [type, size, weight, rotation, fg, bg, w, h, fit]);
+  const tileSize = fit ? fitTile(size, w, h) : size;
+  const tilesAcross = Math.round((w / tileSize) * 100) / 100;
+  const tilesDown = Math.round((h / tileSize) * 100) / 100;
+  const exact = Number.isInteger(tilesAcross) && Number.isInteger(tilesDown);
   const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   const css = `background-image: url("${dataUrl}");`;
 
@@ -83,13 +88,18 @@ export default function SvgPatternGenerator() {
             <Field label="Larghezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={width} onChange={(e) => setWidth(e.target.value)} /></Field>
             <Field label="Altezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={height} onChange={(e) => setHeight(e.target.value)} /></Field>
           </div>
+          <Toggle checked={fit} onChange={setFit} label="Adatta il modulo: nessun modulo tagliato ai bordi" />
+          <p className={cx("text-xs font-mono", u.muted)}>
+            Modulo {Math.round(tileSize * 100) / 100} px · {tilesAcross} × {tilesDown} moduli{exact ? "" : " (l'ultimo è tagliato)"}
+            {rotation % 180 !== 0 && " · con la rotazione i bordi tagliano i moduli"}
+          </p>
           <Button className="w-full" icon={<Shuffle className="w-3.5 h-3.5" />} onClick={shuffle}>Combinazione casuale</Button>
         </div>
 
         <div className="space-y-3">
           <SectionTitle>Anteprima</SectionTitle>
           <Panel className="p-2">
-            <img src={dataUrl} alt="Anteprima del pattern" className="w-full h-64 object-cover" />
+            <img src={dataUrl} alt="Anteprima del pattern" className="w-full max-h-72 object-contain" style={{ aspectRatio: `${w} / ${h}` }} />
           </Panel>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="primary" icon={<Download className="w-3.5 h-3.5" />} onClick={downloadSvg}>Scarica SVG</Button>
