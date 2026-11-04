@@ -14,6 +14,16 @@ export interface Source {
   image: HTMLImageElement;
 }
 
+const isHeic = (file: File) => /^image\/hei[cf]/.test(file.type) || /\.hei[cf]$/i.test(file.name);
+
+/** HEIC is decoded in the browser by a library loaded only when a HEIC file is picked, then handled as a PNG. */
+async function heicToPng(file: File): Promise<File> {
+  const { default: heic2any } = await import("heic2any");
+  const out = await heic2any({ blob: file, toType: "image/png" });
+  const blob = Array.isArray(out) ? out[0] : out;
+  return new File([blob], file.name.replace(/\.[^.]+$/, ".png"), { type: "image/png" });
+}
+
 /** Loads one image file and keeps its object URL alive only while it is in use. */
 export function useImageSource() {
   const [source, setSource] = useState<Source | null>(null);
@@ -21,8 +31,18 @@ export function useImageSource() {
 
   useEffect(() => () => { if (source) URL.revokeObjectURL(source.url); }, [source]);
 
-  const load = (file: File | undefined) => {
-    if (!file) return;
+  const load = async (picked: File | undefined) => {
+    if (!picked) return;
+    let file = picked;
+    if (isHeic(picked)) {
+      setError(null);
+      try {
+        file = await heicToPng(picked);
+      } catch {
+        setError("Impossibile leggere il file HEIC.");
+        return;
+      }
+    }
     if (!file.type.startsWith("image/")) {
       setError("Il file selezionato non è un'immagine.");
       return;
@@ -49,7 +69,7 @@ export function useImageSource() {
 
 export type ImageSourceState = ReturnType<typeof useImageSource>;
 
-export function ImageDrop({ onFile, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF" }: { onFile: (file: File | undefined) => void; hint?: string }) {
+export function ImageDrop({ onFile, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF, HEIC" }: { onFile: (file: File | undefined) => void; hint?: string }) {
   const u = useUi();
   const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -78,7 +98,7 @@ export function ImageDrop({ onFile, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF" }: {
         <span className={cx("text-xs font-semibold", u.text)}>Seleziona o trascina un'immagine</span>
         <span className="text-[11px]">{hint}</span>
       </button>
-      <input ref={input} type="file" accept="image/*" onChange={onChange} className="hidden" />
+      <input ref={input} type="file" accept="image/*,.heic,.heif" onChange={onChange} className="hidden" />
     </>
   );
 }
