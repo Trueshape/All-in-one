@@ -118,8 +118,9 @@ export default function UnitConverter() {
   const [category, setCategory] = useState("lunghezza");
   const [value, setValue] = useState("1");
 
+  // As tall as the longest tab (length, 8 units), so the centred window does not move when the tab changes.
   return (
-    <Stack>
+    <Stack className="min-h-[560px]">
       <Tabs fill value={category} onChange={(v) => setCategory(String(v))} options={[...Object.entries(CATEGORIES).map(([id, c]) => ({ value: id, label: c.name })), { value: DATA, label: "Dati" }]} />
       {category === DATA ? <DataSizeConverter /> : <UnitCategory key={category} category={category} value={value} setValue={setValue} />}
     </Stack>
