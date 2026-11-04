@@ -22,7 +22,6 @@ export function LookupTable<T>({
   rows,
   columns,
   rowKey,
-  search,
   placeholder,
   defaultSort,
   tieBreak,
