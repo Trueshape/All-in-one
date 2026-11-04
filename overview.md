@@ -10,19 +10,17 @@
 - `src/ui/tokens.ts` — token di stile per tema (colori, font, bordi) usati dagli strumenti.
 - `src/ui/kit.tsx` — componenti condivisi: campi, bottoni, slider, pannelli, risultati, avvisi.
 - `src/ui/ColorWheel.tsx` — ruota dei colori (trascinabile con mouse o frecce, oppure solo di sola lettura) e nomi delle armonie.
-- `src/components/CodeGenerator.tsx` — Generatore Codici: scheda QR code o codice a barre (`QrGenerator`, `BarcodeGenerator`).
-- `src/components/MeasureConverters.tsx` — Valute e Unità: schede `CurrencyConverter`, `UnitConverter` e `DataSizeConverter`.
-- `src/components/ColorTools.tsx` — Colori: schede `ColorPicker` e `ColorExtractor`.
-- `src/components/EncodingTools.tsx` — Codifica: schede `TextCodes`, `MorseCode` e `RomanNumerals`.
 - `src/ui/ShapePreview.tsx` — disegno animato della forma scelta in Geometria.
+- `src/components/UnitConverter.tsx` — Unità di misura: una scheda per grandezza e la scheda Dati (`DataSizeConverter`).
+- `src/components/PomodoroTimer.tsx` — esporta le due pagine Timer Pomodoro e Cronometro.
 - `src/components/GeometryCalculator.tsx` — Geometria: forme 2D e 3D (perimetro, area, superficie, volume), calcoli in `src/lib/geometry.ts`.
-- `src/components/ImageTools.tsx` — strumento Immagini: schede Converti, Ridimensiona, Ingrandisci (`ImageConverter`, `ImageResizer`, `ImageUpscaler`) con un'unica immagine caricata.
-- `src/components/TextCodes.tsx` — scheda di Codifica: testo ↔ binario/esadecimale/decimale/ottale (`src/lib/textCodes.ts`).
-- `src/components/MorseCode.tsx` — scheda di Codifica: testo ↔ Morse (`src/lib/morse.ts`).
-- `src/components/RomanNumerals.tsx` — scheda di Codifica: 1–3999 ↔ romani (`src/lib/roman.ts`).
+- `src/components/ImageToolPages.tsx` — le tre pagine immagini (Converti, Ridimensiona, Ingrandisci): ognuna carica la propria immagine (`ImageConverter`, `ImageResizer`, `ImageUpscaler`).
+- `src/components/TextCodes.tsx` — Testo in Binario: testo ↔ binario/esadecimale/decimale/ottale (`src/lib/textCodes.ts`).
+- `src/components/MorseCode.tsx` — Codice Morse: testo ↔ Morse (`src/lib/morse.ts`).
+- `src/components/RomanNumerals.tsx` — Numeri Romani: 1–3999 ↔ romani (`src/lib/roman.ts`).
 - `src/components/RandomizeList.tsx` — Mescola Elenco: mescola le righe e ne estrae le prime N.
 - `src/components/TextCleaner.tsx` — Trova e Sostituisci e righe duplicate (`src/lib/textTools.ts`, che contiene anche `shuffle`).
-- `src/components/DataSizeConverter.tsx` — scheda di Valute e Unità: bit, byte, KB…PB a scatti di 1000 o 1024 (`src/lib/dataSize.ts`).
+- `src/components/DataSizeConverter.tsx` — scheda Dati di Unità di misura: bit, byte, KB…PB a scatti di 1000 o 1024 (`src/lib/dataSize.ts`).
 - `src/components/AudioEditor.tsx` — Editor Audio: ritaglia/dividi, volume e dissolvenze, salva in WAV/MP3/OGG/FLAC.
 - `src/lib/audioOps.ts` — PCM puro: taglio, volume, divisione, picchi, encoder WAV e FLAC (scritto qui).
 - `src/lib/audioEncoders.ts` — scelta del formato; MP3 e OGG con `wasm-media-encoders`, caricato solo al primo uso.

@@ -65,14 +65,33 @@ import {
   ScanBarcode,
   Trophy,
   Medal,
+  Pipette,
+  Radio,
+  Circle,
+  Ruler,
+  Watch,
+  Scaling,
+  ZoomIn,
 } from "lucide-react";
 
 // Import Components
-const MeasureConverters = lazy(() => import("../components/MeasureConverters"));
+const CurrencyConverter = lazy(() => import("../components/CurrencyConverter"));
+const UnitConverter = lazy(() => import("../components/UnitConverter"));
+const ColorPicker = lazy(() => import("../components/ColorPicker"));
+const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
+const QrGenerator = lazy(() => import("../components/QrGenerator"));
+const BarcodeGenerator = lazy(() => import("../components/BarcodeGenerator"));
+const TextCodes = lazy(() => import("../components/TextCodes"));
+const MorseCode = lazy(() => import("../components/MorseCode"));
+const RomanNumerals = lazy(() => import("../components/RomanNumerals"));
+const CircleCalculator = lazy(() => import("../components/CircleCalculator"));
+const ConvertImages = lazy(() => import("../components/ImageToolPages").then((m) => ({ default: m.ConvertImages })));
+const ResizeImages = lazy(() => import("../components/ImageToolPages").then((m) => ({ default: m.ResizeImages })));
+const UpscaleImages = lazy(() => import("../components/ImageToolPages").then((m) => ({ default: m.UpscaleImages })));
+const PomodoroPage = lazy(() => import("../components/PomodoroTimer").then((m) => ({ default: m.PomodoroPage })));
+const StopwatchPage = lazy(() => import("../components/PomodoroTimer").then((m) => ({ default: m.StopwatchPage })));
 const PasswordGenerator = lazy(() => import("../components/PasswordGenerator"));
 const TipCalculator = lazy(() => import("../components/TipCalculator"));
-const PomodoroTimer = lazy(() => import("../components/PomodoroTimer"));
-const CodeGenerator = lazy(() => import("../components/CodeGenerator"));
 const DecisionMaker = lazy(() => import("../components/DecisionMaker"));
 const BmiCalculator = lazy(() => import("../components/BmiCalculator"));
 const MarkdownPreviewer = lazy(() => import("../components/MarkdownPreviewer"));
@@ -84,9 +103,6 @@ const AspectRatioCalculator = lazy(() => import("../components/AspectRatioCalcul
 const CaseConverter = lazy(() => import("../components/CaseConverter"));
 const CompoundInterestCalculator = lazy(() => import("../components/CompoundInterestCalculator"));
 const TextDiff = lazy(() => import("../components/TextDiff"));
-const ColorTools = lazy(() => import("../components/ColorTools"));
-const EncodingTools = lazy(() => import("../components/EncodingTools"));
-const ImageTools = lazy(() => import("../components/ImageTools"));
 const DiscordTimestamp = lazy(() => import("../components/DiscordTimestamp"));
 const CodiceFiscaleCalculator = lazy(() => import("../components/CodiceFiscaleCalculator"));
 const CryptoAndNasdaqTracker = lazy(() => import("../components/CryptoAndNasdaqTracker"));
@@ -123,14 +139,25 @@ export interface ToolItem {
 export const TOOLS: ToolItem[] = [
   {
     id: "currency",
-    name: "Valute e Unità",
-    description: "Converti valute con tassi aggiornati e misure di lunghezza, peso, area, volume, velocità, energia, temperatura e dimensioni dei dati (byte, MB, GB).",
+    name: "Convertitore di Valuta",
+    description: "Tassi di cambio aggiornati in tempo reale per le principali monete mondiali.",
     icon: ArrowLeftRight,
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
     glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
     iconColor: "text-indigo-400 bg-indigo-500/10",
     category: "convertitori",
-    component: MeasureConverters,
+    component: CurrencyConverter,
+  },
+  {
+    id: "units",
+    name: "Unità di misura",
+    description: "Lunghezza, peso, area, volume, velocità, energia, temperatura e dimensioni dei dati (byte, MB, GB).",
+    icon: Ruler,
+    colorClass: "border-teal-900/30 hover:border-teal-500/50",
+    glowClass: "shadow-teal-950/20 hover:shadow-teal-500/5",
+    iconColor: "text-teal-400 bg-teal-500/10",
+    category: "convertitori",
+    component: UnitConverter,
   },
   {
     id: "password",
@@ -156,36 +183,69 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "timer",
-    name: "Timer & Pomodoro",
-    description: "Gestisci sessioni di focus con la tecnica Pomodoro o usa il cronometro di precisione.",
+    name: "Timer Pomodoro",
+    description: "Gestisci sessioni di focus con la tecnica Pomodoro: lavoro e pause con il tempo modificabile.",
     icon: Timer,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
     glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
     iconColor: "text-rose-400 bg-rose-500/10",
     category: "produttivita",
-    component: PomodoroTimer,
+    component: PomodoroPage,
+  },
+  {
+    id: "stopwatch",
+    name: "Cronometro",
+    description: "Cronometro di precisione al centesimo di secondo, con i giri.",
+    icon: Watch,
+    colorClass: "border-orange-900/30 hover:border-orange-500/50",
+    glowClass: "shadow-orange-950/20 hover:shadow-orange-500/5",
+    iconColor: "text-orange-400 bg-orange-500/10",
+    category: "produttivita",
+    component: StopwatchPage,
   },
   {
     id: "qr",
-    name: "Generatore Codici",
+    name: "Generatore QR Code",
     description: "Crea al volo codici QR scansionabili per testi, indirizzi web o credenziali Wi-Fi.",
     icon: QrCode,
     colorClass: "border-cyan-900/30 hover:border-cyan-500/50",
     glowClass: "shadow-cyan-950/20 hover:shadow-cyan-500/5",
     iconColor: "text-cyan-400 bg-cyan-500/10",
     category: "creative",
-    component: CodeGenerator,
+    component: QrGenerator,
+  },
+  {
+    id: "barcode",
+    name: "Generatore Codici a Barre",
+    description: "Crea codici a barre Code 128 ed EAN-13 con colori e altezza regolabili, da scaricare in SVG o PNG.",
+    icon: ScanBarcode,
+    colorClass: "border-zinc-900/30 hover:border-zinc-500/50",
+    glowClass: "shadow-zinc-950/20 hover:shadow-zinc-500/5",
+    iconColor: "text-zinc-400 bg-zinc-500/10",
+    category: "creative",
+    component: BarcodeGenerator,
   },
   {
     id: "color",
-    name: "Colori",
-    description: "Seleziona i colori, leggi i codici HEX/RGB/HSL, genera scale armoniche ed estrai la tavolozza di un'immagine.",
+    name: "Tavolozza e Picker Colori",
+    description: "Seleziona i colori, visualizza i codici HEX/RGB/HSL e genera scale armoniche.",
     icon: Palette,
     colorClass: "border-pink-900/30 hover:border-pink-500/50",
     glowClass: "shadow-pink-950/20 hover:shadow-pink-500/5",
     iconColor: "text-pink-400 bg-pink-500/10",
     category: "immagini",
-    component: ColorTools,
+    component: ColorPicker,
+  },
+  {
+    id: "color_extractor",
+    name: "Estrattore di Colori",
+    description: "Ricava i colori principali di un'immagine, con percentuali, codici HEX/RGB e variabili CSS.",
+    icon: Pipette,
+    colorClass: "border-amber-900/30 hover:border-amber-500/50",
+    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
+    iconColor: "text-amber-400 bg-amber-500/10",
+    category: "immagini",
+    component: ColorExtractor,
   },
   {
     id: "decision",
@@ -256,13 +316,24 @@ export const TOOLS: ToolItem[] = [
   {
     id: "geometry_calc",
     name: "Geometria",
-    description: "Perimetro, area, superficie e volume di quadrato, rettangolo, triangolo, cerchio (circonferenza), cubo, parallelepipedo, cilindro e sfera.",
+    description: "Perimetro, area, superficie e volume di quadrato, rettangolo, triangolo, cubo, parallelepipedo, cilindro e sfera.",
     icon: Shapes,
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
     glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
     iconColor: "text-emerald-400 bg-emerald-500/10",
     category: "calcolo",
     component: GeometryCalculator,
+  },
+  {
+    id: "circle_calc",
+    name: "Calcolo circonferenza",
+    description: "Calcola in tempo reale area, circonferenza, diametro e raggio di un cerchio partendo da una qualsiasi misura.",
+    icon: Circle,
+    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
+    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
+    iconColor: "text-emerald-400 bg-emerald-500/10",
+    category: "calcolo",
+    component: CircleCalculator,
   },
   {
     id: "aspect_ratio_calc",
@@ -310,14 +381,36 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "image_converter",
-    name: "Strumenti Immagini",
-    description: "Converti formato, ridimensiona (risoluzione e qualità) e ingrandisci le immagini, tutto nel browser.",
+    name: "Convertitore immagini",
+    description: "Converti immagini tra JPG, PNG, WEBP, GIF, AVIF, BMP, TIFF e ICO, anche da HEIC, con ridimensionamento opzionale.",
     icon: Image,
     colorClass: "border-amber-900/30 hover:border-amber-500/50",
     glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
     iconColor: "text-amber-400 bg-amber-500/10",
     category: "immagini",
-    component: ImageTools,
+    component: ConvertImages,
+  },
+  {
+    id: "image_resizer",
+    name: "Ridimensiona Immagini",
+    description: "Riduci risoluzione, qualità o entrambe e vedi subito il peso del file risultante.",
+    icon: Scaling,
+    colorClass: "border-cyan-900/30 hover:border-cyan-500/50",
+    glowClass: "shadow-cyan-950/20 hover:shadow-cyan-500/5",
+    iconColor: "text-cyan-400 bg-cyan-500/10",
+    category: "immagini",
+    component: ResizeImages,
+  },
+  {
+    id: "image_upscaler",
+    name: "Ingrandisci Immagini",
+    description: "Ingrandisci ×2, ×3 o ×4 con ricampionamento di qualità, nitidezza e filtri applicati sull'immagine grande.",
+    icon: ZoomIn,
+    colorClass: "border-purple-900/30 hover:border-purple-500/50",
+    glowClass: "shadow-purple-950/20 hover:shadow-purple-500/5",
+    iconColor: "text-purple-400 bg-purple-500/10",
+    category: "immagini",
+    component: UpscaleImages,
   },
   {
     id: "discord_timestamp",
@@ -398,14 +491,36 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "text_codes",
-    name: "Codifica",
-    description: "Testo in binario, esadecimale, decimale, ottale e codice Morse, numeri romani: in entrambe le direzioni.",
+    name: "Testo in Binario",
+    description: "Converte il testo in binario, esadecimale, decimale o ottale (UTF-8) e decodifica i codici in testo.",
     icon: Binary,
     colorClass: "border-sky-900/30 hover:border-sky-500/50",
     glowClass: "shadow-sky-950/20 hover:shadow-sky-500/5",
     iconColor: "text-sky-400 bg-sky-500/10",
     category: "convertitori",
-    component: EncodingTools,
+    component: TextCodes,
+  },
+  {
+    id: "morse_code",
+    name: "Codice Morse",
+    description: "Converte il testo in codice Morse e decodifica il Morse in testo, scrivendo in uno dei due riquadri.",
+    icon: Radio,
+    colorClass: "border-amber-900/30 hover:border-amber-500/50",
+    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
+    iconColor: "text-amber-400 bg-amber-500/10",
+    category: "convertitori",
+    component: MorseCode,
+  },
+  {
+    id: "roman_numerals",
+    name: "Numeri Romani",
+    description: "Converte i numeri da 1 a 3999 in numeri romani e viceversa.",
+    icon: Hash,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "convertitori",
+    component: RomanNumerals,
   },
   {
     id: "percentage_calc",

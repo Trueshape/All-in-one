@@ -8,15 +8,6 @@ import { I18nContext, LOCALES, makeI18n, type Lang } from "./i18n";
 
 const THEMES: Theme[] = ["artistic", "immersive", "sophisticated"];
 
-/** Tools merged into another one: a saved favorite follows the tool that now contains it. */
-const MERGED_INTO: Record<string, string> = {
-  color_extractor: "color",
-  morse_code: "text_codes",
-  roman_numerals: "text_codes",
-  data_size: "currency",
-  circle_calc: "geometry_calc",
-};
-
 // Storage can be blocked (private modes, embedded browsers) or full: the app must still start.
 const readStorage = (key: string): string | null => {
   try {
@@ -61,8 +52,7 @@ export default function App() {
     const saved = readStorage("utilita365_favorite_tools");
     if (saved) {
       try {
-        const parsed: Record<string, boolean> = JSON.parse(saved);
-        return Object.fromEntries(Object.entries(parsed).map(([id, on]) => [MERGED_INTO[id] ?? id, on]).sort(([, a], [, b]) => Number(a) - Number(b)));
+        return JSON.parse(saved);
       } catch (e) {}
     }
     return {};

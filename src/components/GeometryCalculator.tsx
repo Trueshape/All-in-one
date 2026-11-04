@@ -1,19 +1,15 @@
 import { useState } from "react";
 import { Field, TextInput, Chips, Panel, Row, Notice, Stack } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import CircleCalculator from "./CircleCalculator";
 import { ShapePreview } from "../ui/ShapePreview";
 import { SHAPES, measure } from "../lib/geometry";
 import type { ShapeId } from "../lib/geometry";
 
 const round = (n: number) => String(+n.toFixed(4));
-const CIRCLE = "circle" as const;
-// The circle has its own view: any of radius, diameter, circumference or area gives the others. It sits with the flat shapes.
-const CHOICES = [...SHAPES.filter((s) => s.dimensions === 2), { id: CIRCLE, name: "Cerchio" }, ...SHAPES.filter((s) => s.dimensions === 3)];
 
 export default function GeometryCalculator() {
   const u = useUi();
-  const [shapeId, setShapeId] = useState<ShapeId | typeof CIRCLE>("square");
+  const [shapeId, setShapeId] = useState<ShapeId>("square");
   const [values, setValues] = useState<Record<string, string>>({});
 
   const shape = SHAPES.find((s) => s.id === shapeId) ?? SHAPES[0];
@@ -24,9 +20,8 @@ export default function GeometryCalculator() {
 
   return (
     <Stack>
-      <Chips value={shapeId} onChange={(id) => { setShapeId(id); setValues({}); }} options={CHOICES.map((s) => ({ value: s.id, label: s.name }))} />
+      <Chips value={shapeId} onChange={(id) => { setShapeId(id); setValues({}); }} options={SHAPES.map((s) => ({ value: s.id, label: s.name }))} />
 
-      {shapeId === CIRCLE ? <CircleCalculator /> : <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <p className={`text-[11px] ${u.muted}`}>Inserisci le misure: il risultato si aggiorna mentre scrivi.</p>
@@ -59,7 +54,6 @@ export default function GeometryCalculator() {
       </div>
 
       <Notice>I calcoli usano <code className="font-mono">Math.PI</code> e arrotondano a 4 decimali. Le unità restano quelle che inserisci: lati in cm danno aree in cm² e volumi in cm³.</Notice>
-      </>}
     </Stack>
   );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Hourglass, ListPlus, Pause, Play, RotateCcw, Timer } from "lucide-react";
-import { Notice, Segmented, Chips, Button, IconButton, Stack, cx } from "../ui/kit";
+import { ListPlus, Pause, Play, RotateCcw } from "lucide-react";
+import { Notice, Chips, Button, IconButton, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { parseTime } from "../lib/timeInput";
 
@@ -191,21 +191,19 @@ function Stopwatch() {
   );
 }
 
-export default function PomodoroTimer() {
-  const [mode, setMode] = useState<"pomodoro" | "stopwatch">("pomodoro");
+export function PomodoroPage() {
   return (
     <Stack>
-      <Segmented
-        fill
-        value={mode}
-        onChange={setMode}
-        options={[
-          { value: "pomodoro", label: <span className="inline-flex items-center gap-1.5"><Hourglass className="w-3.5 h-3.5" /> Pomodoro</span> },
-          { value: "stopwatch", label: <span className="inline-flex items-center gap-1.5"><Timer className="w-3.5 h-3.5" /> Cronometro</span> },
-        ]}
-      />
-      {mode === "pomodoro" ? <Pomodoro /> : <Stopwatch />}
+      <Pomodoro />
       <Notice>Tecnica Pomodoro: 25 minuti di concentrazione, poi una pausa. Il tempo è calcolato sull’orologio di sistema, quindi non si ferma se cambi scheda.</Notice>
+    </Stack>
+  );
+}
+
+export function StopwatchPage() {
+  return (
+    <Stack>
+      <Stopwatch />
     </Stack>
   );
 }

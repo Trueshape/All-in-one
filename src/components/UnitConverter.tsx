@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import { useUi } from "../ui/tokens";
+import DataSizeConverter from "./DataSizeConverter";
 import { Notice, Field, TextInput, Select, Tabs, IconButton, ResultCard, Row, Stack, fmtNumber, cx } from "../ui/kit";
 
 interface Unit {
@@ -114,12 +115,26 @@ function convert(category: string, value: number, from: string, to: string): num
   return (value * units[from].factor) / units[to].factor;
 }
 
+const DATA = "dati";
+
+/** One tab per quantity; the data-size tab is a converter of its own, with a 1000/1024 switch. */
 export default function UnitConverter() {
-  const u = useUi();
   const [category, setCategory] = useState("lunghezza");
   const [value, setValue] = useState("1");
-  const [from, setFrom] = useState("m");
-  const [to, setTo] = useState("cm");
+
+  return (
+    <Stack>
+      <Tabs fill value={category} onChange={(v) => setCategory(String(v))} options={[...Object.entries(CATEGORIES).map(([id, c]) => ({ value: id, label: c.name })), { value: DATA, label: "Dati" }]} />
+      {category === DATA ? <DataSizeConverter /> : <UnitCategory key={category} category={category} value={value} setValue={setValue} />}
+    </Stack>
+  );
+}
+
+function UnitCategory({ category, value, setValue }: { category: string; value: string; setValue: (v: string) => void }) {
+  const u = useUi();
+  const firstKeys = Object.keys(CATEGORIES[category].units);
+  const [from, setFrom] = useState(category === "lunghezza" ? "m" : firstKeys[0]);
+  const [to, setTo] = useState(category === "lunghezza" ? "cm" : firstKeys[1] ?? firstKeys[0]);
 
   const cat = CATEGORIES[category];
   const keys = Object.keys(cat.units);
@@ -128,13 +143,6 @@ export default function UnitConverter() {
   const result = valid ? convert(category, number, from, to) : 0;
   const fromSymbol = cat.units[from].symbol;
   const toSymbol = cat.units[to].symbol;
-
-  const selectCategory = (next: string) => {
-    const nextKeys = Object.keys(CATEGORIES[next].units);
-    setCategory(next);
-    setFrom(nextKeys[0]);
-    setTo(nextKeys[1] ?? nextKeys[0]);
-  };
 
   const swap = () => {
     setFrom(to);
@@ -145,8 +153,6 @@ export default function UnitConverter() {
 
   return (
     <Stack>
-      <Tabs fill value={category} onChange={selectCategory} options={Object.entries(CATEGORIES).map(([id, c]) => ({ value: id, label: c.name }))} />
-
       <Field label="Valore">
         <TextInput type="number" inputMode="decimal" step="any" value={value} onChange={(e) => setValue(e.target.value)} suffixText={fromSymbol} />
       </Field>
