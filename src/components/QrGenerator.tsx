@@ -156,7 +156,7 @@ export default function QrGenerator() {
             )}
           </div>
           {error && <Notice tone="error">{error}</Notice>}
-          <Button variant="primary" className="w-full !rounded-xl py-3" disabled={!matrix} icon={<Download className="w-4 h-4" />} onClick={downloadPng}>Scarica QR Code</Button>
+          <Button variant="primary" className="w-full !rounded-xl py-3" disabled={!matrix} icon={<Download className="w-4 h-4" />} onClick={downloadPng}>PNG</Button>
           <Notice>Il codice è generato nel browser: nessun dato viene inviato a servizi esterni.</Notice>
         </Panel>
       </div>

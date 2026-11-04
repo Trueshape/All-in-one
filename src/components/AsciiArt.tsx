@@ -66,7 +66,7 @@ export default function AsciiArt() {
               <Segmented fill value={comment} onChange={setComment} options={[{ value: "none", label: "No" }, { value: "slashes", label: "//" }, { value: "hash", label: "#" }, { value: "block", label: "/* */" }]} />
             </Field>
           </div>
-          <Button disabled={!art} icon={<Download className="w-3.5 h-3.5" />} onClick={() => download(new Blob([art + "\n"], { type: "text/plain;charset=utf-8" }), "ascii-art.txt")}>Scarica .txt</Button>
+          <Button disabled={!art} icon={<Download className="w-3.5 h-3.5" />} onClick={() => download(new Blob([art + "\n"], { type: "text/plain;charset=utf-8" }), "ascii-art.txt")}>.txt</Button>
         </div>
       </div>
       <Notice>I font sono inclusi nel sito: le lettere accentate usano la forma della lettera base e i simboli non previsti diventano un "?". L'ombra usa "." o "░" a seconda del carattere scelto.</Notice>

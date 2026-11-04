@@ -402,7 +402,7 @@ export default function HandwritingFont() {
           <div className="space-y-3">
             <SectionTitle>1 · Il foglio</SectionTitle>
             <p className="text-xs leading-relaxed">Scarica il foglio, stampalo e scrivi ogni carattere nella sua casella, appoggiandolo alla linea tratteggiata, con una penna nera.</p>
-            <Button variant="primary" icon={<FileImage className="w-3.5 h-3.5" />} onClick={saveSheet}>Scarica il foglio (PNG)</Button>
+            <Button variant="primary" icon={<FileImage className="w-3.5 h-3.5" />} onClick={saveSheet}>PNG</Button>
             <SectionTitle>2 · La foto</SectionTitle>
             {!source ? (
               <ImageDrop onFile={load} hint="Foto o scansione del foglio compilato" />
@@ -433,7 +433,7 @@ export default function HandwritingFont() {
               {mode === "sheet" && sheetGlyphs.length > 0 && <Row label="Dal foglio" value={`${sheetGlyphs.length} su ${CHARS.length}`} />}
             </div>
           )}
-          <Button variant="primary" disabled={!file} icon={<Download className="w-3.5 h-3.5" />} onClick={saveFont}>Scarica il font (.ttf)</Button>
+          <Button variant="primary" disabled={!file} icon={<Download className="w-3.5 h-3.5" />} onClick={saveFont}>.ttf</Button>
         </div>
       </div>
 

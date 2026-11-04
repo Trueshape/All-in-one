@@ -85,8 +85,8 @@ export default function BarcodeGenerator() {
           </div>
           {encoded && "error" in encoded && <Notice tone="error">{encoded.error}</Notice>}
           <div className="grid grid-cols-2 gap-2 w-full">
-            <Button variant="primary" disabled={!ok} icon={<Download className="w-3.5 h-3.5" />} onClick={() => download(new Blob([svg], { type: "image/svg+xml" }), `barcode_${type}.svg`)}>Scarica SVG</Button>
-            <Button disabled={!ok} icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>Scarica PNG</Button>
+            <Button variant="primary" disabled={!ok} icon={<Download className="w-3.5 h-3.5" />} onClick={() => download(new Blob([svg], { type: "image/svg+xml" }), `barcode_${type}.svg`)}>SVG</Button>
+            <Button disabled={!ok} icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>PNG</Button>
           </div>
           {ok && <CopyButton text={ok.label} label="Copia testo codificato" />}
         </Panel>

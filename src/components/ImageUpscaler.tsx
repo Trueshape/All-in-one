@@ -117,7 +117,7 @@ export default function ImageUpscaler({ image }: { image: ImageSourceState }) {
           {tooBig && <Notice tone="error">Troppo grande: scegli un ingrandimento minore (lato massimo {MAX_SIDE} px).</Notice>}
           <div className="grid grid-cols-2 gap-2">
             <Button variant="primary" disabled={!source || busy || tooBig} onClick={run}>{busy ? "Elaborazione..." : "Ingrandisci"}</Button>
-            <Button disabled={!result} icon={<Download className="w-3.5 h-3.5" />} onClick={() => result && source && download(result.blob, `${source.name}_x${scale}.${format === "jpeg" ? "jpg" : format}`)}>Scarica</Button>
+            <Button disabled={!result} icon={<Download className="w-3.5 h-3.5" />} onClick={() => result && source && download(result.blob, `${source.name}_x${scale}.${format === "jpeg" ? "jpg" : format}`)}>{(format === "jpeg" ? "jpg" : format).toUpperCase()}</Button>
           </div>
         </div>
       </div>

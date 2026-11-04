@@ -102,8 +102,8 @@ export default function SvgPatternGenerator() {
             <img src={dataUrl} alt="Anteprima del pattern" className="w-full max-h-72 object-contain" style={{ aspectRatio: `${w} / ${h}` }} />
           </Panel>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="primary" icon={<Download className="w-3.5 h-3.5" />} onClick={downloadSvg}>Scarica SVG</Button>
-            <Button icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>Scarica PNG</Button>
+            <Button variant="primary" icon={<Download className="w-3.5 h-3.5" />} onClick={downloadSvg}>SVG</Button>
+            <Button icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>PNG</Button>
           </div>
           <div className="flex items-center justify-between">
             <span className={cx("text-xs", u.muted)}>Codice SVG</span>

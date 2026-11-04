@@ -153,7 +153,7 @@ export default function ImageResizer({ image }: { image: ImageSourceState }) {
           {mode !== "size" && format === "png" && <Notice tone="warn">Il PNG non perde qualità: per ridurre il peso scegli JPG o WEBP.</Notice>}
           {source && !valid && <Notice tone="error">Dimensioni non valide: lato massimo {MAX_SIDE} px.</Notice>}
           <Button variant="primary" className="w-full" disabled={!result} icon={<Download className="w-3.5 h-3.5" />} onClick={() => result && source && download(result.blob, `${source.name}_${result.width}x${result.height}.${EXTENSION[format]}`)}>
-            Scarica
+            {EXTENSION[format].toUpperCase()}
           </Button>
         </div>
       </div>
