@@ -174,7 +174,7 @@ export default function Landing({
             onChange={(v) => setLang(v)}
             options={LANGS.map((l) => ({ value: l.code, label: l.label, flag: l.flag }))}
             ariaLabel={t("language")}
-            triggerClassName={`h-[30px] w-[30px] border ${tc.borderClass} ${tc.btnClassic} transition-all`}
+            triggerClassName="h-[30px] w-[30px] opacity-80 hover:opacity-100 transition-opacity"
             listClassName={`rounded border ${tc.borderClass} ${activeTheme === "immersive" ? "bg-[#030812]" : activeTheme === "sophisticated" ? "bg-slate-900" : "bg-[#0a0a0a]"}`}
             itemClassName={(active) =>
               `rounded ${
