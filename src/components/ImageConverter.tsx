@@ -4,17 +4,28 @@ import { Field, TextInput, Toggle, Chips, Slider, Button, IconButton, Panel, Sec
 import { useUi } from "../ui/tokens";
 import { ImageDrop } from "../ui/ImageDrop";
 import type { ImageSourceState } from "../ui/ImageDrop";
-import { encodeBmp, encodeIco, encodeTiff } from "../lib/imageEncoders";
+import { encodeBmp, encodeGif, encodeIco, encodeTiff } from "../lib/imageEncoders";
 import { MAX_SIDE, formatBytes } from "../lib/imageOps";
 
-type Format = "jpeg" | "png" | "webp" | "bmp" | "tiff" | "ico";
+type Format = "jpeg" | "png" | "webp" | "gif" | "avif" | "bmp" | "tiff" | "ico";
 
-const EXTENSION: Record<Format, string> = { jpeg: "jpg", png: "png", webp: "webp", bmp: "bmp", tiff: "tif", ico: "ico" };
+const EXTENSION: Record<Format, string> = { jpeg: "jpg", png: "png", webp: "webp", gif: "gif", avif: "avif", bmp: "bmp", tiff: "tif", ico: "ico" };
 const FORMATS: Array<{ value: Format; label: string }> = [
   { value: "jpeg", label: "JPG" }, { value: "png", label: "PNG" }, { value: "webp", label: "WEBP" },
-  { value: "bmp", label: "BMP" }, { value: "tiff", label: "TIFF" }, { value: "ico", label: "ICO" },
+  { value: "gif", label: "GIF" }, { value: "avif", label: "AVIF" }, { value: "bmp", label: "BMP" }, { value: "tiff", label: "TIFF" }, { value: "ico", label: "ICO" },
 ];
-const LOSSY: Format[] = ["jpeg", "webp"];
+const LOSSY: Format[] = ["jpeg", "webp", "avif"];
+
+/** Browsers that cannot encode AVIF hand back a PNG, so the chip is shown only where it works. */
+function useAvifSupport() {
+  const [supported, setSupported] = useState(false);
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    canvas.toBlob((blob) => setSupported(blob?.type === "image/avif"), "image/avif");
+  }, []);
+  return supported;
+}
 
 export default function ImageConverter({ image }: { image: ImageSourceState }) {
   const u = useUi();
@@ -25,6 +36,7 @@ export default function ImageConverter({ image }: { image: ImageSourceState }) {
   const [format, setFormat] = useState<Format>("jpeg");
   const [quality, setQuality] = useState(90);
   const [busy, setBusy] = useState(false);
+  const avif = useAvifSupport();
   const [outputSize, setOutputSize] = useState<number | null>(null);
 
   // A new image (or none) resets the size fields.
@@ -87,9 +99,10 @@ export default function ImageConverter({ image }: { image: ImageSourceState }) {
       a.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
-    if (format === "bmp" || format === "tiff") {
+    if (format === "bmp" || format === "tiff" || format === "gif") {
       const pixels = ctx.getImageData(0, 0, w, h);
-      done(new Blob([format === "bmp" ? encodeBmp(pixels) : encodeTiff(pixels)], { type: format === "bmp" ? "image/bmp" : "image/tiff" }));
+      const encode = { bmp: encodeBmp, tiff: encodeTiff, gif: encodeGif }[format];
+      done(new Blob([encode(pixels)], { type: `image/${format}` }));
       return;
     }
     const mime = format === "ico" ? "image/png" : `image/${format}`;
@@ -132,7 +145,7 @@ export default function ImageConverter({ image }: { image: ImageSourceState }) {
           </div>
           <Toggle checked={lock} onChange={setLock} label="Mantieni proporzioni" />
           <Field label="Formato">
-            <Chips value={format} onChange={setFormat} options={FORMATS} />
+            <Chips value={format} onChange={setFormat} options={FORMATS.filter((f) => f.value !== "avif" || avif)} />
           </Field>
           {LOSSY.includes(format) && <Slider label="Qualità" value={quality} min={10} max={100} onChange={setQuality} display={`${quality}%`} />}
           <Button variant="primary" className="w-full" disabled={!source || busy} icon={<Download className="w-3.5 h-3.5" />} onClick={save}>

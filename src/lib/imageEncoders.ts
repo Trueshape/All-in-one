@@ -88,3 +88,107 @@ export function encodeIco(png: Uint8Array, width: number, height: number): Uint8
   out.set(png, 22);
   return out;
 }
+
+const GIF_LEVELS = 6;
+const GIF_TRANSPARENT = GIF_LEVELS ** 3;
+
+/** Single-frame GIF with a fixed 6x6x6 colour palette, Floyd-Steinberg dithering and one transparent index (alpha under 128). */
+export function encodeGif({ width, height, data }: Pixels): Uint8Array {
+  const step = 255 / (GIF_LEVELS - 1);
+  const work = Float32Array.from(data);
+  const indices = new Uint8Array(width * height);
+  const spread = (x: number, y: number, c: number, err: number, weight: number) => {
+    if (x < 0 || x >= width || y >= height) return;
+    work[(y * width + x) * 4 + c] += err * weight;
+  };
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      if (work[i + 3] < 128) {
+        indices[y * width + x] = GIF_TRANSPARENT;
+        continue;
+      }
+      let index = 0;
+      for (let c = 0; c < 3; c++) {
+        const level = Math.min(GIF_LEVELS - 1, Math.max(0, Math.round(work[i + c] / step)));
+        index = index * GIF_LEVELS + level;
+        const err = work[i + c] - level * step;
+        spread(x + 1, y, c, err, 7 / 16);
+        spread(x - 1, y + 1, c, err, 3 / 16);
+        spread(x, y + 1, c, err, 5 / 16);
+        spread(x + 1, y + 1, c, err, 1 / 16);
+      }
+      indices[y * width + x] = index;
+    }
+  }
+
+  const bytes: number[] = [];
+  const word = (n: number) => bytes.push(n & 255, n >> 8);
+  bytes.push(...[..."GIF89a"].map((ch) => ch.charCodeAt(0)));
+  word(width);
+  word(height);
+  bytes.push(0xf7, 0, 0); // global 256-colour table, background 0, square pixels
+  for (let n = 0; n < 256; n++) {
+    if (n < GIF_TRANSPARENT) {
+      const r = Math.floor(n / (GIF_LEVELS * GIF_LEVELS));
+      const g = Math.floor(n / GIF_LEVELS) % GIF_LEVELS;
+      bytes.push(Math.round(r * step), Math.round(g * step), Math.round((n % GIF_LEVELS) * step));
+    } else bytes.push(0, 0, 0);
+  }
+  bytes.push(0x21, 0xf9, 4, 0x01, 0, 0, GIF_TRANSPARENT, 0); // transparent colour index
+  bytes.push(0x2c);
+  word(0);
+  word(0);
+  word(width);
+  word(height);
+  bytes.push(0, 8); // no local table, LZW minimum code size 8
+
+  // LZW: codes start at 9 bits and grow; the table is reset with a clear code when full.
+  const CLEAR = 256;
+  const END = 257;
+  const packed: number[] = [];
+  let acc = 0;
+  let accBits = 0;
+  let codeSize = 9;
+  const emit = (code: number) => {
+    acc |= code << accBits;
+    accBits += codeSize;
+    while (accBits >= 8) {
+      packed.push(acc & 255);
+      acc >>>= 8;
+      accBits -= 8;
+    }
+  };
+  let table = new Map<number, number>();
+  let next = END + 1;
+  emit(CLEAR);
+  let prefix = indices[0];
+  for (let p = 1; p < indices.length; p++) {
+    const key = prefix * 256 + indices[p];
+    const hit = table.get(key);
+    if (hit !== undefined) {
+      prefix = hit;
+      continue;
+    }
+    emit(prefix);
+    if (next === 4096) {
+      emit(CLEAR);
+      table = new Map();
+      next = END + 1;
+      codeSize = 9;
+    } else {
+      table.set(key, next++);
+      if (next > 1 << codeSize && codeSize < 12) codeSize++;
+    }
+    prefix = indices[p];
+  }
+  emit(prefix);
+  emit(END);
+  if (accBits > 0) packed.push(acc & 255);
+  for (let p = 0; p < packed.length; p += 255) {
+    const chunk = packed.slice(p, p + 255);
+    bytes.push(chunk.length, ...chunk);
+  }
+  bytes.push(0, 0x3b);
+  return Uint8Array.from(bytes);
+}
