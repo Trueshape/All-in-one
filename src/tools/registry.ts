@@ -59,6 +59,7 @@ import {
   Hash,
   MapPinned,
   PhoneCall,
+  Volume2,
   AudioLines,
   HardDrive,
   Replace,
@@ -110,6 +111,7 @@ const RandomizeList = lazy(() => import("../components/RandomizeList"));
 const TextCleaner = lazy(() => import("../components/TextCleaner"));
 const DataSizeConverter = lazy(() => import("../components/DataSizeConverter"));
 const AudioEditor = lazy(() => import("../components/AudioEditor"));
+const TextToSpeech = lazy(() => import("../components/TextToSpeech"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -521,6 +523,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-fuchsia-400 bg-fuchsia-500/10",
     category: "convertitori",
     component: AudioEditor,
+  },
+  {
+    id: "text_to_speech",
+    name: "Lettura Testo",
+    description: "Legge ad alta voce qualsiasi testo con le voci del tuo dispositivo, con velocità, tono e volume regolabili.",
+    icon: Volume2,
+    colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
+    glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
+    iconColor: "text-indigo-400 bg-indigo-500/10",
+    category: "convertitori",
+    component: TextToSpeech,
   },
   {
     id: "morse_code",

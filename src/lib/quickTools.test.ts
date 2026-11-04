@@ -6,6 +6,7 @@ import { computeEta, formatDuration } from "./eta";
 import { DEFAULT_OPTIONS, asciiArt, renderLine } from "./asciiArt";
 import { fitTile, patternSvg } from "./pattern";
 import { fromBytes, toBytes, unitLabel } from "./dataSize";
+import { splitForSpeech } from "./speech";
 import { morseToText, textToMorse } from "./morse";
 import { fromRoman, toRoman } from "./roman";
 import { dedupeLines, findReplace, shuffle } from "./textTools";
@@ -193,4 +194,13 @@ test("data sizes convert in decimal and binary", () => {
   assert.equal(unitLabel("MB", "binary"), "MiB");
   assert.equal(unitLabel("B", "binary"), "B");
   assert.equal(unitLabel("bit", "binary"), "bit");
+});
+
+test("speech text is cut at sentence ends and never over the limit", () => {
+  assert.deepEqual(splitForSpeech("Ciao. Come stai? Bene!"), ["Ciao.", "Come stai?", "Bene!"]);
+  assert.deepEqual(splitForSpeech("   "), []);
+  const long = "parola ".repeat(100);
+  const pieces = splitForSpeech(long, 50);
+  assert.ok(pieces.every((p) => p.length <= 50));
+  assert.equal(pieces.join(" "), long.trim());
 });

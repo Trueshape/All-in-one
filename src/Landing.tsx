@@ -496,7 +496,7 @@ export default function Landing({
                       role="button"
                       tabIndex={0}
                       onKeyDown={keyActivate(() => { if (editingCardToolId !== tool.id) onOpenTool(tool.id); })}
-                      className={`${tc.card} ${focusRing} flex flex-col justify-between h-36 cursor-pointer group`}
+                      className={`${tc.card} ${focusRing} flex flex-col justify-start gap-1 h-36 cursor-pointer group`}
                       id={`card-tool-${tool.id}`}
                       whileHover={editingCardToolId === tool.id ? undefined : {
                         backgroundColor: activeTheme === "immersive" ? "rgba(16, 185, 129, 0.05)" : activeTheme === "sophisticated" ? "rgba(139, 92, 246, 0.04)" : "rgba(24, 24, 27, 0.2)",
@@ -553,7 +553,7 @@ export default function Landing({
                         </div>
                       </div>
 
-                      <div className="mt-1 flex-1 flex flex-col justify-end">
+                      <div className="flex flex-col">
                         {editingCardToolId === tool.id ? (
                           <div
                             className="mb-1"

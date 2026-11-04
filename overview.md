@@ -24,6 +24,7 @@
 - `src/components/AudioEditor.tsx` — Editor Audio: ritaglia/dividi, volume e dissolvenze, salva in WAV/MP3/OGG/FLAC.
 - `src/lib/audioOps.ts` — PCM puro: taglio, volume, divisione, picchi, encoder WAV e FLAC (scritto qui).
 - `src/lib/audioEncoders.ts` — scelta del formato; MP3 e OGG con `wasm-media-encoders`, caricato solo al primo uso.
+- `src/components/TextToSpeech.tsx` — Lettura Testo: legge il testo con le voci del browser, a pezzi (`src/lib/speech.ts`).
 - `src/components/PercentageCalculator.tsx` — Calcolatore Percentuali: le quattro domande più comuni (`src/lib/percent.ts`).
 - `src/components/EtaCalculator.tsx` — Calcolatore ETA: durata e ora di fine di un'attività dalla velocità (`src/lib/eta.ts`).
 - `src/components/AsciiArt.tsx` — Testo in ASCII Art con font 5×7 incluso (`src/lib/asciiArt.ts`).
