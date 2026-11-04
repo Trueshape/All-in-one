@@ -1,10 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Coins, Dices, ListTodo, Plus, Sparkles, X } from "lucide-react";
+import { Coins, Dices, Disc3, ListTodo, Plus, Sparkles, X } from "lucide-react";
 import { Notice, Segmented, Button, TextInput, Chips, Panel, Stack, Tag, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
-type Tab = "coin" | "dice" | "list";
+type Tab = "coin" | "dice" | "list" | "wheel";
+
+/** Colours for the wheel slices, spread around the hue circle. */
+const sliceColor = (i: number, n: number) => `hsl(${Math.round((i * 360) / n)} 60% 45%)`;
+
+/** SVG path of the slice that starts at angle `from` and ends at `to` (degrees clockwise from the top). */
+function slicePath(from: number, to: number, r: number) {
+  const point = (deg: number) => {
+    const rad = ((deg - 90) * Math.PI) / 180;
+    return `${(r + r * Math.cos(rad)).toFixed(2)} ${(r + r * Math.sin(rad)).toFixed(2)}`;
+  };
+  return `M ${r} ${r} L ${point(from)} A ${r} ${r} 0 ${to - from > 180 ? 1 : 0} 1 ${point(to)} Z`;
+}
 
 const PIPS: Record<number, number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
 
@@ -114,6 +126,39 @@ export default function DecisionMaker() {
     }, 100);
   };
 
+  // Wheel: the same options as the list. The angle keeps growing so the wheel always spins forward.
+  const [wheelAngle, setWheelAngle] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+  const [wheelResult, setWheelResult] = useState<string | null>(null);
+  const spin = () => {
+    if (options.length < 2 || spinning) return;
+    const winner = randomInt(options.length);
+    const slice = 360 / options.length;
+    // The pointer is at the top: bring the middle of the winning slice there, with a random offset inside it.
+    const inside = (randomInt(1000) / 1000 - 0.5) * slice * 0.8;
+    const base = Math.ceil(wheelAngle / 360) * 360;
+    setSpinning(true);
+    setWheelResult(null);
+    setWheelAngle(base + 360 * 6 + (360 - (winner * slice + slice / 2 + inside)));
+    timers.timeout(() => { setWheelResult(options[winner]); setSpinning(false); }, 4000);
+  };
+
+  const optionEditor = (
+    <>
+      <form onSubmit={addOption} className="flex gap-2">
+        <TextInput value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Aggiungi un'opzione (es. Cinema)" />
+        <Button type="submit" variant="primary" className="h-11 w-11 p-0 shrink-0 rounded-xl" aria-label="Aggiungi opzione"><Plus className="w-4 h-4" /></Button>
+      </form>
+
+      <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">
+        {options.map((opt) => (
+          <Tag key={opt} label={opt} onRemove={() => { setOptions(options.filter((o) => o !== opt)); setPicked(null); setWheelResult(null); }} />
+        ))}
+        {!options.length && <p className={cx("text-xs", u.muted)}>La lista è vuota: aggiungi delle opzioni.</p>}
+      </div>
+    </>
+  );
+
   const big = cx("text-3xl font-bold", u.statValue);
 
   return (
@@ -126,6 +171,7 @@ export default function DecisionMaker() {
           { value: "coin", label: <span className="inline-flex items-center gap-1.5"><Coins className="w-3.5 h-3.5" /> Moneta</span> },
           { value: "dice", label: <span className="inline-flex items-center gap-1.5"><Dices className="w-3.5 h-3.5" /> Dadi</span> },
           { value: "list", label: <span className="inline-flex items-center gap-1.5"><ListTodo className="w-3.5 h-3.5" /> Lista</span> },
+          { value: "wheel", label: <span className="inline-flex items-center gap-1.5"><Disc3 className="w-3.5 h-3.5" /> Ruota</span> },
         ]}
       />
 
@@ -183,17 +229,7 @@ export default function DecisionMaker() {
 
       {tab === "list" && (
         <div className="space-y-4">
-          <form onSubmit={addOption} className="flex gap-2">
-            <TextInput value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Aggiungi un'opzione (es. Cinema)" />
-            <Button type="submit" variant="primary" className="h-11 w-11 p-0 shrink-0 rounded-xl" aria-label="Aggiungi opzione"><Plus className="w-4 h-4" /></Button>
-          </form>
-
-          <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">
-            {options.map((opt) => (
-              <Tag key={opt} label={opt} onRemove={() => { setOptions(options.filter((o) => o !== opt)); setPicked(null); }} />
-            ))}
-            {!options.length && <p className={cx("text-xs", u.muted)}>La lista è vuota: aggiungi delle opzioni.</p>}
-          </div>
+          {optionEditor}
 
           <Panel inset className="min-h-[96px] flex items-center justify-center text-center">
             {picked ? (
@@ -211,7 +247,44 @@ export default function DecisionMaker() {
           </Button>
         </div>
       )}
-      <Notice>Moneta, dadi e lista scelgono a caso con il generatore casuale del browser: ogni estrazione è indipendente dalle precedenti.</Notice>
+      {tab === "wheel" && (
+        <div className="space-y-4">
+          {optionEditor}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative h-56 w-56">
+              <span className="absolute left-1/2 -top-1 z-10 -translate-x-1/2 border-x-[10px] border-t-[18px] border-x-transparent" style={{ borderTopColor: u.accentHex }} aria-hidden />
+              <svg
+                viewBox="0 0 224 224"
+                className="h-full w-full"
+                role="img"
+                aria-label={wheelResult ? `Ruota: ${wheelResult}` : "Ruota delle opzioni"}
+                style={{ transform: `rotate(${wheelAngle}deg)`, transition: "transform 4s cubic-bezier(0.12, 0.6, 0.15, 1)" }}
+              >
+                  {options.length === 0 && <circle cx="112" cy="112" r="112" fill="rgba(128,128,128,0.2)" />}
+                  {options.length === 1 && <circle cx="112" cy="112" r="112" fill={sliceColor(0, 1)} />}
+                  {options.length > 1 && options.map((opt, i) => {
+                    const slice = 360 / options.length;
+                    const mid = i * slice + slice / 2;
+                    return (
+                      <g key={opt}>
+                        <path d={slicePath(i * slice, (i + 1) * slice, 112)} fill={sliceColor(i, options.length)} stroke="rgba(0,0,0,0.35)" strokeWidth="1" />
+                        <text x="112" y="112" fill="#fff" fontSize={options.length > 12 ? 8 : 11} fontWeight="600" textAnchor="end" dominantBaseline="middle" transform={`rotate(${mid - 90} 112 112) translate(104 0)`}>
+                          {opt.length > 14 ? `${opt.slice(0, 13)}…` : opt}
+                        </text>
+                      </g>
+                    );
+                  })}
+                  <circle cx="112" cy="112" r="10" fill="rgba(0,0,0,0.6)" />
+              </svg>
+            </div>
+            <p className={cx("text-sm min-h-5", u.subtle)}>
+              {wheelResult && !spinning ? <>Risultato: <strong className={u.accent}>{wheelResult}</strong></> : options.length < 2 ? "Servono almeno 2 opzioni." : ""}
+            </p>
+            <Button variant="primary" onClick={spin} disabled={options.length < 2 || spinning} icon={<Disc3 className="w-4 h-4" />}>{spinning ? "La ruota gira..." : "Gira la ruota"}</Button>
+          </div>
+        </div>
+      )}
+      <Notice>Moneta, dadi, lista e ruota scelgono a caso con il generatore casuale del browser: ogni estrazione è indipendente dalle precedenti.</Notice>
     </Stack>
   );
 }

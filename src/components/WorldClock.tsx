@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Globe, Moon, Sun } from "lucide-react";
-import { Notice, Panel, Slider, Button, Stack, cx } from "../ui/kit";
+import { ArrowLeftRight, Globe, Moon, Sun } from "lucide-react";
+import { DatePicker, Field, IconButton, Notice, Panel, Select, Slider, Button, Stack, TextInput, cx } from "../ui/kit";
+import { offsetDifference, zonedTimeToInstant } from "../lib/timeZones";
 import { useUi } from "../ui/tokens";
 
 const CITIES = [
@@ -22,6 +23,21 @@ const utcLabel = (raw: string) => {
   return `UTC${m[1]}${Number(m[2])}${m[3] === "00" ? "" : `:${m[3]}`}`;
 };
 
+const ZONE_NAMES = Object.fromEntries(CITIES.map((c) => [c.zone, `${c.name} (${c.country})`]));
+/** The cities above first, then every other zone the browser knows. */
+const ZONES = [...CITIES.map((c) => c.zone), ...((Intl as unknown as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.("timeZone") ?? []).filter((z) => !ZONE_NAMES[z])];
+
+const todayIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+const diffLabel = (minutes: number) => {
+  if (minutes === 0) return "stessa ora";
+  const abs = Math.abs(minutes);
+  const text = `${Math.floor(abs / 60)}${abs % 60 ? `:${String(abs % 60).padStart(2, "0")}` : ""} h`;
+  return `${minutes > 0 ? "+" : "-"}${text}`;
+};
+
 export default function WorldClock() {
   const u = useUi();
   const [now, setNow] = useState(() => new Date());
@@ -31,6 +47,19 @@ export default function WorldClock() {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
+
+  // Converter: a date and time in one zone, shown in another.
+  const [from, setFrom] = useState("Europe/Rome");
+  const [to, setTo] = useState("America/New_York");
+  const [date, setDate] = useState(todayIso);
+  const [time, setTime] = useState("12:00");
+  const converted = useMemo(() => {
+    const instant = zonedTimeToInstant(date, time, from);
+    if (instant === null) return null;
+    const text = new Intl.DateTimeFormat("it-IT", { timeZone: to, weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(instant));
+    return { text, diff: offsetDifference(instant, from, to) };
+  }, [date, time, from, to]);
+  const zoneName = (zone: string) => ZONE_NAMES[zone] ?? zone.replace(/_/g, " ");
 
   const shifted = useMemo(() => new Date(now.getTime() + offset * 3_600_000), [now, offset]);
 
@@ -84,6 +113,26 @@ export default function WorldClock() {
           );
         })}
       </div>
+      <Panel className="space-y-3">
+        <span className={cx("inline-flex items-center gap-2", u.statLabel)}><ArrowLeftRight className="w-4 h-4" /> Convertitore fusi orari</span>
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-end gap-3">
+          <Field label="Da">
+            <Select value={from} onChange={(e) => setFrom(e.target.value)}>{ZONES.map((z) => <option key={z} value={z}>{zoneName(z)}</option>)}</Select>
+          </Field>
+          <IconButton onClick={() => { setFrom(to); setTo(from); }} title="Inverti i due fusi" className="mb-1"><ArrowLeftRight className="w-4 h-4" /></IconButton>
+          <Field label="A">
+            <Select value={to} onChange={(e) => setTo(e.target.value)}>{ZONES.map((z) => <option key={z} value={z}>{zoneName(z)}</option>)}</Select>
+          </Field>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Data"><DatePicker value={date} onChange={setDate} /></Field>
+          <Field label="Ora"><TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} /></Field>
+        </div>
+        <p className={cx("text-lg font-semibold", u.text)}>
+          {converted ? converted.text : "—"}
+          {converted && <span className={cx("ml-2 text-xs font-normal normal-case", u.muted)}>{diffLabel(converted.diff)}</span>}
+        </p>
+      </Panel>
       <Notice>Gli orari seguono i fusi orari del sistema, ora legale inclusa. Sposta il cursore per vedere che ore saranno in un altro momento.</Notice>
     </Stack>
   );

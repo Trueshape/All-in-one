@@ -7,6 +7,7 @@ import { DEFAULT_OPTIONS, asciiArt, renderLine } from "./asciiArt";
 import { fitTile, patternSvg } from "./pattern";
 import { fromBytes, toBytes, unitLabel } from "./dataSize";
 import { splitForSpeech } from "./speech";
+import { offsetDifference, zoneOffsetMinutes, zonedTimeToInstant } from "./timeZones";
 import { morseToText, textToMorse } from "./morse";
 import { fromRoman, toRoman } from "./roman";
 import { dedupeLines, findReplace, shuffle } from "./textTools";
@@ -203,4 +204,19 @@ test("speech text is cut at sentence ends and never over the limit", () => {
   const pieces = splitForSpeech(long, 50);
   assert.ok(pieces.every((p) => p.length <= 50));
   assert.equal(pieces.join(" "), long.trim());
+});
+
+test("time zones: offsets, conversion and clock changes", () => {
+  const winter = Date.UTC(2026, 0, 15, 12);
+  const summer = Date.UTC(2026, 6, 15, 12);
+  assert.equal(zoneOffsetMinutes(winter, "Europe/Rome"), 60);
+  assert.equal(zoneOffsetMinutes(summer, "Europe/Rome"), 120);
+  assert.equal(zoneOffsetMinutes(winter, "Asia/Kolkata"), 330);
+  assert.equal(offsetDifference(winter, "Europe/Rome", "America/New_York"), -360);
+  // 12:00 in Rome on 15 January is 11:00 UTC.
+  assert.equal(zonedTimeToInstant("2026-01-15", "12:00", "Europe/Rome"), Date.UTC(2026, 0, 15, 11));
+  assert.equal(zonedTimeToInstant("2026-07-15", "12:00", "Europe/Rome"), Date.UTC(2026, 6, 15, 10));
+  // Day of the change to summer time in Rome (29 March 2026): 12:00 is already +2.
+  assert.equal(zonedTimeToInstant("2026-03-29", "12:00", "Europe/Rome"), Date.UTC(2026, 2, 29, 10));
+  assert.equal(zonedTimeToInstant("2026-01-15", "", "Europe/Rome"), null);
 });
