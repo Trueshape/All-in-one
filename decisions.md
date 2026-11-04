@@ -66,3 +66,4 @@
 - 2026-11-04 — Calcolatore Percentuali: due soli numeri (A e B, con un tasto per invertirli) e le quattro schede dei risultati in colonna, sempre aggiornate; sostituisce le quattro coppie di caselle.
 - 2026-11-04 — Home: da 1500 px di larghezza le sei categorie stanno in una sola riga (sotto restano tre per riga) e l'elenco degli strumenti parte subito sotto il titolo di ogni scheda, non più in fondo.
 - 2026-11-04 — Home: la barra di ricerca è centrata a metà pagina (da 1024 px) nella stessa riga fissa; la scelta dello stile sta in alto a destra, accanto alla lingua; sotto i 1280 px le categorie restano nel flusso per non sovrapporsi ai due menu.
+- 2026-11-04 — Menu lingua: il bottone mostra solo la bandiera della lingua in uso, nello stesso stile del bottone dello stile (bordo, colori e altezza del tema attivo); i nomi delle lingue compaiono solo nell'elenco aperto, che usa lo stesso aspetto del menu dello stile.

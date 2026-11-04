@@ -576,19 +576,24 @@ export function DatePicker({ value, onChange, max }: { value: string; onChange: 
   );
 }
 
-/** Dropdown in the theme's style: a field trigger and a rounded popover list with flags. */
+/** Language menu: the closed button shows only the flag of the language in use; the open list shows each flag with its name. The caller styles both to match the current theme. */
 export function LangMenu<T extends string>({
   value,
   onChange,
   options,
   ariaLabel,
+  triggerClassName,
+  listClassName,
+  itemClassName,
 }: {
   value: T;
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string; flag: string }>;
   ariaLabel: string;
+  triggerClassName: string;
+  listClassName: string;
+  itemClassName: (active: boolean) => string;
 }) {
-  const u = useUi();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const current = options.find((o) => o.value === value) ?? options[0];
@@ -610,13 +615,13 @@ export function LangMenu<T extends string>({
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={cx(u.input, "flex w-40 items-center justify-between gap-2 py-1.5 text-xs cursor-pointer")}
+        title={ariaLabel}
+        className={cx("flex items-center justify-center cursor-pointer", triggerClassName)}
       >
-        <span className="flex items-center gap-2"><Flag code={current.flag} />{current.label}</span>
-        <ChevronDown className={cx("h-3.5 w-3.5 shrink-0 transition-transform", u.muted, open && "rotate-180")} />
+        <Flag code={current.flag} />
       </button>
       {open && (
-        <ul role="listbox" className={cx("absolute right-0 z-50 mt-2 w-48 overflow-hidden p-1.5 shadow-2xl bg-zinc-950 rounded-2xl", u.panel)}>
+        <ul role="listbox" className={cx("absolute left-0 md:left-auto md:right-0 z-50 mt-2 w-48 overflow-hidden p-1.5 shadow-2xl", listClassName)}>
           {options.map((o) => {
             const active = o.value === value;
             return (
@@ -624,11 +629,11 @@ export function LangMenu<T extends string>({
                 <button
                   type="button"
                   onClick={() => { onChange(o.value); setOpen(false); }}
-                  className={cx("flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-xs transition-colors cursor-pointer", active ? u.tag : "hover:bg-white/5", !active && u.subtle)}
+                  className={cx("flex w-full items-center gap-3 px-3 py-2 text-left text-xs transition-colors cursor-pointer", itemClassName(active))}
                 >
                   <Flag code={o.flag} />
                   <span className="flex-1">{o.label}</span>
-                  {active && <Check className={cx("h-3.5 w-3.5", u.accent)} />}
+                  {active && <Check className="h-3.5 w-3.5 text-zinc-400" />}
                 </button>
               </li>
             );

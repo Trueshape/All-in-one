@@ -174,6 +174,19 @@ export default function Landing({
             onChange={(v) => setLang(v)}
             options={LANGS.map((l) => ({ value: l.code, label: l.label, flag: l.flag }))}
             ariaLabel={t("language")}
+            triggerClassName={`h-[30px] w-[30px] border ${tc.borderClass} ${tc.btnClassic} transition-all`}
+            listClassName={`rounded border ${tc.borderClass} ${activeTheme === "immersive" ? "bg-[#030812]" : activeTheme === "sophisticated" ? "bg-slate-900" : "bg-[#0a0a0a]"}`}
+            itemClassName={(active) =>
+              `rounded ${
+                active
+                  ? activeTheme === "immersive"
+                    ? "bg-emerald-950/30 text-emerald-300"
+                    : activeTheme === "sophisticated"
+                    ? "bg-slate-800 text-violet-200"
+                    : "bg-zinc-900 text-zinc-100"
+                  : "hover:bg-zinc-900/40 text-zinc-500 hover:text-zinc-200"
+              }`
+            }
           />
       {/* Theme Selector Dropdown */}
       <div className="relative w-full sm:w-auto">
