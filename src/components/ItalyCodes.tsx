@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { TextInput, Segmented, CopyButton, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { DIAL_CODES, PROVINCES, formatDial, searchDial, searchProvinces } from "../lib/italyCodes";
@@ -91,7 +90,6 @@ export default function ItalyCodes() {
                     className={cx("w-full flex items-center gap-1 px-3 py-2 text-left text-[10px] uppercase tracking-wider font-semibold cursor-pointer whitespace-nowrap hover:text-zinc-200", sort.key === c.key ? u.accent : u.muted)}
                   >
                     {c.label}
-                    {sort.key === c.key && (sort.dir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
                   </button>
                 </th>
               ))}
@@ -122,7 +120,7 @@ export default function ItalyCodes() {
         </table>
         {(tab === "province" ? provinces : dials).length === 0 && <p className={cx("p-8 text-center text-sm", u.muted)}>Nessun risultato.</p>}
       </div>
-      <Notice>Dati di riferimento: per usi ufficiali verifica sulle fonti ufficiali (ISTAT, Poste Italiane, AGCOM). I prefissi telefonici e i CAP sono quelli del capoluogo (due, separati da "/", per le province con due sedi); le città grandi hanno più CAP. Clicca il titolo di una colonna per ordinare.</Notice>
+      <Notice>Dati di riferimento: per usi ufficiali verifica sulle fonti ufficiali (ISTAT, Poste Italiane, AGCOM). I prefissi telefonici e i CAP sono quelli del capoluogo (due, separati da "/", per le province con due sedi); le città grandi hanno più CAP. Clicca il titolo di una colonna per ordinare (di nuovo per invertire).</Notice>
     </Stack>
   );
 }
