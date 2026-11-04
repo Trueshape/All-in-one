@@ -29,7 +29,7 @@ const PROVINCE_COLUMNS: Column<Province>[] = [
 ];
 const DIAL_COLUMNS: Column<DialCode>[] = [
   { key: "iso", label: "ISO", value: (d) => d.iso },
-  { key: "country", label: "Paese", value: (d) => d.country, width: "w-60" },
+  { key: "country", label: "Paese", value: (d) => d.country, width: "w-px whitespace-nowrap" },
   { key: "code", label: "Prefisso", value: (d) => digitsOf(d.codes[0]), digits: true },
 ];
 
@@ -113,7 +113,7 @@ export default function ItalyCodes() {
               : dials.map((d) => (
                   <tr key={d.iso} className={cx("border-t", u.divider)}>
                     <td className={cx(cell, "font-mono font-bold", u.accent)}>{d.iso}</td>
-                    <td className={cx(cell, "w-60")}>{d.country}</td>
+                    <td className={cx(cell, "w-px whitespace-nowrap")}>{d.country}</td>
                     <td className={cx(cell, "font-mono")}>{d.codes.map(formatDial).join(", ")}</td>
                     <td className={cell}><CopyButton text={formatDial(d.codes[0])} label="Copia il prefisso" /></td>
                   </tr>

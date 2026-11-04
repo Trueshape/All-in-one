@@ -87,7 +87,7 @@ Cambogia|KH|855
 Camerun|CM|237
 Canada|CA|1
 Capo Verde|CV|238
-Caraibi olandesi (Bonaire, Sint Eustatius, Saba)|BQ|599-7,599-3,599-4
+Caraibi olandesi|BQ|599-7,599-3,599-4
 Ciad|TD|235
 Cile|CL|56
 Cina|CN|86
@@ -105,7 +105,7 @@ Croazia|HR|385
 Cuba|CU|53
 Curaçao|CW|599-9
 Danimarca|DK|45
-Diego Garcia (Territorio britannico dell'Oceano Indiano)|IO|246
+Diego Garcia|IO|246
 Dominica|DM|1-767
 Ecuador|EC|593
 Egitto|EG|20
@@ -122,7 +122,7 @@ Francia|FR|33
 Gabon|GA|241
 Gambia|GM|220
 Georgia|GE|995
-Georgia del Sud e Sandwich australi|GS|500
+Georgia del Sud|GS|500
 Germania|DE|49
 Ghana|GH|233
 Giamaica|JM|1-876,1-658
