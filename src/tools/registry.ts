@@ -58,6 +58,7 @@ import {
   Hourglass,
   Hash,
   MapPinned,
+  PhoneCall,
   ScanBarcode,
   Trophy,
   Medal,
@@ -97,6 +98,7 @@ const PercentageCalculator = lazy(() => import("../components/PercentageCalculat
 const EtaCalculator = lazy(() => import("../components/EtaCalculator"));
 const AsciiArt = lazy(() => import("../components/AsciiArt"));
 const ItalyCodes = lazy(() => import("../components/ItalyCodes"));
+const DialCodes = lazy(() => import("../components/DialCodes"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -467,14 +469,25 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "italy_codes",
-    name: "Atlante dei Prefissi",
-    description: "Cerca sigle, prefissi telefonici e CAP delle province italiane, e i prefissi internazionali dei Paesi.",
+    name: "Province Italiane",
+    description: "Cerca sigla, regione, prefisso telefonico e CAP del capoluogo delle province italiane.",
     icon: MapPinned,
     colorClass: "border-red-900/30 hover:border-red-500/50",
     glowClass: "shadow-red-950/20 hover:shadow-red-500/5",
     iconColor: "text-red-400 bg-red-500/10",
     category: "creative",
     component: ItalyCodes,
+  },
+  {
+    id: "dial_codes",
+    name: "Prefissi Internazionali",
+    description: "Cerca il prefisso telefonico di ogni Paese per nome o per sigla ISO, e ordina l'elenco come vuoi.",
+    icon: PhoneCall,
+    colorClass: "border-cyan-900/30 hover:border-cyan-500/50",
+    glowClass: "shadow-cyan-950/20 hover:shadow-cyan-500/5",
+    iconColor: "text-cyan-400 bg-cyan-500/10",
+    category: "creative",
+    component: DialCodes,
   },
   {
     id: "bracket_maker",
