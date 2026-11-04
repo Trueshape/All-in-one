@@ -14,6 +14,8 @@ interface Column<T> {
   value: (row: T) => string;
   /** Digit strings compare character by character, which is also the order you would dial them in. */
   digits?: boolean;
+  /** Width class for the column, when it should not take the spare space. */
+  width?: string;
 }
 
 const digitsOf = (s: string) => s.replace(/\D/g, "");
@@ -27,7 +29,7 @@ const PROVINCE_COLUMNS: Column<Province>[] = [
 ];
 const DIAL_COLUMNS: Column<DialCode>[] = [
   { key: "iso", label: "ISO", value: (d) => d.iso },
-  { key: "country", label: "Paese", value: (d) => d.country },
+  { key: "country", label: "Paese", value: (d) => d.country, width: "w-60" },
   { key: "code", label: "Prefisso", value: (d) => digitsOf(d.codes[0]), digits: true },
 ];
 
@@ -82,7 +84,7 @@ export default function ItalyCodes() {
           <thead className={u.id === "sophisticated" ? "bg-black/40 backdrop-blur" : "bg-black/60"}>
             <tr>
               {columns.map((c) => (
-                <th key={c.key} className="sticky top-0 p-0 text-left" aria-sort={sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
+                <th key={c.key} className={cx("sticky top-0 p-0 text-left", c.width)} aria-sort={sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
                   <button
                     type="button"
                     onClick={() => toggle(c.key)}
@@ -111,7 +113,7 @@ export default function ItalyCodes() {
               : dials.map((d) => (
                   <tr key={d.iso} className={cx("border-t", u.divider)}>
                     <td className={cx(cell, "font-mono font-bold", u.accent)}>{d.iso}</td>
-                    <td className={cell}>{d.country}</td>
+                    <td className={cx(cell, "w-60")}>{d.country}</td>
                     <td className={cx(cell, "font-mono")}>{d.codes.map(formatDial).join(", ")}</td>
                     <td className={cell}><CopyButton text={formatDial(d.codes[0])} label="Copia il prefisso" /></td>
                   </tr>
