@@ -1,48 +1,102 @@
 import { useMemo, useState } from "react";
-import { Field, TextInput, Segmented, CopyButton, Notice, Stack, cx } from "../ui/kit";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { TextInput, Segmented, CopyButton, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { DIAL_CODES, PROVINCES, formatDial, searchDial, searchProvinces } from "../lib/italyCodes";
+import type { DialCode, Province } from "../lib/italyCodes";
 
 type Tab = "province" | "dial";
-type Sort = "name" | "prefix";
+type Dir = "asc" | "desc";
 
-/** Prefixes compare digit by digit, which is also the order you would dial them in. */
-const byDigits = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+interface Column<T> {
+  key: string;
+  label: string;
+  /** Text to sort by. */
+  value: (row: T) => string;
+  /** Digit strings compare character by character, which is also the order you would dial them in. */
+  digits?: boolean;
+}
 
-/** Lookup tables: Italian provinces (sigla, telephone prefix, CAP) and international dialing codes. */
+const digitsOf = (s: string) => s.replace(/\D/g, "");
+
+const PROVINCE_COLUMNS: Column<Province>[] = [
+  { key: "sigla", label: "Sigla", value: (p) => p.sigla },
+  { key: "name", label: "Provincia", value: (p) => p.name },
+  { key: "region", label: "Regione", value: (p) => p.region },
+  { key: "prefix", label: "Prefisso", value: (p) => digitsOf(p.prefix.split(" / ")[0]), digits: true },
+  { key: "cap", label: "CAP capoluogo", value: (p) => digitsOf(p.cap.split(/[ –]/)[0]), digits: true },
+];
+const DIAL_COLUMNS: Column<DialCode>[] = [
+  { key: "country", label: "Paese", value: (d) => d.country },
+  { key: "iso", label: "ISO", value: (d) => d.iso },
+  { key: "code", label: "Prefisso", value: (d) => digitsOf(d.codes[0]), digits: true },
+];
+
+function sortRows<T>(rows: T[], column: Column<T>, dir: Dir, tieBreak: (row: T) => string): T[] {
+  const sign = dir === "asc" ? 1 : -1;
+  return [...rows].sort((a, b) => {
+    const x = column.value(a);
+    const y = column.value(b);
+    const order = column.digits ? (x < y ? -1 : x > y ? 1 : 0) : x.localeCompare(y, "it");
+    return order * sign || tieBreak(a).localeCompare(tieBreak(b), "it");
+  });
+}
+
+/** Lookup tables: Italian provinces (sigla, telephone prefix, CAP) and international dialing codes. Click a column title to sort by it. */
 export default function ItalyCodes() {
   const u = useUi();
   const [tab, setTab] = useState<Tab>("province");
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<Sort>("name");
+  const [sort, setSort] = useState<{ key: string; dir: Dir }>({ key: "name", dir: "asc" });
 
   const provinces = useMemo(() => {
-    const found = searchProvinces(query);
-    return sort === "prefix" ? [...found].sort((a, b) => byDigits(a.prefix, b.prefix) || a.name.localeCompare(b.name, "it")) : found;
+    const column = PROVINCE_COLUMNS.find((c) => c.key === sort.key) ?? PROVINCE_COLUMNS[1];
+    return sortRows(searchProvinces(query), column, sort.dir, (p) => p.name);
   }, [query, sort]);
   const dials = useMemo(() => {
-    const found = searchDial(query);
-    return sort === "prefix" ? [...found].sort((a, b) => byDigits(a.codes[0].replace("-", ""), b.codes[0].replace("-", "")) || a.country.localeCompare(b.country, "it")) : found;
+    const column = DIAL_COLUMNS.find((c) => c.key === sort.key) ?? DIAL_COLUMNS[0];
+    return sortRows(searchDial(query), column, sort.dir, (d) => d.country);
   }, [query, sort]);
-  const head = cx("text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2 sticky top-0", u.muted);
+
   const cell = "px-3 py-1.5";
+  const columns = tab === "province" ? PROVINCE_COLUMNS : DIAL_COLUMNS;
+  const toggle = (key: string) => setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
 
   return (
     <Stack>
-      <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] items-stretch gap-3">
-        <Segmented fill className="h-full" value={tab} onChange={(v) => { setTab(v); setQuery(""); }} options={[{ value: "province", label: <span className="whitespace-nowrap">{`Province (${PROVINCES.length})`}</span> }, { value: "dial", label: <span className="whitespace-nowrap">{`Prefissi esteri (${DIAL_CODES.length})`}</span> }]} />
+      <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] items-stretch gap-3">
+        <Segmented
+          fill
+          className="h-full"
+          value={tab}
+          onChange={(v) => { setTab(v); setQuery(""); setSort({ key: v === "province" ? "name" : "country", dir: "asc" }); }}
+          options={[
+            { value: "province", label: <span className="whitespace-nowrap">{`Province (${PROVINCES.length})`}</span> },
+            { value: "dial", label: <span className="whitespace-nowrap">{`Prefissi esteri (${DIAL_CODES.length})`}</span> },
+          ]}
+        />
         <TextInput className="h-full" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tab === "province" ? "Nome, sigla, regione, prefisso o CAP" : "Paese, sigla ISO o prefisso (+39)"} aria-label="Cerca" />
-        <Segmented fill className="h-full" value={sort} onChange={setSort} options={[{ value: "name", label: <span className="whitespace-nowrap">Per nome</span> }, { value: "prefix", label: <span className="whitespace-nowrap">Per prefisso</span> }]} />
       </div>
 
       <div className={cx("overflow-auto max-h-[52vh] border", u.divider)}>
         <table className="w-full text-sm">
           <thead className={u.id === "sophisticated" ? "bg-black/40 backdrop-blur" : "bg-black/60"}>
-            {tab === "province" ? (
-              <tr><th className={head}>Sigla</th><th className={head}>Provincia</th><th className={head}>Regione</th><th className={head}>Prefisso</th><th className={head}>CAP capoluogo</th><th className={head} /></tr>
-            ) : (
-              <tr><th className={head}>Paese</th><th className={head}>ISO</th><th className={head}>Prefisso</th><th className={head} /></tr>
-            )}
+            <tr>
+              {columns.map((c) => (
+                <th key={c.key} className="sticky top-0 p-0 text-left" aria-sort={sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
+                  <button
+                    type="button"
+                    onClick={() => toggle(c.key)}
+                    title={`Ordina per ${c.label.toLowerCase()}`}
+                    className={cx("w-full flex items-center gap-1 px-3 py-2 text-left text-[10px] uppercase tracking-wider font-semibold cursor-pointer whitespace-nowrap hover:text-zinc-200", sort.key === c.key ? u.accent : u.muted)}
+                  >
+                    {c.label}
+                    {sort.key === c.key && (sort.dir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
+                  </button>
+                </th>
+              ))}
+              <th className="sticky top-0" />
+            </tr>
           </thead>
           <tbody>
             {tab === "province"
@@ -68,7 +122,7 @@ export default function ItalyCodes() {
         </table>
         {(tab === "province" ? provinces : dials).length === 0 && <p className={cx("p-8 text-center text-sm", u.muted)}>Nessun risultato.</p>}
       </div>
-      <Notice>Dati di riferimento: per usi ufficiali verifica sulle fonti ufficiali (ISTAT, Poste Italiane, AGCOM). I prefissi telefonici e i CAP sono quelli del capoluogo (due, separati da "/", per le province con due sedi); le città grandi hanno più CAP.</Notice>
+      <Notice>Dati di riferimento: per usi ufficiali verifica sulle fonti ufficiali (ISTAT, Poste Italiane, AGCOM). I prefissi telefonici e i CAP sono quelli del capoluogo (due, separati da "/", per le province con due sedi); le città grandi hanno più CAP. Clicca il titolo di una colonna per ordinare.</Notice>
     </Stack>
   );
 }
