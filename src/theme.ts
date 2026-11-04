@@ -3,6 +3,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   calcolo: "Calcoli",
   convertitori: "Convertitori",
   immagini: "Immagini",
+  testo: "Testo",
   produttivita: "Produttività",
   creative: "Utilità",
   preferiti: "Preferiti",

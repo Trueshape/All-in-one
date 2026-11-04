@@ -16,6 +16,7 @@ import {
   Pencil,
   ChevronLeft,
   Image as ImageIcon,
+  Type as TypeIcon,
 } from "lucide-react";
 import { TOOLS, type ToolItem } from "./tools/registry";
 import { CATEGORY_LABELS, getThemeClasses, type Theme } from "./theme";
@@ -38,6 +39,8 @@ const getCategoryIcon = (category: string) => {
       return ArrowLeftRight;
     case "immagini":
       return ImageIcon;
+    case "testo":
+      return TypeIcon;
     case "calcolo":
       return Calculator;
     case "produttivita":
@@ -328,7 +331,7 @@ export default function Landing({
               </p>
             </div>
 
-            <div className={`${tc.gridContainer} min-[1500px]:grid-cols-6! min-[1500px]:w-full min-[1500px]:max-w-none!`}>
+            <div className={`${tc.gridContainer} min-[1500px]:grid-cols-7! min-[1500px]:w-full min-[1500px]:max-w-none!`}>
               {[
                 {
                   id: "calcolo",
@@ -340,7 +343,7 @@ export default function Landing({
                 {
                   id: "convertitori",
                   name: t("nav_convertitori"),
-                  description: "Tassi di cambio valute, unità di misura, maiuscole e codici di testo.",
+                  description: "Tassi di cambio valute, unità di misura, numeri romani, formati audio.",
                   icon: ArrowLeftRight,
                   count: TOOLS.filter(t => t.category === "convertitori").length,
                 },
@@ -352,16 +355,23 @@ export default function Landing({
                   count: TOOLS.filter(t => t.category === "immagini").length,
                 },
                 {
+                  id: "testo",
+                  name: t("nav_testo"),
+                  description: "Maiuscole, differenze, markdown, trova e sostituisci, lettura ad alta voce e codifiche di testo.",
+                  icon: TypeIcon,
+                  count: TOOLS.filter(t => t.category === "testo").length,
+                },
+                {
                   id: "produttivita",
                   name: t("nav_produttivita"),
-                  description: "Pomodoro, timer, orologi mondiali, generatori e analisi testi.",
+                  description: "Pomodoro, timer, orologi mondiali, tornei, segnapunti e liste.",
                   icon: Timer,
                   count: TOOLS.filter(t => t.category === "produttivita").length,
                 },
                 {
                   id: "creative",
                   name: t("nav_creative"),
-                  description: "Decisioni casuali, picker colori, markdown e tag per Discord.",
+                  description: "Decisioni casuali, QR e codici a barre, piano, grafici e prefissi.",
                   icon: Palette,
                   count: TOOLS.filter(t => t.category === "creative").length,
                 },

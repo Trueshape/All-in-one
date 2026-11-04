@@ -18,7 +18,7 @@ type Dict = Record<string, string>;
 /** Interface strings of the landing page and the tool window. Italian is the source language. */
 const UI: Record<Lang, Dict> = {
   it: {
-    nav_all: "Tutti i Tool", nav_calcolo: "Calcoli", nav_convertitori: "Convertitori", nav_immagini: "Immagini", nav_produttivita: "Produttività", nav_creative: "Utilità", nav_preferiti: "Preferiti",
+    nav_all: "Tutti i Tool", nav_calcolo: "Calcoli", nav_convertitori: "Convertitori", nav_immagini: "Immagini", nav_testo: "Testo", nav_produttivita: "Produttività", nav_creative: "Utilità", nav_preferiti: "Preferiti",
     search: "Cerca strumento o funzione...", style: "Stile:", select_interface: "Seleziona Interfaccia",
     theme_artistic: "Minimale, stampo editoriale", theme_immersive: "Terminale cyber, dettagli neon, fosfori", theme_sophisticated: "Premium dark, angoli morbidi, sfumature",
     select_category: "Seleziona Categoria", select_category_sub: "Esplora i diversi strumenti raggruppati per tipologia di utilizzo.",
@@ -28,7 +28,7 @@ const UI: Record<Lang, Dict> = {
     prev: "Precedente", next: "Successivo", tool_of: "STRUMENTO", language: "Lingua", settings: "Impostazioni", settings_close: "Chiudi impostazioni", close: "Chiudi",
   },
   en: {
-    nav_all: "All tools", nav_calcolo: "Calculators", nav_convertitori: "Converters", nav_immagini: "Images", nav_produttivita: "Productivity", nav_creative: "Utilities", nav_preferiti: "Favorites",
+    nav_all: "All tools", nav_calcolo: "Calculators", nav_convertitori: "Converters", nav_immagini: "Images", nav_testo: "Text", nav_produttivita: "Productivity", nav_creative: "Utilities", nav_preferiti: "Favorites",
     search: "Search tool or feature...", style: "Style:", select_interface: "Select interface",
     theme_artistic: "Minimal, editorial style", theme_immersive: "Cyber terminal, neon details, phosphor", theme_sophisticated: "Premium dark, soft corners, gradients",
     select_category: "Select category", select_category_sub: "Explore the tools grouped by type of use.",
@@ -38,7 +38,7 @@ const UI: Record<Lang, Dict> = {
     prev: "Previous", next: "Next", tool_of: "TOOL", language: "Language", settings: "Settings", settings_close: "Close settings", close: "Close",
   },
   es: {
-    nav_all: "Todas las herramientas", nav_calcolo: "Cálculos", nav_convertitori: "Conversores", nav_immagini: "Imágenes", nav_produttivita: "Productividad", nav_creative: "Utilidades", nav_preferiti: "Favoritos",
+    nav_all: "Todas las herramientas", nav_calcolo: "Cálculos", nav_convertitori: "Conversores", nav_immagini: "Imágenes", nav_testo: "Texto", nav_produttivita: "Productividad", nav_creative: "Utilidades", nav_preferiti: "Favoritos",
     search: "Buscar herramienta o función...", style: "Estilo:", select_interface: "Seleccionar interfaz",
     theme_artistic: "Minimalista, estilo editorial", theme_immersive: "Terminal cibernético, detalles neón, fósforo", theme_sophisticated: "Premium oscuro, esquinas suaves, degradados",
     select_category: "Seleccionar categoría", select_category_sub: "Explora las herramientas agrupadas por tipo de uso.",
@@ -48,7 +48,7 @@ const UI: Record<Lang, Dict> = {
     prev: "Anterior", next: "Siguiente", tool_of: "HERRAMIENTA", language: "Idioma", settings: "Ajustes", settings_close: "Cerrar ajustes", close: "Cerrar",
   },
   de: {
-    nav_all: "Alle Tools", nav_calcolo: "Rechner", nav_convertitori: "Umrechner", nav_immagini: "Bilder", nav_produttivita: "Produktivität", nav_creative: "Hilfsmittel", nav_preferiti: "Favoriten",
+    nav_all: "Alle Tools", nav_calcolo: "Rechner", nav_convertitori: "Umrechner", nav_immagini: "Bilder", nav_testo: "Text", nav_produttivita: "Produktivität", nav_creative: "Hilfsmittel", nav_preferiti: "Favoriten",
     search: "Tool oder Funktion suchen...", style: "Stil:", select_interface: "Oberfläche wählen",
     theme_artistic: "Minimalistisch, redaktioneller Stil", theme_immersive: "Cyber-Terminal, Neon-Details, Phosphor", theme_sophisticated: "Premium dunkel, weiche Ecken, Verläufe",
     select_category: "Kategorie wählen", select_category_sub: "Entdecke die Tools, gruppiert nach Verwendungszweck.",
@@ -58,7 +58,7 @@ const UI: Record<Lang, Dict> = {
     prev: "Zurück", next: "Weiter", tool_of: "TOOL", language: "Sprache", settings: "Einstellungen", settings_close: "Einstellungen schließen", close: "Schließen",
   },
   fr: {
-    nav_all: "Tous les outils", nav_calcolo: "Calculs", nav_convertitori: "Convertisseurs", nav_immagini: "Images", nav_produttivita: "Productivité", nav_creative: "Utilitaires", nav_preferiti: "Favoris",
+    nav_all: "Tous les outils", nav_calcolo: "Calculs", nav_convertitori: "Convertisseurs", nav_immagini: "Images", nav_testo: "Texte", nav_produttivita: "Productivité", nav_creative: "Utilitaires", nav_preferiti: "Favoris",
     search: "Rechercher un outil ou une fonction...", style: "Style :", select_interface: "Choisir l’interface",
     theme_artistic: "Minimaliste, style éditorial", theme_immersive: "Terminal cyber, détails néon, phosphore", theme_sophisticated: "Premium sombre, coins arrondis, dégradés",
     select_category: "Choisir une catégorie", select_category_sub: "Explore les outils regroupés par type d’usage.",

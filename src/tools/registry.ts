@@ -132,7 +132,7 @@ export interface ToolItem {
   colorClass: string;
   glowClass: string;
   iconColor: string;
-  category: "convertitori" | "calcolo" | "produttivita" | "creative" | "immagini";
+  category: "convertitori" | "calcolo" | "produttivita" | "creative" | "immagini" | "testo";
   component: React.ComponentType<any>;
 }
 
@@ -277,7 +277,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
     glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
     iconColor: "text-indigo-400 bg-indigo-500/10",
-    category: "creative",
+    category: "testo",
     component: MarkdownPreviewer,
   },
   {
@@ -354,7 +354,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-purple-900/30 hover:border-purple-500/50",
     glowClass: "shadow-purple-950/20 hover:shadow-purple-500/5",
     iconColor: "text-purple-400 bg-purple-500/10",
-    category: "convertitori",
+    category: "testo",
     component: CaseConverter,
   },
   {
@@ -376,7 +376,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
     glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
     iconColor: "text-rose-400 bg-rose-500/10",
-    category: "produttivita",
+    category: "testo",
     component: TextDiff,
   },
   {
@@ -420,7 +420,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
     glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
     iconColor: "text-indigo-400 bg-indigo-500/10",
-    category: "creative",
+    category: "testo",
     component: DiscordTimestamp,
   },
   {
@@ -497,7 +497,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-sky-900/30 hover:border-sky-500/50",
     glowClass: "shadow-sky-950/20 hover:shadow-sky-500/5",
     iconColor: "text-sky-400 bg-sky-500/10",
-    category: "convertitori",
+    category: "testo",
     component: TextCodes,
   },
   {
@@ -508,7 +508,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-amber-900/30 hover:border-amber-500/50",
     glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
     iconColor: "text-amber-400 bg-amber-500/10",
-    category: "convertitori",
+    category: "testo",
     component: MorseCode,
   },
   {
@@ -552,7 +552,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-teal-900/30 hover:border-teal-500/50",
     glowClass: "shadow-teal-950/20 hover:shadow-teal-500/5",
     iconColor: "text-teal-400 bg-teal-500/10",
-    category: "creative",
+    category: "testo",
     component: AsciiArt,
   },
   {
@@ -596,7 +596,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
     glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
     iconColor: "text-indigo-400 bg-indigo-500/10",
-    category: "convertitori",
+    category: "testo",
     component: TextToSpeech,
   },
   {
@@ -629,7 +629,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-lime-900/30 hover:border-lime-500/50",
     glowClass: "shadow-lime-950/20 hover:shadow-lime-500/5",
     iconColor: "text-lime-400 bg-lime-500/10",
-    category: "produttivita",
+    category: "testo",
     component: RandomizeList,
   },
   {
@@ -640,7 +640,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-teal-900/30 hover:border-teal-500/50",
     glowClass: "shadow-teal-950/20 hover:shadow-teal-500/5",
     iconColor: "text-teal-400 bg-teal-500/10",
-    category: "produttivita",
+    category: "testo",
     component: TextCleaner,
   },
   {
