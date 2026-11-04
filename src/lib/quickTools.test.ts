@@ -8,6 +8,7 @@ import { fitTile, patternSvg } from "./pattern";
 import { fromBytes, toBytes, unitLabel } from "./dataSize";
 import { splitForSpeech } from "./speech";
 import { offsetDifference, zoneOffsetMinutes, zonedTimeToInstant } from "./timeZones";
+import { radarPoint, radarSvg } from "./radar";
 import { morseToText, textToMorse } from "./morse";
 import { fromRoman, toRoman } from "./roman";
 import { dedupeLines, findReplace, shuffle } from "./textTools";
@@ -219,4 +220,18 @@ test("time zones: offsets, conversion and clock changes", () => {
   // Day of the change to summer time in Rome (29 March 2026): 12:00 is already +2.
   assert.equal(zonedTimeToInstant("2026-03-29", "12:00", "Europe/Rome"), Date.UTC(2026, 2, 29, 10));
   assert.equal(zonedTimeToInstant("2026-01-15", "", "Europe/Rome"), null);
+});
+
+test("radar: axis 0 points up, values scale to the radius and text is escaped", () => {
+  const top = radarPoint(0, 4, 1);
+  assert.equal(Math.round(top.x), 240);
+  assert.equal(Math.round(top.y), 90);
+  const right = radarPoint(1, 4, 0.5);
+  assert.deepEqual([Math.round(right.x), Math.round(right.y)], [315, 240]);
+  const svg = radarSvg({ axes: ["A<b>", "B", "C"], series: [{ name: "S", color: "#000000", values: [10, 5, 99] }], max: 10, rings: 2 });
+  assert.ok(svg.includes("A&lt;b&gt;"));
+  assert.ok(!svg.includes("A<b>"));
+  assert.equal((svg.match(/<circle/g) ?? []).length, 3);
+  // 99 is clamped to the edge: same point as axis value 10.
+  assert.ok(svg.includes("<polygon points=\"240,90 "));
 });

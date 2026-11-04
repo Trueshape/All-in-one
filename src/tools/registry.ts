@@ -59,6 +59,7 @@ import {
   Hash,
   MapPinned,
   PhoneCall,
+  Radar,
   Volume2,
   AudioLines,
   HardDrive,
@@ -112,6 +113,7 @@ const TextCleaner = lazy(() => import("../components/TextCleaner"));
 const DataSizeConverter = lazy(() => import("../components/DataSizeConverter"));
 const AudioEditor = lazy(() => import("../components/AudioEditor"));
 const TextToSpeech = lazy(() => import("../components/TextToSpeech"));
+const RadarChartMaker = lazy(() => import("../components/RadarChartMaker"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -534,6 +536,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-indigo-400 bg-indigo-500/10",
     category: "convertitori",
     component: TextToSpeech,
+  },
+  {
+    id: "radar_chart",
+    name: "Grafico Radar",
+    description: "Scrivi assi e valori, confronta fino a quattro serie in un grafico radar e salvalo in SVG o PNG.",
+    icon: Radar,
+    colorClass: "border-violet-900/30 hover:border-violet-500/50",
+    glowClass: "shadow-violet-950/20 hover:shadow-violet-500/5",
+    iconColor: "text-violet-400 bg-violet-500/10",
+    category: "creative",
+    component: RadarChartMaker,
   },
   {
     id: "morse_code",

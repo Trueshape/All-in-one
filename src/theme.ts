@@ -117,6 +117,7 @@ export const getToolModalSize = (toolId: string): string => {
     case "case_converter":
     case "text_codes":
     case "morse_code":
+    case "radar_chart":
     case "audio_editor":
     case "text_to_speech":
     case "randomize_list":
