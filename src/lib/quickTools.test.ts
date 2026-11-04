@@ -9,6 +9,7 @@ import { fromBytes, toBytes, unitLabel } from "./dataSize";
 import { splitForSpeech } from "./speech";
 import { offsetDifference, zoneOffsetMinutes, zonedTimeToInstant } from "./timeZones";
 import { radarPoint, radarSvg } from "./radar";
+import { cMidi, noteFrequency, noteName, pianoKeys } from "./piano";
 import { morseToText, textToMorse } from "./morse";
 import { fromRoman, toRoman } from "./roman";
 import { dedupeLines, findReplace, shuffle } from "./textTools";
@@ -234,4 +235,20 @@ test("radar: axis 0 points up, values scale to the radius and text is escaped", 
   assert.equal((svg.match(/<circle/g) ?? []).length, 3);
   // 99 is clamped to the edge: same point as axis value 10.
   assert.ok(svg.includes("<polygon points=\"240,90 "));
+});
+
+test("piano: frequencies, names and key layout", () => {
+  assert.equal(noteFrequency(69), 440);
+  assert.ok(Math.abs(noteFrequency(60) - 261.6256) < 0.001);
+  assert.equal(cMidi(4), 60);
+  assert.equal(noteName(60), "Do4");
+  assert.equal(noteName(70), "La#4");
+  const keys = pianoKeys(3, 3);
+  assert.equal(keys.length, 37);
+  assert.equal(keys.filter((k) => !k.black).length, 22);
+  assert.equal(keys[0].name, "Do3");
+  assert.equal(keys[36].name, "Do6");
+  // The first black key (Do#) sits after the first white key.
+  assert.equal(keys[1].black, true);
+  assert.equal(keys[1].white, 1);
 });

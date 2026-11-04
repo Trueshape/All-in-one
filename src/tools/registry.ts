@@ -59,6 +59,7 @@ import {
   Hash,
   MapPinned,
   PhoneCall,
+  Piano,
   Radar,
   Volume2,
   AudioLines,
@@ -114,6 +115,7 @@ const DataSizeConverter = lazy(() => import("../components/DataSizeConverter"));
 const AudioEditor = lazy(() => import("../components/AudioEditor"));
 const TextToSpeech = lazy(() => import("../components/TextToSpeech"));
 const RadarChartMaker = lazy(() => import("../components/RadarChartMaker"));
+const VirtualPiano = lazy(() => import("../components/VirtualPiano"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -547,6 +549,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-violet-400 bg-violet-500/10",
     category: "creative",
     component: RadarChartMaker,
+  },
+  {
+    id: "virtual_piano",
+    name: "Piano Virtuale",
+    description: "Suona un pianoforte a tre ottave con mouse, touch o tastiera del computer, scegliendo il suono.",
+    icon: Piano,
+    colorClass: "border-pink-900/30 hover:border-pink-500/50",
+    glowClass: "shadow-pink-950/20 hover:shadow-pink-500/5",
+    iconColor: "text-pink-400 bg-pink-500/10",
+    category: "creative",
+    component: VirtualPiano,
   },
   {
     id: "morse_code",

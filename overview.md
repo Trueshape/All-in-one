@@ -26,6 +26,8 @@
 - `src/lib/audioEncoders.ts` — scelta del formato; MP3 e OGG con `wasm-media-encoders`, caricato solo al primo uso.
 - `src/components/TextToSpeech.tsx` — Lettura Testo: legge il testo con le voci del browser, a pezzi (`src/lib/speech.ts`).
 - `src/lib/timeZones.ts` — offset e conversione tra fusi orari (usato dal convertitore dentro Fusi Mondiali).
+- `src/components/RadarChartMaker.tsx` — Grafico Radar: assi e valori in tabella, anteprima, SVG/PNG (`src/lib/radar.ts`).
+- `src/components/VirtualPiano.tsx` — Piano Virtuale: tre ottave, tastiera del computer, onde Web Audio (`src/lib/piano.ts`).
 - `src/components/PercentageCalculator.tsx` — Calcolatore Percentuali: le quattro domande più comuni (`src/lib/percent.ts`).
 - `src/components/EtaCalculator.tsx` — Calcolatore ETA: durata e ora di fine di un'attività dalla velocità (`src/lib/eta.ts`).
 - `src/components/AsciiArt.tsx` — Testo in ASCII Art con font 5×7 incluso (`src/lib/asciiArt.ts`).
