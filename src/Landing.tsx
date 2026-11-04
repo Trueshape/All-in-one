@@ -144,7 +144,7 @@ export default function Landing({
   return (
     <>
       {/* Header Section */}
-      <header className={`min-h-20 py-3 ${tc.headerBg} relative flex flex-wrap md:flex-nowrap items-center justify-between gap-y-3 px-6 sm:px-8 shrink-0 z-30`}>
+      <header className={`min-h-20 py-3 ${tc.headerBg} relative flex flex-wrap md:flex-nowrap items-center justify-between gap-x-4 gap-y-3 px-6 sm:px-8 shrink-0 z-30`}>
         <div className="flex flex-none items-baseline gap-4 whitespace-nowrap">
           <h1 className={tc.headerTitle}>
             {activeTheme === "immersive" ? "IL SITO È MIO" : "Il sito è mio"}
@@ -154,7 +154,7 @@ export default function Landing({
           </span>
         </div>
 
-        <nav className="flex justify-center gap-4 text-[10px] md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-max font-medium tracking-[0.2em] uppercase overflow-x-auto max-w-full pb-1 sm:pb-0 no-scrollbar">
+        <nav className="flex justify-center gap-4 text-[10px] xl:absolute xl:left-1/2 xl:top-1/2 xl:-translate-x-1/2 xl:-translate-y-1/2 xl:w-max font-medium tracking-[0.2em] uppercase overflow-x-auto max-w-full pb-1 sm:pb-0 no-scrollbar">
           {Object.keys(CATEGORY_LABELS).map((catKey) => (
             <button
               key={catKey}
@@ -168,21 +168,111 @@ export default function Landing({
             </button>
           ))}
         </nav>
-        <div className="flex justify-end shrink-0 md:ml-auto">
+        <div className="flex justify-end items-center gap-3 shrink-0 md:ml-auto">
           <LangMenu
             value={lang}
             onChange={(v) => setLang(v)}
             options={LANGS.map((l) => ({ value: l.code, label: l.label, flag: l.flag }))}
             ariaLabel={t("language")}
           />
+      {/* Theme Selector Dropdown */}
+      <div className="relative w-full sm:w-auto">
+        <button
+          onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
+          className={`w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 text-[10px] font-mono border ${tc.borderClass} ${tc.btnClassic} transition-all uppercase tracking-wider h-[30px]`}
+          id="theme-dropdown-btn"
+          style={{ height: "30px" }}
+        >
+          <div className="flex items-center gap-2">
+            <Palette className="w-3.5 h-3.5" />
+            <span className="hidden md:inline-block">{t("style")}</span>
+            <span className="font-bold">
+              {activeTheme === "artistic" ? "Artistic Flair" : activeTheme === "immersive" ? "Immersive UI" : "Sophisticated"}
+            </span>
+          </div>
+          <ChevronDown className={`w-3 h-3 transition-transform ${isThemeDropdownOpen ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence>
+          {isThemeDropdownOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setIsThemeDropdownOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className={`absolute right-0 mt-2 w-64 z-50 rounded shadow-2xl border ${tc.borderClass} ${
+                  activeTheme === "immersive" ? "bg-[#030812]" : activeTheme === "sophisticated" ? "bg-slate-900" : "bg-[#0a0a0a]"
+                } overflow-hidden`}
+              >
+                <div className={`p-2 border-b ${tc.borderClass} bg-zinc-950/20 text-[9px] font-mono tracking-widest text-zinc-500 uppercase`}>
+                  {t("select_interface")}
+                </div>
+                <div className="p-1.5 flex flex-col gap-1">
+                  {[
+                    {
+                      id: "artistic",
+                      name: "Artistic Flair",
+                      desc: t("theme_artistic"),
+                      accent: "bg-zinc-100",
+                    },
+                    {
+                      id: "immersive",
+                      name: "Immersive UI",
+                      desc: t("theme_immersive"),
+                      accent: "bg-emerald-500",
+                    },
+                    {
+                      id: "sophisticated",
+                      name: "Sophisticated Dark",
+                      desc: t("theme_sophisticated"),
+                      accent: "bg-violet-500",
+                    },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setActiveTheme(t.id as Theme);
+                        setIsThemeDropdownOpen(false);
+                      }}
+                      className={`w-full text-left p-2.5 rounded transition-colors flex items-start gap-3 ${
+                        activeTheme === t.id
+                          ? activeTheme === "immersive"
+                            ? "bg-emerald-950/30 text-emerald-300"
+                            : activeTheme === "sophisticated"
+                            ? "bg-slate-800 text-violet-200"
+                            : "bg-zinc-900 text-zinc-100"
+                          : "hover:bg-zinc-900/40 text-zinc-500 hover:text-zinc-200"
+                      }`}
+                    >
+                      <div className={`w-2 h-2 rounded-full mt-1.5 ${t.accent}`} />
+                      <div className="flex-1">
+                        <div className="text-xs font-bold font-mono tracking-wide">{t.name}</div>
+                        <div className="text-[10px] text-zinc-500 font-sans mt-0.5 leading-snug">{t.desc}</div>
+                      </div>
+                      {activeTheme === t.id && (
+                        <Check className="w-3.5 h-3.5 self-center text-zinc-400" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
         </div>
       </header>
 
       {/* Search, Time and Theme Selector Panel */}
-      <div className={`h-auto sm:h-14 border-b ${tc.borderClass} ${tc.panelBg} flex flex-col sm:flex-row items-center justify-between px-6 sm:px-8 py-3 sm:py-0 gap-4 shrink-0 z-20`}>
+      <div className={`h-auto sm:h-14 border-b ${tc.borderClass} ${tc.panelBg} relative flex flex-col sm:flex-row items-center justify-between px-6 sm:px-8 py-3 sm:py-0 gap-4 shrink-0 z-20`}>
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           {/* Search bar */}
-          <div className="relative w-full sm:w-72 shrink-0">
+          <div className="relative w-full sm:w-72 shrink-0 lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">
               <Search className="w-3.5 h-3.5" />
             </span>
@@ -205,96 +295,6 @@ export default function Landing({
             )}
           </div>
 
-          {/* Theme Selector Dropdown */}
-          <div className="relative w-full sm:w-auto">
-            <button
-              onClick={() => setIsThemeDropdownOpen(!isThemeDropdownOpen)}
-              className={`w-full sm:w-auto flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 text-[10px] font-mono border ${tc.borderClass} ${tc.btnClassic} transition-all uppercase tracking-wider h-[30px]`}
-              id="theme-dropdown-btn"
-              style={{ height: "30px" }}
-            >
-              <div className="flex items-center gap-2">
-                <Palette className="w-3.5 h-3.5" />
-                <span className="hidden md:inline-block">{t("style")}</span>
-                <span className="font-bold">
-                  {activeTheme === "artistic" ? "Artistic Flair" : activeTheme === "immersive" ? "Immersive UI" : "Sophisticated"}
-                </span>
-              </div>
-              <ChevronDown className={`w-3 h-3 transition-transform ${isThemeDropdownOpen ? "rotate-180" : ""}`} />
-            </button>
-
-            <AnimatePresence>
-              {isThemeDropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsThemeDropdownOpen(false)}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className={`absolute left-0 mt-2 w-64 z-50 rounded shadow-2xl border ${tc.borderClass} ${
-                      activeTheme === "immersive" ? "bg-[#030812]" : activeTheme === "sophisticated" ? "bg-slate-900" : "bg-[#0a0a0a]"
-                    } overflow-hidden`}
-                  >
-                    <div className={`p-2 border-b ${tc.borderClass} bg-zinc-950/20 text-[9px] font-mono tracking-widest text-zinc-500 uppercase`}>
-                      {t("select_interface")}
-                    </div>
-                    <div className="p-1.5 flex flex-col gap-1">
-                      {[
-                        {
-                          id: "artistic",
-                          name: "Artistic Flair",
-                          desc: t("theme_artistic"),
-                          accent: "bg-zinc-100",
-                        },
-                        {
-                          id: "immersive",
-                          name: "Immersive UI",
-                          desc: t("theme_immersive"),
-                          accent: "bg-emerald-500",
-                        },
-                        {
-                          id: "sophisticated",
-                          name: "Sophisticated Dark",
-                          desc: t("theme_sophisticated"),
-                          accent: "bg-violet-500",
-                        },
-                      ].map((t) => (
-                        <button
-                          key={t.id}
-                          onClick={() => {
-                            setActiveTheme(t.id as Theme);
-                            setIsThemeDropdownOpen(false);
-                          }}
-                          className={`w-full text-left p-2.5 rounded transition-colors flex items-start gap-3 ${
-                            activeTheme === t.id
-                              ? activeTheme === "immersive"
-                                ? "bg-emerald-950/30 text-emerald-300"
-                                : activeTheme === "sophisticated"
-                                ? "bg-slate-800 text-violet-200"
-                                : "bg-zinc-900 text-zinc-100"
-                              : "hover:bg-zinc-900/40 text-zinc-500 hover:text-zinc-200"
-                          }`}
-                        >
-                          <div className={`w-2 h-2 rounded-full mt-1.5 ${t.accent}`} />
-                          <div className="flex-1">
-                            <div className="text-xs font-bold font-mono tracking-wide">{t.name}</div>
-                            <div className="text-[10px] text-zinc-500 font-sans mt-0.5 leading-snug">{t.desc}</div>
-                          </div>
-                          {activeTheme === t.id && (
-                            <Check className="w-3.5 h-3.5 self-center text-zinc-400" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
 
         <HeaderClock tc={tc} />
