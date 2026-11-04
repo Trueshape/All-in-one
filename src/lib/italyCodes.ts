@@ -4,35 +4,35 @@ export interface Province {
   sigla: string;
   name: string;
   region: string;
-  /** Telephone area code of the capoluogo, with the leading 0. */
+  /** Telephone area code of the capoluogo, with the leading 0 ("A / B" when the two seats differ). */
   prefix: string;
-  /** Postal code of the capoluogo: one code, or a range for cities with several. */
+  /** Postal code of the capoluogo: one code, a range for cities with several, or one per capoluogo ("A / B") for provinces with two seats. */
   cap: string;
 }
 
 type Row = [sigla: string, name: string, prefix: string, cap: string];
 
 const REGIONS: Array<[string, Row[]]> = [
-  ["Abruzzo", [["AQ", "L'Aquila", "0862", "67100"], ["CH", "Chieti", "0871", "66100"], ["PE", "Pescara", "085", "65100–65129"], ["TE", "Teramo", "0861", "64100"]]],
+  ["Abruzzo", [["AQ", "L'Aquila", "0862", "67100"], ["CH", "Chieti", "0871", "66100"], ["PE", "Pescara", "085", "65121–65129"], ["TE", "Teramo", "0861", "64100"]]],
   ["Basilicata", [["MT", "Matera", "0835", "75100"], ["PZ", "Potenza", "0971", "85100"]]],
-  ["Calabria", [["CZ", "Catanzaro", "0961", "88100"], ["CS", "Cosenza", "0984", "87100"], ["KR", "Crotone", "0962", "88900"], ["RC", "Reggio Calabria", "0965", "89100–89135"], ["VV", "Vibo Valentia", "0963", "89900"]]],
+  ["Calabria", [["CZ", "Catanzaro", "0961", "88100"], ["CS", "Cosenza", "0984", "87100"], ["KR", "Crotone", "0962", "88900"], ["RC", "Reggio Calabria", "0965", "89121–89135"], ["VV", "Vibo Valentia", "0963", "89900"]]],
   ["Campania", [["AV", "Avellino", "0825", "83100"], ["BN", "Benevento", "0824", "82100"], ["CE", "Caserta", "0823", "81100"], ["NA", "Napoli", "081", "80121–80147"], ["SA", "Salerno", "089", "84121–84135"]]],
-  ["Emilia-Romagna", [["BO", "Bologna", "051", "40121–40141"], ["FE", "Ferrara", "0532", "44121–44124"], ["FC", "Forlì-Cesena", "0543", "47121–47122"], ["MO", "Modena", "059", "41121–41126"], ["PR", "Parma", "0521", "43121–43126"], ["PC", "Piacenza", "0523", "29121–29122"], ["RA", "Ravenna", "0544", "48121–48124"], ["RE", "Reggio Emilia", "0522", "42121–42124"], ["RN", "Rimini", "0541", "47921–47924"]]],
+  ["Emilia-Romagna", [["BO", "Bologna", "051", "40121–40141"], ["FE", "Ferrara", "0532", "44121–44124"], ["FC", "Forlì-Cesena", "0543", "47121–47122"], ["MO", "Modena", "059", "41121–41126"], ["PR", "Parma", "0521", "43121–43126"], ["PC", "Piacenza", "0523", "29121–29122"], ["RA", "Ravenna", "0544", "48121–48125"], ["RE", "Reggio Emilia", "0522", "42121–42124"], ["RN", "Rimini", "0541", "47921–47924"]]],
   ["Friuli-Venezia Giulia", [["GO", "Gorizia", "0481", "34170"], ["PN", "Pordenone", "0434", "33170"], ["TS", "Trieste", "040", "34121–34151"], ["UD", "Udine", "0432", "33100"]]],
   ["Lazio", [["FR", "Frosinone", "0775", "03100"], ["LT", "Latina", "0773", "04100"], ["RI", "Rieti", "0746", "02100"], ["RM", "Roma", "06", "00118–00199"], ["VT", "Viterbo", "0761", "01100"]]],
-  ["Liguria", [["GE", "Genova", "010", "16121–16167"], ["IM", "Imperia", "0183", "18100"], ["SP", "La Spezia", "0187", "19121–19138"], ["SV", "Savona", "019", "17100"]]],
+  ["Liguria", [["GE", "Genova", "010", "16121–16167"], ["IM", "Imperia", "0183", "18100"], ["SP", "La Spezia", "0187", "19121–19137"], ["SV", "Savona", "019", "17100"]]],
   ["Lombardia", [["BG", "Bergamo", "035", "24121–24129"], ["BS", "Brescia", "030", "25121–25136"], ["CO", "Como", "031", "22100"], ["CR", "Cremona", "0372", "26100"], ["LC", "Lecco", "0341", "23900"], ["LO", "Lodi", "0371", "26900"], ["MN", "Mantova", "0376", "46100"], ["MI", "Milano", "02", "20121–20162"], ["MB", "Monza e della Brianza", "039", "20900"], ["PV", "Pavia", "0382", "27100"], ["SO", "Sondrio", "0342", "23100"], ["VA", "Varese", "0332", "21100"]]],
   ["Marche", [["AN", "Ancona", "071", "60121–60131"], ["AP", "Ascoli Piceno", "0736", "63100"], ["FM", "Fermo", "0734", "63900"], ["MC", "Macerata", "0733", "62100"], ["PU", "Pesaro e Urbino", "0721", "61121–61122"]]],
   ["Molise", [["CB", "Campobasso", "0874", "86100"], ["IS", "Isernia", "0865", "86170"]]],
-  ["Piemonte", [["AL", "Alessandria", "0131", "15121–15122"], ["AT", "Asti", "0141", "14100"], ["BI", "Biella", "015", "13900"], ["CN", "Cuneo", "0171", "12100"], ["NO", "Novara", "0321", "28100"], ["TO", "Torino", "011", "10121–10156"], ["VB", "Verbano-Cusio-Ossola", "0323", "28922"], ["VC", "Vercelli", "0161", "13100"]]],
+  ["Piemonte", [["AL", "Alessandria", "0131", "15121–15122"], ["AT", "Asti", "0141", "14100"], ["BI", "Biella", "015", "13900"], ["CN", "Cuneo", "0171", "12100"], ["NO", "Novara", "0321", "28100"], ["TO", "Torino", "011", "10121–10156"], ["VB", "Verbano-Cusio-Ossola", "0323", "28921–28925"], ["VC", "Vercelli", "0161", "13100"]]],
   ["Puglia", [["BA", "Bari", "080", "70121–70132"], ["BT", "Barletta-Andria-Trani", "0883", "76121"], ["BR", "Brindisi", "0831", "72100"], ["FG", "Foggia", "0881", "71121–71122"], ["LE", "Lecce", "0832", "73100"], ["TA", "Taranto", "099", "74121–74123"]]],
-  ["Sardegna", [["CA", "Cagliari", "070", "09121–09134"], ["NU", "Nuoro", "0784", "08100"], ["OR", "Oristano", "0783", "09170"], ["SS", "Sassari", "079", "07100"], ["SU", "Sud Sardegna", "0781", "09013"]]],
+  ["Sardegna", [["CA", "Cagliari", "070", "09121–09134"], ["NU", "Nuoro", "0784", "08100"], ["OR", "Oristano", "0783", "09170"], ["SS", "Sassari", "079", "07100"], ["OT", "Gallura Nord-Est Sardegna", "0789 / 079", "07026 / 07029"], ["OG", "Ogliastra", "0782", "08045 / 08048"], ["SU", "Sulcis Iglesiente", "0781", "09013 / 09016"], ["VS", "Medio Campidano", "070", "09025 / 09039"]]],
   ["Sicilia", [["AG", "Agrigento", "0922", "92100"], ["CL", "Caltanissetta", "0934", "93100"], ["CT", "Catania", "095", "95121–95131"], ["EN", "Enna", "0935", "94100"], ["ME", "Messina", "090", "98121–98168"], ["PA", "Palermo", "091", "90121–90151"], ["RG", "Ragusa", "0932", "97100"], ["SR", "Siracusa", "0931", "96100"], ["TP", "Trapani", "0923", "91100"]]],
   ["Toscana", [["AR", "Arezzo", "0575", "52100"], ["FI", "Firenze", "055", "50121–50145"], ["GR", "Grosseto", "0564", "58100"], ["LI", "Livorno", "0586", "57121–57128"], ["LU", "Lucca", "0583", "55100"], ["MS", "Massa-Carrara", "0585", "54100"], ["PI", "Pisa", "050", "56121–56128"], ["PT", "Pistoia", "0573", "51100"], ["PO", "Prato", "0574", "59100"], ["SI", "Siena", "0577", "53100"]]],
   ["Trentino-Alto Adige", [["BZ", "Bolzano", "0471", "39100"], ["TN", "Trento", "0461", "38121–38123"]]],
   ["Umbria", [["PG", "Perugia", "075", "06121–06135"], ["TR", "Terni", "0744", "05100"]]],
   ["Valle d'Aosta", [["AO", "Aosta", "0165", "11100"]]],
-  ["Veneto", [["BL", "Belluno", "0437", "32100"], ["PD", "Padova", "049", "35121–35143"], ["RO", "Rovigo", "0425", "45100"], ["TV", "Treviso", "0422", "31100"], ["VE", "Venezia", "041", "30121–30175"], ["VR", "Verona", "045", "37121–37142"], ["VI", "Vicenza", "0444", "36100"]]],
+  ["Veneto", [["BL", "Belluno", "0437", "32100"], ["PD", "Padova", "049", "35121–35143"], ["RO", "Rovigo", "0425", "45100"], ["TV", "Treviso", "0422", "31100"], ["VE", "Venezia", "041", "30121–30176"], ["VR", "Verona", "045", "37121–37142"], ["VI", "Vicenza", "0444", "36100"]]],
 ];
 
 export const PROVINCES: Province[] = REGIONS.flatMap(([region, rows]) =>
@@ -78,7 +78,7 @@ export function searchProvinces(query: string): Province[] {
   if (!q) return PROVINCES;
   const found = PROVINCES.filter((p) => {
     if (clean(p.sigla) === q) return true;
-    if (/^\d+$/.test(q)) return p.prefix.startsWith(q) || p.cap.replace(/–/g, " ").split(" ").some((c) => c.startsWith(q));
+    if (/^\d+$/.test(q)) return p.prefix.split(" / ").some((x) => x.startsWith(q)) || p.cap.replace(/–/g, " ").split(" ").some((c) => c.startsWith(q));
     return clean(p.name).includes(q) || clean(p.region).includes(q);
   });
   // An exact sigla ("MI") comes first, before names and regions that merely contain the letters.

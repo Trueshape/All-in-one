@@ -65,10 +65,10 @@ test("ascii art: every glyph has 7 rows and the fill character is used", () => {
   assert.equal(renderLine("é", opt), renderLine("e", opt));
 });
 
-test("107 provinces with unique sigle", () => {
-  assert.equal(PROVINCES.length, 107);
-  assert.equal(new Set(PROVINCES.map((p) => p.sigla)).size, 107);
-  assert.ok(PROVINCES.every((p) => /^[A-Z]{2}$/.test(p.sigla) && /^0\d+$/.test(p.prefix) && /^\d{5}/.test(p.cap)));
+test("110 provinces with unique sigle", () => {
+  assert.equal(PROVINCES.length, 110);
+  assert.equal(new Set(PROVINCES.map((p) => p.sigla)).size, 110);
+  assert.ok(PROVINCES.every((p) => /^[A-Z]{2}$/.test(p.sigla) && /^0\d+( \/ 0\d+)?$/.test(p.prefix) && /^\d{5}/.test(p.cap)));
 });
 
 test("province search by sigla, name, prefix and CAP", () => {
@@ -77,6 +77,8 @@ test("province search by sigla, name, prefix and CAP", () => {
   assert.deepEqual(searchProvinces("0862").map((p) => p.sigla), ["AQ"]);
   assert.ok(searchProvinces("20121").some((p) => p.sigla === "MI"));
   assert.ok(searchProvinces("friuli").length === 4);
+  assert.deepEqual(searchProvinces("0789").map((p) => p.sigla), ["OT"]);
+  assert.ok(searchProvinces("079").some((p) => p.sigla === "OT"));
 });
 
 test("dialing codes search with or without +", () => {
