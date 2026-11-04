@@ -43,10 +43,10 @@ export default function EtaCalculator() {
     <Stack>
       <div className="space-y-6">
         <div className="space-y-4">
-          <Field label="Quantità totale da fare" hint="Per esempio 500 piatti, 2000 MB, 120 pagine.">
+          <Field label="Totale" hint="Es. 500 piatti, 2000 MB, 120 pagine.">
             <TextInput type="number" inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} />
           </Field>
-          <Field label="Quantità fatta in un dato tempo">
+          <Field label="Ritmo">
             <div className="grid grid-cols-2 items-start gap-3">
               <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} suffixText="fatti" />
               <div className="space-y-2">
@@ -55,6 +55,7 @@ export default function EtaCalculator() {
               </div>
             </div>
           </Field>
+          <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
         </div>
 
         <div className="space-y-4">
@@ -64,7 +65,6 @@ export default function EtaCalculator() {
               <TextInput value={time} onChange={(e) => setTime(e.target.value)} placeholder="HH:MM" aria-label="Ora di inizio" />
             </div>
           </Field>
-          <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
           {eta ? (
             <>
               <ResultCard label="Durata totale" value={formatDuration(eta.durationMs)} copyText={formatDuration(eta.durationMs)} />
