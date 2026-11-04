@@ -116,6 +116,9 @@ export const getToolModalSize = (toolId: string): string => {
       return "w-fit min-w-[min(36rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)]";
     case "case_converter":
     case "text_codes":
+    case "morse_code":
+    case "randomize_list":
+    case "text_cleaner":
     case "ascii_art":
     case "italy_codes":
     case "text_diff":

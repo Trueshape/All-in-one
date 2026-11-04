@@ -5,6 +5,9 @@ import { percentChange, percentOf, wholeFrom, whatPercent } from "./percent";
 import { computeEta, formatDuration } from "./eta";
 import { DEFAULT_OPTIONS, asciiArt, renderLine } from "./asciiArt";
 import { fitTile, patternSvg } from "./pattern";
+import { morseToText, textToMorse } from "./morse";
+import { fromRoman, toRoman } from "./roman";
+import { dedupeLines, findReplace, shuffle } from "./textTools";
 import { DIAL_CODES, PROVINCES, searchDial, searchProvinces } from "./italyCodes";
 
 test("text to binary and hex, and back", () => {
@@ -136,4 +139,46 @@ test("a fitted pattern svg uses the snapped tile size; grid lines run through th
   const svg = patternSvg({ type: "grid", size: 30, weight: 4, rotation: 0, fg: "#ffffff", bg: "#000000", width: 1000, height: 1000, fit: true });
   assert.ok(svg.includes('pattern id="p" width="25" height="25"'));
   assert.ok(svg.includes("M0 12.5H25M12.5 0V25"));
+});
+
+test("morse converts both ways", () => {
+  assert.equal(textToMorse("SOS ciao").code, "... --- ... / -.-. .. .- ---");
+  assert.deepEqual(morseToText("... --- ... / -.-. .. .- ---"), { text: "SOS CIAO", unknown: 0 });
+  assert.equal(textToMorse("è").code, ".");
+  assert.deepEqual(textToMorse("a~b"), { code: ".- -...", skipped: 1 });
+  assert.equal(morseToText("...---...").unknown, 1);
+});
+
+test("roman numerals round-trip and reject non-canonical forms", () => {
+  assert.equal(toRoman(2026), "MMXXVI");
+  assert.equal(toRoman(0), null);
+  assert.equal(toRoman(4000), null);
+  assert.equal(fromRoman("mcmxciv"), 1994);
+  assert.equal(fromRoman("IIII"), null);
+  assert.equal(fromRoman("VX"), null);
+  for (let n = 1; n <= 3999; n++) assert.equal(fromRoman(toRoman(n)!), n);
+});
+
+test("find and replace, with options and regex", () => {
+  const off = { caseSensitive: false, wholeWord: false, regex: false };
+  assert.deepEqual(findReplace("Gatto gatto", "gatto", "cane", off), { result: "cane cane", count: 2 });
+  assert.deepEqual(findReplace("Gatto gatto", "gatto", "cane", { ...off, caseSensitive: true }), { result: "Gatto cane", count: 1 });
+  assert.deepEqual(findReplace("ora o orario", "ora", "X", { ...off, wholeWord: true }), { result: "X o orario", count: 1 });
+  assert.deepEqual(findReplace("a1 b22", "(\\w)(\\d+)", "$2$1", { ...off, regex: true }), { result: "1a 22b", count: 2 });
+  assert.deepEqual(findReplace("costo", "costo", "$1", off), { result: "$1", count: 1 });
+  assert.ok("error" in findReplace("x", "(", "", { ...off, regex: true }));
+});
+
+test("duplicate lines keep the first occurrence", () => {
+  const o = { caseSensitive: false, trim: true, skipEmpty: false };
+  assert.deepEqual(dedupeLines("a\nA\n b\nb\n\n\n", o), { result: "a\nb\n", removed: 4 });
+  assert.deepEqual(dedupeLines("a\nA", { ...o, caseSensitive: true }), { result: "a\nA", removed: 0 });
+  assert.deepEqual(dedupeLines("a\n\nb", { ...o, skipEmpty: true }), { result: "a\nb", removed: 1 });
+});
+
+test("shuffle keeps the same items", () => {
+  const items = Array.from({ length: 50 }, (_, i) => i);
+  const out = shuffle(items);
+  assert.deepEqual([...out].sort((a, b) => a - b), items);
+  assert.equal(items[0], 0);
 });

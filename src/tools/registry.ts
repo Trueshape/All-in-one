@@ -59,6 +59,9 @@ import {
   Hash,
   MapPinned,
   PhoneCall,
+  Replace,
+  Shuffle,
+  Radio,
   ScanBarcode,
   Trophy,
   Medal,
@@ -99,6 +102,10 @@ const EtaCalculator = lazy(() => import("../components/EtaCalculator"));
 const AsciiArt = lazy(() => import("../components/AsciiArt"));
 const ItalyCodes = lazy(() => import("../components/ItalyCodes"));
 const DialCodes = lazy(() => import("../components/DialCodes"));
+const MorseCode = lazy(() => import("../components/MorseCode"));
+const RomanNumerals = lazy(() => import("../components/RomanNumerals"));
+const RandomizeList = lazy(() => import("../components/RandomizeList"));
+const TextCleaner = lazy(() => import("../components/TextCleaner"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -488,6 +495,50 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-cyan-400 bg-cyan-500/10",
     category: "creative",
     component: DialCodes,
+  },
+  {
+    id: "morse_code",
+    name: "Codice Morse",
+    description: "Converte il testo in codice Morse e decodifica il Morse in testo, scrivendo in uno dei due riquadri.",
+    icon: Radio,
+    colorClass: "border-amber-900/30 hover:border-amber-500/50",
+    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
+    iconColor: "text-amber-400 bg-amber-500/10",
+    category: "convertitori",
+    component: MorseCode,
+  },
+  {
+    id: "roman_numerals",
+    name: "Numeri Romani",
+    description: "Converte i numeri da 1 a 3999 in numeri romani e viceversa.",
+    icon: Hash,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "convertitori",
+    component: RomanNumerals,
+  },
+  {
+    id: "randomize_list",
+    name: "Mescola Elenco",
+    description: "Mescola un elenco di voci in ordine casuale, con la possibilità di estrarne solo le prime N.",
+    icon: Shuffle,
+    colorClass: "border-lime-900/30 hover:border-lime-500/50",
+    glowClass: "shadow-lime-950/20 hover:shadow-lime-500/5",
+    iconColor: "text-lime-400 bg-lime-500/10",
+    category: "produttivita",
+    component: RandomizeList,
+  },
+  {
+    id: "text_cleaner",
+    name: "Trova e Sostituisci",
+    description: "Trova e sostituisci nel testo (anche con espressioni regolari) e rimuovi le righe duplicate.",
+    icon: Replace,
+    colorClass: "border-teal-900/30 hover:border-teal-500/50",
+    glowClass: "shadow-teal-950/20 hover:shadow-teal-500/5",
+    iconColor: "text-teal-400 bg-teal-500/10",
+    category: "produttivita",
+    component: TextCleaner,
   },
   {
     id: "bracket_maker",

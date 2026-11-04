@@ -16,6 +16,10 @@
 - `src/components/GeometryCalculator.tsx` — Geometria: forme 2D e 3D (perimetro, area, superficie, volume), calcoli in `src/lib/geometry.ts`.
 - `src/components/ImageTools.tsx` — strumento Immagini: schede Converti, Ridimensiona, Ingrandisci (`ImageConverter`, `ImageResizer`, `ImageUpscaler`) con un'unica immagine caricata.
 - `src/components/TextCodes.tsx` — Testo in Binario: testo ↔ binario/esadecimale/decimale/ottale (`src/lib/textCodes.ts`).
+- `src/components/MorseCode.tsx` — Codice Morse: testo ↔ Morse (`src/lib/morse.ts`).
+- `src/components/RomanNumerals.tsx` — Numeri Romani: 1–3999 ↔ romani (`src/lib/roman.ts`).
+- `src/components/RandomizeList.tsx` — Mescola Elenco: mescola le righe e ne estrae le prime N.
+- `src/components/TextCleaner.tsx` — Trova e Sostituisci e righe duplicate (`src/lib/textTools.ts`, che contiene anche `shuffle`).
 - `src/components/PercentageCalculator.tsx` — Calcolatore Percentuali: le quattro domande più comuni (`src/lib/percent.ts`).
 - `src/components/EtaCalculator.tsx` — Calcolatore ETA: durata e ora di fine di un'attività dalla velocità (`src/lib/eta.ts`).
 - `src/components/AsciiArt.tsx` — Testo in ASCII Art con font 5×7 incluso (`src/lib/asciiArt.ts`).
