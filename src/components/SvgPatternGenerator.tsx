@@ -68,52 +68,41 @@ export default function SvgPatternGenerator() {
 
   return (
     <Stack>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <Field label="Motivo">
-            <Chips value={type} onChange={setType} options={PATTERN_TYPES.map((t) => ({ value: t, label: LABELS[t] }))} />
-          </Field>
-          <Slider label="Dimensione del modulo" value={size} min={8} max={120} onChange={setSize} display={`${size} px`} />
-          <Slider label="Spessore / dimensione forme" value={weight} min={1} max={10} onChange={setWeight} />
-          <Slider label="Rotazione" value={rotation} min={0} max={180} step={5} onChange={setRotation} display={`${rotation}°`} />
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Colore motivo">
-              <div className="flex items-center gap-2"><input type="color" value={fg} onChange={(e) => setFg(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore motivo" /><span className={`font-mono text-xs ${u.subtle}`}>{fg.toUpperCase()}</span></div>
-            </Field>
-            <Field label="Colore sfondo">
-              <div className="flex items-center gap-2"><input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore sfondo" /><span className={`font-mono text-xs ${u.subtle}`}>{bg.toUpperCase()}</span></div>
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Larghezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={width} onChange={(e) => setWidth(e.target.value)} /></Field>
-            <Field label="Altezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={height} onChange={(e) => setHeight(e.target.value)} /></Field>
-          </div>
-          <Toggle checked={fit} onChange={setFit} label="Adatta il modulo: nessun modulo tagliato ai bordi" />
-          <p className={cx("text-xs font-mono", u.muted)}>
-            Modulo {Math.round(tileSize * 100) / 100} px · {tilesAcross} × {tilesDown} moduli{exact ? "" : " (l'ultimo è tagliato)"}
-            {rotation % 180 !== 0 && " · con la rotazione i bordi tagliano i moduli"}
-          </p>
-          <Button className="w-full" icon={<Shuffle className="w-3.5 h-3.5" />} onClick={shuffle}>Combinazione casuale</Button>
+      <div className="space-y-4">
+        <Panel className="p-2">
+          <img src={dataUrl} alt="Anteprima del pattern" className="w-full max-h-48 object-contain" style={{ aspectRatio: `${w} / ${h}` }} />
+        </Panel>
+        <div className="grid grid-cols-[1fr_1fr_auto_auto] items-center gap-2">
+          <Button variant="primary" icon={<Download className="w-3.5 h-3.5" />} onClick={downloadSvg}>SVG</Button>
+          <Button icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>PNG</Button>
+          <span className="flex items-center gap-1"><span className={cx("text-xs", u.muted)}>Codice</span><CopyButton text={svg} label="Copia codice SVG" /></span>
+          <span className="flex items-center gap-1"><span className={cx("text-xs", u.muted)}>CSS</span><CopyButton text={css} label="Copia sfondo CSS" /></span>
         </div>
 
-        <div className="space-y-3">
-          <SectionTitle>Anteprima</SectionTitle>
-          <Panel className="p-2">
-            <img src={dataUrl} alt="Anteprima del pattern" className="w-full max-h-72 object-contain" style={{ aspectRatio: `${w} / ${h}` }} />
-          </Panel>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="primary" icon={<Download className="w-3.5 h-3.5" />} onClick={downloadSvg}>SVG</Button>
-            <Button icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>PNG</Button>
+        <Field label="Motivo">
+          <Chips value={type} onChange={setType} options={PATTERN_TYPES.map((t) => ({ value: t, label: LABELS[t] }))} />
+        </Field>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+          <Slider label="Modulo" value={size} min={8} max={120} onChange={setSize} display={`${size} px`} />
+          <Slider label="Spessore" value={weight} min={1} max={10} onChange={setWeight} />
+          <Slider label="Rotazione" value={rotation} min={0} max={180} step={5} onChange={setRotation} display={`${rotation}°`} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Motivo">
+              <div className="flex items-center gap-2"><input type="color" value={fg} onChange={(e) => setFg(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore motivo" /><span className={`font-mono text-[10px] ${u.subtle}`}>{fg.toUpperCase()}</span></div>
+            </Field>
+            <Field label="Sfondo">
+              <div className="flex items-center gap-2"><input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore sfondo" /><span className={`font-mono text-[10px] ${u.subtle}`}>{bg.toUpperCase()}</span></div>
+            </Field>
           </div>
-          <div className="flex items-center justify-between">
-            <span className={cx("text-xs", u.muted)}>Codice SVG</span>
-            <CopyButton text={svg} label="Copia codice SVG" />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className={cx("text-xs", u.muted)}>Sfondo CSS</span>
-            <CopyButton text={css} label="Copia sfondo CSS" />
-          </div>
+          <Field label="Larghezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={width} onChange={(e) => setWidth(e.target.value)} /></Field>
+          <Field label="Altezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={height} onChange={(e) => setHeight(e.target.value)} /></Field>
         </div>
+        <Toggle checked={fit} onChange={setFit} label="Adatta il modulo: nessun modulo tagliato ai bordi" />
+        <p className={cx("text-xs font-mono", u.muted)}>
+          Modulo {Math.round(tileSize * 100) / 100} px · {tilesAcross} × {tilesDown} moduli{exact ? "" : " (l'ultimo è tagliato)"}
+          {rotation % 180 !== 0 && " · con la rotazione i bordi tagliano i moduli"}
+        </p>
+        <Button className="w-full" icon={<Shuffle className="w-3.5 h-3.5" />} onClick={shuffle}>Combinazione casuale</Button>
       </div>
       <Notice>Il pattern è un SVG: resta nitido a qualsiasi ingrandimento. Il PNG ha la dimensione indicata sopra.</Notice>
     </Stack>

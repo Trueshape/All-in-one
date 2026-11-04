@@ -41,7 +41,7 @@ export default function EtaCalculator() {
 
   return (
     <Stack>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-6">
         <div className="space-y-4">
           <Field label="Quantità totale da fare" hint="Per esempio 500 piatti, 2000 MB, 120 pagine.">
             <TextInput type="number" inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} />

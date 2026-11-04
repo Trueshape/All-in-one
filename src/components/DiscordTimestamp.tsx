@@ -73,7 +73,7 @@ export default function DiscordTimestamp() {
 
   return (
     <Stack>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-6">
         <div className="space-y-4">
           <SectionTitle>Timestamp</SectionTitle>
           <div className="grid grid-cols-2 gap-3">

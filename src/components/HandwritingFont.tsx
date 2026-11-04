@@ -377,26 +377,6 @@ export default function HandwritingFont() {
               <Button size="sm" onClick={() => step(1)} className="ml-auto">Avanti</Button>
             </div>
             <Slider label="Spessore della penna" value={thickness} min={6} max={40} onChange={setThickness} display={`${thickness} px`} />
-            <div className="flex flex-wrap gap-1.5">
-              {GROUPS.map((g) => (
-                <button key={g.id} type="button" onClick={() => pickGroup(g.id)} className={group === g.id ? u.segmentActive : u.segment}>{g.label}</button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {chars.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCurrent(c)}
-                  className={cx("w-8 h-8 text-sm border", u.divider, current === c ? u.accent + " font-bold" : drawn[c]?.length ? u.text : u.muted)}
-                  aria-label={`Carattere ${c}${drawn[c]?.length ? " (disegnato)" : ""}`}
-                >
-                  {c}
-                  {drawn[c]?.length ? <span className="sr-only"> ✓</span> : null}
-                </button>
-              ))}
-            </div>
-            <p className={cx("text-xs", u.muted)}>{drawnCount} caratteri disegnati · il lavoro resta salvato in questo browser</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -417,6 +397,31 @@ export default function HandwritingFont() {
         )}
 
         <div className="space-y-3">
+          {mode === "draw" && (
+            <div className="space-y-3">
+              <SectionTitle>Caratteri</SectionTitle>
+        <div className="flex flex-wrap gap-1.5">
+          {GROUPS.map((g) => (
+            <button key={g.id} type="button" onClick={() => pickGroup(g.id)} className={group === g.id ? u.segmentActive : u.segment}>{g.label}</button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {chars.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCurrent(c)}
+              className={cx("w-8 h-8 text-sm border", u.divider, current === c ? u.accent + " font-bold" : drawn[c]?.length ? u.text : u.muted)}
+              aria-label={`Carattere ${c}${drawn[c]?.length ? " (disegnato)" : ""}`}
+            >
+              {c}
+              {drawn[c]?.length ? <span className="sr-only"> ✓</span> : null}
+            </button>
+          ))}
+        </div>
+        <p className={cx("text-xs", u.muted)}>{drawnCount} caratteri disegnati · il lavoro resta salvato in questo browser</p>
+            </div>
+          )}
           <SectionTitle>{mode === "draw" ? "2" : "3"} · Il font</SectionTitle>
           <Field label="Nome del font">
             <TextInput value={family} onChange={(e) => setFamily(e.target.value)} />
