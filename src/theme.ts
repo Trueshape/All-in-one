@@ -117,7 +117,6 @@ export const getToolModalSize = (toolId: string): string => {
       return "w-fit min-w-[min(36rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)]";
     case "case_converter":
     case "text_codes":
-    case "morse_code":
     case "virtual_piano":
     case "audio_editor":
     case "text_to_speech":
@@ -130,13 +129,11 @@ export const getToolModalSize = (toolId: string): string => {
       return "max-w-4xl";
     case "compound_interest_calc":
     case "geometry_calc":
-    case "circle_calc":
     case "age":
-    case "data_size":
+    case "currency":
     case "scientific_calc":
     case "image_converter":
       return "max-w-3xl";
-    case "currency":
     case "timer":
     case "password":
     case "tip":

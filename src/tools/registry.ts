@@ -29,7 +29,6 @@ import {
   Globe,
   Gift,
   Calculator,
-  Circle,
   Shapes,
   Maximize,
   Type,
@@ -47,7 +46,6 @@ import {
   Wand2,
   ListTodo,
   BarChart3,
-  Pipette,
   Blend,
   Grid3x3,
   Gamepad2,
@@ -62,10 +60,8 @@ import {
   Radar,
   Volume2,
   AudioLines,
-  HardDrive,
   Replace,
   Shuffle,
-  Radio,
   ScanBarcode,
   Trophy,
   Medal,
@@ -77,39 +73,34 @@ const PasswordGenerator = lazy(() => import("../components/PasswordGenerator"));
 const TipCalculator = lazy(() => import("../components/TipCalculator"));
 const PomodoroTimer = lazy(() => import("../components/PomodoroTimer"));
 const CodeGenerator = lazy(() => import("../components/CodeGenerator"));
-const ColorPicker = lazy(() => import("../components/ColorPicker"));
 const DecisionMaker = lazy(() => import("../components/DecisionMaker"));
 const BmiCalculator = lazy(() => import("../components/BmiCalculator"));
 const MarkdownPreviewer = lazy(() => import("../components/MarkdownPreviewer"));
 const WorldClock = lazy(() => import("../components/WorldClock"));
 const AgeCalculator = lazy(() => import("../components/AgeCalculator"));
 const ScientificCalculator = lazy(() => import("../components/ScientificCalculator"));
-const CircleCalculator = lazy(() => import("../components/CircleCalculator"));
 const GeometryCalculator = lazy(() => import("../components/GeometryCalculator"));
 const AspectRatioCalculator = lazy(() => import("../components/AspectRatioCalculator"));
 const CaseConverter = lazy(() => import("../components/CaseConverter"));
 const CompoundInterestCalculator = lazy(() => import("../components/CompoundInterestCalculator"));
 const TextDiff = lazy(() => import("../components/TextDiff"));
+const ColorTools = lazy(() => import("../components/ColorTools"));
+const EncodingTools = lazy(() => import("../components/EncodingTools"));
 const ImageTools = lazy(() => import("../components/ImageTools"));
 const DiscordTimestamp = lazy(() => import("../components/DiscordTimestamp"));
 const CodiceFiscaleCalculator = lazy(() => import("../components/CodiceFiscaleCalculator"));
 const CryptoAndNasdaqTracker = lazy(() => import("../components/CryptoAndNasdaqTracker"));
 const IbanValidator = lazy(() => import("../components/IbanValidator"));
-const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
 const SvgPatternGenerator = lazy(() => import("../components/SvgPatternGenerator"));
 const PixelArt = lazy(() => import("../components/PixelArt"));
 const HandwritingFont = lazy(() => import("../components/HandwritingFont"));
-const TextCodes = lazy(() => import("../components/TextCodes"));
 const PercentageCalculator = lazy(() => import("../components/PercentageCalculator"));
 const EtaCalculator = lazy(() => import("../components/EtaCalculator"));
 const AsciiArt = lazy(() => import("../components/AsciiArt"));
 const ItalyCodes = lazy(() => import("../components/ItalyCodes"));
 const DialCodes = lazy(() => import("../components/DialCodes"));
-const MorseCode = lazy(() => import("../components/MorseCode"));
-const RomanNumerals = lazy(() => import("../components/RomanNumerals"));
 const RandomizeList = lazy(() => import("../components/RandomizeList"));
 const TextCleaner = lazy(() => import("../components/TextCleaner"));
-const DataSizeConverter = lazy(() => import("../components/DataSizeConverter"));
 const AudioEditor = lazy(() => import("../components/AudioEditor"));
 const TextToSpeech = lazy(() => import("../components/TextToSpeech"));
 const RadarChartMaker = lazy(() => import("../components/RadarChartMaker"));
@@ -133,7 +124,7 @@ export const TOOLS: ToolItem[] = [
   {
     id: "currency",
     name: "Valute e Unità",
-    description: "Converti valute con tassi aggiornati e misure di lunghezza, peso, area, volume, velocità, energia e temperatura.",
+    description: "Converti valute con tassi aggiornati e misure di lunghezza, peso, area, volume, velocità, energia, temperatura e dimensioni dei dati (byte, MB, GB).",
     icon: ArrowLeftRight,
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
     glowClass: "shadow-indigo-950/20 hover:shadow-indigo-500/5",
@@ -187,14 +178,14 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "color",
-    name: "Tavolozza e Picker Colori",
-    description: "Seleziona i colori, visualizza i codici HEX/RGB/HSL e genera scale armoniche.",
+    name: "Colori",
+    description: "Seleziona i colori, leggi i codici HEX/RGB/HSL, genera scale armoniche ed estrai la tavolozza di un'immagine.",
     icon: Palette,
     colorClass: "border-pink-900/30 hover:border-pink-500/50",
     glowClass: "shadow-pink-950/20 hover:shadow-pink-500/5",
     iconColor: "text-pink-400 bg-pink-500/10",
     category: "immagini",
-    component: ColorPicker,
+    component: ColorTools,
   },
   {
     id: "decision",
@@ -263,20 +254,9 @@ export const TOOLS: ToolItem[] = [
     component: ScientificCalculator,
   },
   {
-    id: "circle_calc",
-    name: "Calcolo circonferenza",
-    description: "Calcola in tempo reale area, circonferenza, diametro e raggio di un cerchio partendo da una qualsiasi misura.",
-    icon: Circle,
-    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
-    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
-    iconColor: "text-emerald-400 bg-emerald-500/10",
-    category: "calcolo",
-    component: CircleCalculator,
-  },
-  {
     id: "geometry_calc",
     name: "Geometria",
-    description: "Perimetro, area, superficie e volume di quadrato, rettangolo, triangolo, cubo, parallelepipedo, cilindro e sfera.",
+    description: "Perimetro, area, superficie e volume di quadrato, rettangolo, triangolo, cerchio (circonferenza), cubo, parallelepipedo, cilindro e sfera.",
     icon: Shapes,
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
     glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
@@ -384,17 +364,6 @@ export const TOOLS: ToolItem[] = [
     component: IbanValidator,
   },
   {
-    id: "color_extractor",
-    name: "Estrattore di Colori",
-    description: "Ricava i colori principali di un'immagine, con percentuali, codici HEX/RGB e variabili CSS.",
-    icon: Pipette,
-    colorClass: "border-amber-900/30 hover:border-amber-500/50",
-    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
-    iconColor: "text-amber-400 bg-amber-500/10",
-    category: "immagini",
-    component: ColorExtractor,
-  },
-  {
     id: "svg_pattern",
     name: "Generatore di Pattern SVG",
     description: "Crea motivi ripetuti (pois, onde, griglie, scacchi) con colori e rotazione a scelta, da scaricare in SVG o PNG.",
@@ -429,14 +398,14 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "text_codes",
-    name: "Testo in Binario",
-    description: "Converte il testo in binario, esadecimale, decimale o ottale (UTF-8) e decodifica i codici in testo.",
+    name: "Codifica",
+    description: "Testo in binario, esadecimale, decimale, ottale e codice Morse, numeri romani: in entrambe le direzioni.",
     icon: Binary,
     colorClass: "border-sky-900/30 hover:border-sky-500/50",
     glowClass: "shadow-sky-950/20 hover:shadow-sky-500/5",
     iconColor: "text-sky-400 bg-sky-500/10",
     category: "convertitori",
-    component: TextCodes,
+    component: EncodingTools,
   },
   {
     id: "percentage_calc",
@@ -494,17 +463,6 @@ export const TOOLS: ToolItem[] = [
     component: DialCodes,
   },
   {
-    id: "data_size",
-    name: "Dimensioni Dati",
-    description: "Converte byte, KB, MB, GB, TB, PB e bit tra loro, a scatti di 1000 o di 1024.",
-    icon: HardDrive,
-    colorClass: "border-orange-900/30 hover:border-orange-500/50",
-    glowClass: "shadow-orange-950/20 hover:shadow-orange-500/5",
-    iconColor: "text-orange-400 bg-orange-500/10",
-    category: "convertitori",
-    component: DataSizeConverter,
-  },
-  {
     id: "audio_editor",
     name: "Editor Audio",
     description: "Ritaglia o dividi un file audio, cambia il volume con le dissolvenze e salvalo in WAV, MP3, OGG o FLAC.",
@@ -547,28 +505,6 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-pink-400 bg-pink-500/10",
     category: "creative",
     component: VirtualPiano,
-  },
-  {
-    id: "morse_code",
-    name: "Codice Morse",
-    description: "Converte il testo in codice Morse e decodifica il Morse in testo, scrivendo in uno dei due riquadri.",
-    icon: Radio,
-    colorClass: "border-amber-900/30 hover:border-amber-500/50",
-    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
-    iconColor: "text-amber-400 bg-amber-500/10",
-    category: "convertitori",
-    component: MorseCode,
-  },
-  {
-    id: "roman_numerals",
-    name: "Numeri Romani",
-    description: "Converte i numeri da 1 a 3999 in numeri romani e viceversa.",
-    icon: Hash,
-    colorClass: "border-rose-900/30 hover:border-rose-500/50",
-    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
-    iconColor: "text-rose-400 bg-rose-500/10",
-    category: "convertitori",
-    component: RomanNumerals,
   },
   {
     id: "randomize_list",
