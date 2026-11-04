@@ -1,28 +1,40 @@
 import { useMemo, useState } from "react";
 import { Field, TextInput, Segmented, CopyButton, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import { DIAL_CODES, PROVINCES, searchDial, searchProvinces } from "../lib/italyCodes";
+import { DIAL_CODES, PROVINCES, formatDial, searchDial, searchProvinces } from "../lib/italyCodes";
 
 type Tab = "province" | "dial";
+type Sort = "name" | "prefix";
+
+/** Prefixes compare digit by digit, which is also the order you would dial them in. */
+const byDigits = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /** Lookup tables: Italian provinces (sigla, telephone prefix, CAP) and international dialing codes. */
 export default function ItalyCodes() {
   const u = useUi();
   const [tab, setTab] = useState<Tab>("province");
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<Sort>("name");
 
-  const provinces = useMemo(() => searchProvinces(query), [query]);
-  const dials = useMemo(() => searchDial(query), [query]);
+  const provinces = useMemo(() => {
+    const found = searchProvinces(query);
+    return sort === "prefix" ? [...found].sort((a, b) => byDigits(a.prefix, b.prefix) || a.name.localeCompare(b.name, "it")) : found;
+  }, [query, sort]);
+  const dials = useMemo(() => {
+    const found = searchDial(query);
+    return sort === "prefix" ? [...found].sort((a, b) => byDigits(a.codes[0].replace("-", ""), b.codes[0].replace("-", "")) || a.country.localeCompare(b.country, "it")) : found;
+  }, [query, sort]);
   const head = cx("text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2 sticky top-0", u.muted);
   const cell = "px-3 py-1.5";
 
   return (
     <Stack>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3">
         <Segmented fill value={tab} onChange={(v) => { setTab(v); setQuery(""); }} options={[{ value: "province", label: `Province (${PROVINCES.length})` }, { value: "dial", label: `Prefissi esteri (${DIAL_CODES.length})` }]} />
         <Field>
           <TextInput value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tab === "province" ? "Nome, sigla, regione, prefisso o CAP" : "Paese, sigla ISO o prefisso (+39)"} aria-label="Cerca" />
         </Field>
+        <Segmented value={sort} onChange={setSort} options={[{ value: "name", label: "Per nome" }, { value: "prefix", label: "Per prefisso" }]} />
       </div>
 
       <div className={cx("overflow-auto max-h-[52vh] border", u.divider)}>
@@ -50,8 +62,8 @@ export default function ItalyCodes() {
                   <tr key={d.iso} className={cx("border-t", u.divider)}>
                     <td className={cell}>{d.country}</td>
                     <td className={cx(cell, "font-mono", u.muted)}>{d.iso}</td>
-                    <td className={cx(cell, "font-mono font-bold", u.accent)}>+{d.code}</td>
-                    <td className={cell}><CopyButton text={`+${d.code}`} label="Copia il prefisso" /></td>
+                    <td className={cx(cell, "font-mono font-bold", u.accent)}>{d.codes.map(formatDial).join(", ")}</td>
+                    <td className={cell}><CopyButton text={formatDial(d.codes[0])} label="Copia il prefisso" /></td>
                   </tr>
                 ))}
           </tbody>

@@ -41,34 +41,274 @@ export const PROVINCES: Province[] = REGIONS.flatMap(([region, rows]) =>
 
 export interface DialCode {
   country: string;
-  /** ISO 3166-1 alpha-2. */
+  /** ISO 3166-1 alpha-2 (or the ITU's own code for places like Ascension). */
   iso: string;
-  /** International calling code, without "+". */
-  code: string;
+  /** Calling codes without "+": "39", or "1-876" for a code inside the shared +1 plan. */
+  codes: string[];
 }
 
-type Dial = [country: string, iso: string, code: string];
+/** Country name | ISO code | calling codes, comma-separated. Source: ITU-T E.164 assignments as listed by Wikipedia. */
+const DIAL = `
+Afghanistan|AF|93
+Albania|AL|355
+Algeria|DZ|213
+Andorra|AD|376
+Angola|AO|244
+Anguilla|AI|1-264
+Antartide|AQ|672
+Antigua e Barbuda|AG|1-268
+Arabia Saudita|SA|966
+Argentina|AR|54
+Armenia|AM|374
+Aruba|AW|297
+Australia|AU|61
+Austria|AT|43
+Azerbaigian|AZ|994
+Bahamas|BS|1-242
+Bahrein|BH|973
+Bangladesh|BD|880
+Barbados|BB|1-246
+Belgio|BE|32
+Belize|BZ|501
+Benin|BJ|229
+Bermuda|BM|1-441
+Bhutan|BT|975
+Bielorussia|BY|375
+Birmania|MM|95
+Bolivia|BO|591
+Bosnia ed Erzegovina|BA|387
+Botswana|BW|267
+Brasile|BR|55
+Brunei|BN|673
+Bulgaria|BG|359
+Burkina Faso|BF|226
+Burundi|BI|257
+Cambogia|KH|855
+Camerun|CM|237
+Canada|CA|1
+Capo Verde|CV|238
+Caraibi olandesi (Bonaire, Sint Eustatius, Saba)|BQ|599-7,599-3,599-4
+Ciad|TD|235
+Cile|CL|56
+Cina|CN|86
+Cipro|CY|357
+Città del Vaticano|VA|39,379
+Colombia|CO|57
+Comore|KM|269
+Congo (Repubblica del)|CG|242
+Congo (Repubblica Democratica del)|CD|243
+Corea del Nord|KP|850
+Corea del Sud|KR|82
+Costa d'Avorio|CI|225
+Costa Rica|CR|506
+Croazia|HR|385
+Cuba|CU|53
+Curaçao|CW|599-9
+Danimarca|DK|45
+Diego Garcia (Territorio britannico dell'Oceano Indiano)|IO|246
+Dominica|DM|1-767
+Ecuador|EC|593
+Egitto|EG|20
+El Salvador|SV|503
+Emirati Arabi Uniti|AE|971
+Eritrea|ER|291
+Estonia|EE|372
+Eswatini|SZ|268
+Etiopia|ET|251
+Figi|FJ|679
+Filippine|PH|63
+Finlandia|FI|358
+Francia|FR|33
+Gabon|GA|241
+Gambia|GM|220
+Georgia|GE|995
+Georgia del Sud e Sandwich australi|GS|500
+Germania|DE|49
+Ghana|GH|233
+Giamaica|JM|1-876,1-658
+Giappone|JP|81
+Gibilterra|GI|350
+Gibuti|DJ|253
+Giordania|JO|962
+Grecia|GR|30
+Grenada|GD|1-473
+Groenlandia|GL|299
+Guadalupa|GP|590
+Guam|GU|1-671
+Guatemala|GT|502
+Guernsey|GG|44
+Guinea|GN|224
+Guinea Equatoriale|GQ|240
+Guinea-Bissau|GW|245
+Guyana|GY|592
+Guyana francese|GF|594
+Haiti|HT|509
+Honduras|HN|504
+Hong Kong|HK|852
+India|IN|91
+Indonesia|ID|62
+Iran|IR|98
+Iraq|IQ|964
+Irlanda|IE|353
+Islanda|IS|354
+Isola Ascensione|AC|247
+Isola di Man|IM|44
+Isola di Natale|CX|61
+Isola Norfolk|NF|672
+Isole Åland|AX|358
+Isole Cayman|KY|1-345
+Isole Cocos|CC|61
+Isole Cook|CK|682
+Isole Falkland|FK|500
+Isole Fær Øer|FO|298
+Isole Marianne Settentrionali|MP|1-670
+Isole Marshall|MH|692
+Isole Salomone|SB|677
+Isole Vergini Americane|VI|1-340
+Isole Vergini Britanniche|VG|1-284
+Israele|IL|972
+Italia|IT|39
+Jersey|JE|44
+Kazakistan|KZ|7
+Kenya|KE|254
+Kirghizistan|KG|996
+Kiribati|KI|686
+Kosovo|XK|383
+Kuwait|KW|965
+La Riunione|RE|262
+Laos|LA|856
+Lesotho|LS|266
+Lettonia|LV|371
+Libano|LB|961
+Liberia|LR|231
+Libia|LY|218
+Liechtenstein|LI|423
+Lituania|LT|370
+Lussemburgo|LU|352
+Macao|MO|853
+Macedonia del Nord|MK|389
+Madagascar|MG|261
+Malawi|MW|265
+Malaysia|MY|60
+Maldive|MV|960
+Mali|ML|223
+Malta|MT|356
+Marocco|MA|212
+Martinica|MQ|596
+Mauritania|MR|222
+Mauritius|MU|230
+Mayotte|YT|262
+Messico|MX|52
+Micronesia|FM|691
+Moldavia|MD|373
+Monaco|MC|377
+Mongolia|MN|976
+Montenegro|ME|382
+Montserrat|MS|1-664
+Mozambico|MZ|258
+Namibia|NA|264
+Nauru|NR|674
+Nepal|NP|977
+Nicaragua|NI|505
+Niger|NE|227
+Nigeria|NG|234
+Niue|NU|683
+Norvegia|NO|47
+Nuova Caledonia|NC|687
+Nuova Zelanda|NZ|64
+Oman|OM|968
+Paesi Bassi|NL|31
+Pakistan|PK|92
+Palau|PW|680
+Palestina|PS|970
+Panama|PA|507
+Papua Nuova Guinea|PG|675
+Paraguay|PY|595
+Perù|PE|51
+Pitcairn|PN|64
+Polinesia francese|PF|689
+Polonia|PL|48
+Porto Rico|PR|1-787,1-939
+Portogallo|PT|351
+Qatar|QA|974
+Regno Unito|GB|44
+Repubblica Ceca|CZ|420
+Repubblica Centrafricana|CF|236
+Repubblica Dominicana|DO|1-809,1-829,1-849
+Romania|RO|40
+Ruanda|RW|250
+Russia|RU|7
+Sahara Occidentale|EH|212
+Saint Kitts e Nevis|KN|1-869
+Saint Lucia|LC|1-758
+Saint Vincent e Grenadine|VC|1-784
+Saint-Barthélemy|BL|590
+Saint-Martin|MF|590
+Saint-Pierre e Miquelon|PM|508
+Samoa|WS|685
+Samoa Americane|AS|1-684
+San Marino|SM|378
+Sant'Elena|SH|290
+São Tomé e Príncipe|ST|239
+Senegal|SN|221
+Serbia|RS|381
+Seychelles|SC|248
+Sierra Leone|SL|232
+Singapore|SG|65
+Sint Maarten|SX|1-721
+Siria|SY|963
+Slovacchia|SK|421
+Slovenia|SI|386
+Somalia|SO|252
+Spagna|ES|34
+Sri Lanka|LK|94
+Stati Uniti|US|1
+Sudafrica|ZA|27
+Sudan|SD|249
+Sudan del Sud|SS|211
+Suriname|SR|597
+Svalbard e Jan Mayen|SJ|47
+Svezia|SE|46
+Svizzera|CH|41
+Tagikistan|TJ|992
+Taiwan|TW|886
+Tanzania|TZ|255
+Thailandia|TH|66
+Timor Est|TL|670
+Togo|TG|228
+Tokelau|TK|690
+Tonga|TO|676
+Trinidad e Tobago|TT|1-868
+Tristan da Cunha|TA|290
+Tunisia|TN|216
+Turchia|TR|90
+Turkmenistan|TM|993
+Turks e Caicos|TC|1-649
+Tuvalu|TV|688
+Ucraina|UA|380
+Uganda|UG|256
+Ungheria|HU|36
+Uruguay|UY|598
+Uzbekistan|UZ|998
+Vanuatu|VU|678
+Venezuela|VE|58
+Vietnam|VN|84
+Wallis e Futuna|WF|681
+Yemen|YE|967
+Zambia|ZM|260
+Zimbabwe|ZW|263
+`;
 
-const DIAL: Dial[] = [
-  ["Afghanistan", "AF", "93"], ["Albania", "AL", "355"], ["Algeria", "DZ", "213"], ["Andorra", "AD", "376"], ["Arabia Saudita", "SA", "966"], ["Argentina", "AR", "54"],
-  ["Armenia", "AM", "374"], ["Australia", "AU", "61"], ["Austria", "AT", "43"], ["Azerbaigian", "AZ", "994"], ["Belgio", "BE", "32"], ["Bielorussia", "BY", "375"],
-  ["Bosnia ed Erzegovina", "BA", "387"], ["Brasile", "BR", "55"], ["Bulgaria", "BG", "359"], ["Canada", "CA", "1"], ["Cile", "CL", "56"], ["Cina", "CN", "86"],
-  ["Cipro", "CY", "357"], ["Colombia", "CO", "57"], ["Corea del Sud", "KR", "82"], ["Costa Rica", "CR", "506"], ["Croazia", "HR", "385"], ["Cuba", "CU", "53"],
-  ["Danimarca", "DK", "45"], ["Ecuador", "EC", "593"], ["Egitto", "EG", "20"], ["Emirati Arabi Uniti", "AE", "971"], ["Estonia", "EE", "372"], ["Filippine", "PH", "63"],
-  ["Finlandia", "FI", "358"], ["Francia", "FR", "33"], ["Georgia", "GE", "995"], ["Germania", "DE", "49"], ["Giappone", "JP", "81"], ["Giordania", "JO", "962"],
-  ["Gran Bretagna", "GB", "44"], ["Grecia", "GR", "30"], ["India", "IN", "91"], ["Indonesia", "ID", "62"], ["Iran", "IR", "98"], ["Iraq", "IQ", "964"],
-  ["Irlanda", "IE", "353"], ["Islanda", "IS", "354"], ["Israele", "IL", "972"], ["Italia", "IT", "39"], ["Kazakistan", "KZ", "7"], ["Kenya", "KE", "254"],
-  ["Lettonia", "LV", "371"], ["Libano", "LB", "961"], ["Libia", "LY", "218"], ["Liechtenstein", "LI", "423"], ["Lituania", "LT", "370"], ["Lussemburgo", "LU", "352"],
-  ["Malta", "MT", "356"], ["Marocco", "MA", "212"], ["Messico", "MX", "52"], ["Moldavia", "MD", "373"], ["Monaco", "MC", "377"], ["Montenegro", "ME", "382"],
-  ["Nigeria", "NG", "234"], ["Norvegia", "NO", "47"], ["Nuova Zelanda", "NZ", "64"], ["Paesi Bassi", "NL", "31"], ["Pakistan", "PK", "92"], ["Perù", "PE", "51"],
-  ["Polonia", "PL", "48"], ["Portogallo", "PT", "351"], ["Qatar", "QA", "974"], ["Repubblica Ceca", "CZ", "420"], ["Romania", "RO", "40"], ["Russia", "RU", "7"],
-  ["San Marino", "SM", "378"], ["Senegal", "SN", "221"], ["Serbia", "RS", "381"], ["Singapore", "SG", "65"], ["Siria", "SY", "963"], ["Slovacchia", "SK", "421"],
-  ["Slovenia", "SI", "386"], ["Spagna", "ES", "34"], ["Stati Uniti", "US", "1"], ["Sudafrica", "ZA", "27"], ["Svezia", "SE", "46"], ["Svizzera", "CH", "41"],
-  ["Thailandia", "TH", "66"], ["Tunisia", "TN", "216"], ["Turchia", "TR", "90"], ["Ucraina", "UA", "380"], ["Ungheria", "HU", "36"], ["Uruguay", "UY", "598"],
-  ["Città del Vaticano", "VA", "39"], ["Venezuela", "VE", "58"], ["Vietnam", "VN", "84"],
-];
+export const DIAL_CODES: DialCode[] = DIAL.trim()
+  .split("\n")
+  .map((line) => {
+    const [country, iso, codes] = line.split("|");
+    return { country, iso, codes: codes.split(",") };
+  })
+  .sort((a, b) => a.country.localeCompare(b.country, "it"));
 
-export const DIAL_CODES: DialCode[] = DIAL.map(([country, iso, code]) => ({ country, iso, code })).sort((a, b) => a.country.localeCompare(b.country, "it"));
+/** "1-876" -> "+1 876", "39" -> "+39". */
+export const formatDial = (code: string) => "+" + code.replace("-", " ");
 
 const clean = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
@@ -85,10 +325,12 @@ export function searchProvinces(query: string): Province[] {
   return found.sort((a, b) => Number(clean(b.sigla) === q) - Number(clean(a.sigla) === q));
 }
 
-/** Matches by country name, ISO code, or calling code (with or without "+"). */
+/** Matches by country name, ISO code, or calling code (with or without "+", "00", spaces or dashes). */
 export function searchDial(query: string): DialCode[] {
   const q = clean(query);
   if (!q) return DIAL_CODES;
-  const digits = q.replace(/^\+|^00/, "");
-  return DIAL_CODES.filter((d) => clean(d.country).includes(q) || d.iso.toLowerCase() === q || (/^\d+$/.test(digits) && d.code.startsWith(digits)));
+  const digits = q.replace(/^\+|^00/, "").replace(/[\s-]/g, "");
+  return DIAL_CODES.filter(
+    (d) => clean(d.country).includes(q) || d.iso.toLowerCase() === q || (/^\d+$/.test(digits) && d.codes.some((code) => code.replace("-", "").startsWith(digits))),
+  );
 }

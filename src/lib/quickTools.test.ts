@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { codesToText, textToCodes } from "./textCodes";
 import { percentChange, percentOf, wholeFrom, whatPercent } from "./percent";
 import { computeEta, formatDuration } from "./eta";
-import { asciiArt, renderLine } from "./asciiArt";
+import { DEFAULT_OPTIONS, asciiArt, renderLine } from "./asciiArt";
 import { DIAL_CODES, PROVINCES, searchDial, searchProvinces } from "./italyCodes";
 
 test("text to binary and hex, and back", () => {
@@ -55,14 +55,36 @@ test("durations read in Italian", () => {
   assert.equal(formatDuration(45_000), "45 secondi");
 });
 
-test("ascii art: every glyph has 7 rows and the fill character is used", () => {
-  const opt = { fill: "#", scale: 1, spacing: 1, invert: false };
+test("ascii art: every glyph has the font height and the fill character is used", () => {
+  const opt = DEFAULT_OPTIONS;
   const art = renderLine("Ab 1", opt);
   assert.equal(art.split("\n").length, 7);
   assert.ok(art.includes("#"));
   assert.equal(renderLine("A", { ...opt, scale: 2 }).split("\n").length, 14);
+  assert.equal(renderLine("A", { ...opt, font: "slim" }).split("\n").length, 5);
   assert.equal(asciiArt("A\n\nB", opt).split("\n\n").length, 2);
   assert.equal(renderLine("é", opt), renderLine("e", opt));
+});
+
+test("ascii art styles: outline leaves the inside empty, shadow adds rows", () => {
+  const solid = renderLine("I", { ...DEFAULT_OPTIONS, scale: 3 });
+  const outline = renderLine("I", { ...DEFAULT_OPTIONS, scale: 3, style: "outline" });
+  assert.ok((outline.match(/#/g) ?? []).length < (solid.match(/#/g) ?? []).length);
+  const shadow = renderLine("I", { ...DEFAULT_OPTIONS, style: "shadow" });
+  assert.equal(shadow.split("\n").length, 8);
+  assert.ok(shadow.includes("."));
+});
+
+test("ascii art layout: frame, alignment and comment wrapper", () => {
+  const o = { ...DEFAULT_OPTIONS, font: "slim" as const };
+  const framed = asciiArt("I", { ...o, frame: "double" }).split("\n");
+  assert.equal(framed.length, 7);
+  assert.ok(framed[0].startsWith("╔") && framed[6].endsWith("╝"));
+  assert.ok(framed.every((l) => Array.from(l).length === Array.from(framed[0]).length));
+  const lines = asciiArt("I\nWW", { ...o, align: "right" }).split("\n");
+  assert.ok(lines[0].startsWith(" ") && !lines[6].startsWith(" "));
+  assert.ok(asciiArt("I", { ...o, comment: "block" }).startsWith("/*\n * "));
+  assert.ok(asciiArt("I", { ...o, comment: "slashes" }).split("\n").every((l) => l.startsWith("//")));
 });
 
 test("110 provinces with unique sigle", () => {
@@ -82,9 +104,12 @@ test("province search by sigla, name, prefix and CAP", () => {
 });
 
 test("dialing codes search with or without +", () => {
-  assert.ok(DIAL_CODES.length > 80);
+  assert.ok(DIAL_CODES.length > 240);
+  assert.equal(new Set(DIAL_CODES.map((d) => d.iso)).size, DIAL_CODES.length);
+  assert.ok(searchDial("+1 876").some((d) => d.iso === "JM"));
+  assert.ok(searchDial("1242").some((d) => d.iso === "BS"));
   assert.ok(searchDial("+39").some((d) => d.iso === "IT"));
   assert.ok(searchDial("0049").some((d) => d.iso === "DE"));
   assert.equal(searchDial("it")[0].country.length > 0, true);
-  assert.ok(searchDial("giappone").some((d) => d.code === "81"));
+  assert.ok(searchDial("giappone").some((d) => d.codes[0] === "81"));
 });
