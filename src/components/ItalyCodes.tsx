@@ -60,6 +60,8 @@ export default function ItalyCodes() {
   }, [query, sort]);
 
   const cell = "px-3 py-1.5";
+  // Opaque, so rows scrolling underneath the sticky titles do not show through.
+  const headBg = u.id === "immersive" ? "bg-[#02050a]" : u.id === "sophisticated" ? "bg-slate-950" : "bg-zinc-950";
   const columns = tab === "province" ? PROVINCE_COLUMNS : DIAL_COLUMNS;
   const toggle = (key: string) => setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
 
@@ -81,10 +83,10 @@ export default function ItalyCodes() {
 
       <div className={cx("overflow-auto max-h-[52vh] border", u.divider)}>
         <table className="w-full text-sm">
-          <thead className={u.id === "sophisticated" ? "bg-black/40 backdrop-blur" : "bg-black/60"}>
+          <thead>
             <tr>
               {columns.map((c) => (
-                <th key={c.key} className={cx("sticky top-0 p-0 text-left", c.width)} aria-sort={sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
+                <th key={c.key} className={cx("sticky top-0 z-10 p-0 text-left", headBg, c.width)} aria-sort={sort.key === c.key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
                   <button
                     type="button"
                     onClick={() => toggle(c.key)}
@@ -95,7 +97,7 @@ export default function ItalyCodes() {
                   </button>
                 </th>
               ))}
-              <th className="sticky top-0" />
+              <th className={cx("sticky top-0 z-10", headBg)} />
             </tr>
           </thead>
           <tbody>
