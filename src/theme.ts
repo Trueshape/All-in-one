@@ -111,6 +111,10 @@ export const getToolModalSize = (toolId: string): string => {
     case "bracket_maker":
       return "w-fit min-w-[min(36rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)]";
     case "case_converter":
+    case "text_codes":
+    case "percentage_calc":
+    case "ascii_art":
+    case "italy_codes":
     case "text_diff":
     case "markdown":
       return "max-w-4xl";
@@ -118,6 +122,7 @@ export const getToolModalSize = (toolId: string): string => {
     case "geometry_calc":
     case "circle_calc":
     case "age":
+    case "eta_calc":
     case "scientific_calc":
     case "image_converter":
     case "discord_timestamp":

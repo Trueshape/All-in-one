@@ -53,6 +53,11 @@ import {
   Grid3x3,
   Gamepad2,
   PenLine,
+  Binary,
+  BadgePercent,
+  Hourglass,
+  Hash,
+  MapPinned,
   ScanBarcode,
   Trophy,
   Medal,
@@ -87,6 +92,11 @@ const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
 const SvgPatternGenerator = lazy(() => import("../components/SvgPatternGenerator"));
 const PixelArt = lazy(() => import("../components/PixelArt"));
 const HandwritingFont = lazy(() => import("../components/HandwritingFont"));
+const TextCodes = lazy(() => import("../components/TextCodes"));
+const PercentageCalculator = lazy(() => import("../components/PercentageCalculator"));
+const EtaCalculator = lazy(() => import("../components/EtaCalculator"));
+const AsciiArt = lazy(() => import("../components/AsciiArt"));
+const ItalyCodes = lazy(() => import("../components/ItalyCodes"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -410,6 +420,61 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-amber-400 bg-amber-500/10",
     category: "immagini",
     component: HandwritingFont,
+  },
+  {
+    id: "text_codes",
+    name: "Testo in Binario",
+    description: "Converte il testo in binario, esadecimale, decimale o ottale (UTF-8) e decodifica i codici in testo.",
+    icon: Binary,
+    colorClass: "border-sky-900/30 hover:border-sky-500/50",
+    glowClass: "shadow-sky-950/20 hover:shadow-sky-500/5",
+    iconColor: "text-sky-400 bg-sky-500/10",
+    category: "convertitori",
+    component: TextCodes,
+  },
+  {
+    id: "percentage_calc",
+    name: "Calcolatore Percentuali",
+    description: "Quanto è il X% di Y, X è quanto per cento di Y, il numero di partenza e l'aumento o la diminuzione in percentuale.",
+    icon: BadgePercent,
+    colorClass: "border-lime-900/30 hover:border-lime-500/50",
+    glowClass: "shadow-lime-950/20 hover:shadow-lime-500/5",
+    iconColor: "text-lime-400 bg-lime-500/10",
+    category: "calcolo",
+    component: PercentageCalculator,
+  },
+  {
+    id: "eta_calc",
+    name: "Calcolatore ETA",
+    description: "Stima quando finirà un'attività dalla velocità finora: durata totale e ora di fine.",
+    icon: Hourglass,
+    colorClass: "border-orange-900/30 hover:border-orange-500/50",
+    glowClass: "shadow-orange-950/20 hover:shadow-orange-500/5",
+    iconColor: "text-orange-400 bg-orange-500/10",
+    category: "calcolo",
+    component: EtaCalculator,
+  },
+  {
+    id: "ascii_art",
+    name: "Testo in ASCII Art",
+    description: "Trasforma il testo in lettere giganti fatte di caratteri, con carattere, dimensione e spaziatura a scelta.",
+    icon: Hash,
+    colorClass: "border-teal-900/30 hover:border-teal-500/50",
+    glowClass: "shadow-teal-950/20 hover:shadow-teal-500/5",
+    iconColor: "text-teal-400 bg-teal-500/10",
+    category: "creative",
+    component: AsciiArt,
+  },
+  {
+    id: "italy_codes",
+    name: "Atlante dei Prefissi",
+    description: "Cerca sigle, prefissi telefonici e CAP delle province italiane, e i prefissi internazionali dei Paesi.",
+    icon: MapPinned,
+    colorClass: "border-red-900/30 hover:border-red-500/50",
+    glowClass: "shadow-red-950/20 hover:shadow-red-500/5",
+    iconColor: "text-red-400 bg-red-500/10",
+    category: "creative",
+    component: ItalyCodes,
   },
   {
     id: "bracket_maker",
