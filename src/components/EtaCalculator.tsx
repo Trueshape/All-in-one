@@ -47,12 +47,14 @@ export default function EtaCalculator() {
             <TextInput type="number" inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} />
           </Field>
           <Field label="Quantità fatta in un dato tempo">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 items-start gap-3">
               <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} suffixText="fatti" />
-              <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="in" />
+              <div className="space-y-2">
+                <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="in" />
+                <Chips value={unit} onChange={setUnit} options={UNITS} />
+              </div>
             </div>
           </Field>
-          <Chips value={unit} onChange={setUnit} options={UNITS} />
         </div>
 
         <div className="space-y-4">
@@ -62,14 +64,13 @@ export default function EtaCalculator() {
               <TextInput value={time} onChange={(e) => setTime(e.target.value)} placeholder="HH:MM" aria-label="Ora di inizio" />
             </div>
           </Field>
-          <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Parto adesso</Button>
+          <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
           {eta ? (
             <>
               <ResultCard label="Durata totale" value={formatDuration(eta.durationMs)} copyText={formatDuration(eta.durationMs)} />
               <ResultCard label="Finirà" value={whenFormat.format(eta.end)} copyText={whenFormat.format(eta.end)} />
               <Panel inset className="space-y-1.5">
                 <Row label="Velocità" value={speed} />
-                {eta.end.getTime() > Date.now() && <Row label="Da adesso mancano" value={formatDuration(eta.end.getTime() - Date.now())} />}
               </Panel>
             </>
           ) : (
