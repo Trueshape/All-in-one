@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Field, TextArea, TextInput, CopyButton, Segmented, Toggle, Notice, Stack } from "../ui/kit";
+import { Trash2 } from "lucide-react";
+import { Field, TextArea, TextInput, Button, CopyButton, Segmented, Toggle, Notice, Stack } from "../ui/kit";
 import { dedupeLines, findReplace } from "../lib/textTools";
 
 type Mode = "replace" | "dedupe";
@@ -51,14 +52,11 @@ export default function TextCleaner() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Testo">
+        <Field label="Testo" actions={<Button size="sm" variant="danger" disabled={!text} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setText("")}>Svuota</Button>}>
           <TextArea rows={10} value={text} onChange={(e) => setText(e.target.value)} placeholder="Incolla il testo..." />
         </Field>
-        <Field label={out.info ? `Risultato · ${out.info}` : "Risultato"}>
-          <div className="space-y-2">
-            <TextArea rows={10} readOnly value={out.result} />
-            <CopyButton text={out.result} />
-          </div>
+        <Field label={out.info ? `Risultato · ${out.info}` : "Risultato"} actions={<CopyButton text={out.result} />}>
+          <TextArea rows={10} readOnly value={out.result} />
         </Field>
       </div>
       {out.error && <Notice tone="error">{out.error}</Notice>}

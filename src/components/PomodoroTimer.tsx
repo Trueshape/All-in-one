@@ -143,7 +143,7 @@ function Pomodoro() {
           {running ? "Pausa" : left === 0 ? "Ricomincia" : "Avvia"}
         </Button>
         <div className="justify-self-start">
-          <IconButton onClick={() => { setRunning(false); setLeft(total); }} title="Reset" className="border-current"><RotateCcw className="w-5 h-5" /></IconButton>
+          <IconButton size="md" onClick={() => { setRunning(false); setLeft(total); }} title="Reset" className="border-current"><RotateCcw /></IconButton>
         </div>
       </div>
     </div>
@@ -171,11 +171,11 @@ function Stopwatch() {
     <div className="space-y-5 text-center">
       <div className={cx("py-6 text-5xl font-bold font-mono tabular-nums", u.text)} role="timer">{stopwatch(elapsed)}</div>
       <div className="flex justify-center gap-3">
-        <IconButton onClick={reset} disabled={elapsed === 0} title="Reset"><RotateCcw className="w-5 h-5" /></IconButton>
+        <IconButton size="md" onClick={reset} disabled={elapsed === 0} title="Reset"><RotateCcw /></IconButton>
         <Button variant="primary" onClick={() => setRunning((r) => !r)} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
           {running ? "Ferma" : "Avvia"}
         </Button>
-        <IconButton onClick={() => setLaps((l) => [elapsed, ...l])} disabled={!running} title="Giro"><ListPlus className="w-5 h-5" /></IconButton>
+        <IconButton size="md" onClick={() => setLaps((l) => [elapsed, ...l])} disabled={!running} title="Giro"><ListPlus /></IconButton>
       </div>
       {laps.length > 0 && (
         <div className={cx("max-h-40 overflow-y-auto divide-y text-left", u.panel, u.divider)}>

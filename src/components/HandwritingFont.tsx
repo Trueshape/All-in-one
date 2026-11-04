@@ -373,7 +373,7 @@ export default function HandwritingFont() {
             <DrawPad char={current} strokes={strokes} thickness={thickness} onStroke={(stroke) => setDrawn((prev) => ({ ...prev, [current]: [...(prev[current] ?? []), stroke] }))} />
             <div className="flex gap-2">
               <Button size="sm" disabled={!strokes.length} icon={<Undo2 className="w-3.5 h-3.5" />} onClick={() => setStrokes(strokes.slice(0, -1))}>Annulla</Button>
-              <Button size="sm" variant="danger" disabled={!strokes.length} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setStrokes([])}>Cancella</Button>
+              <Button size="sm" variant="danger" disabled={!strokes.length} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setStrokes([])}>Svuota</Button>
               <Button size="sm" onClick={() => step(1)} className="ml-auto">Avanti</Button>
             </div>
             <Slider label="Spessore della penna" value={thickness} min={6} max={40} onChange={setThickness} display={`${thickness} px`} />

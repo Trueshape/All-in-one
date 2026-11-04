@@ -25,22 +25,11 @@ export default function MorseCode() {
   return (
     <Stack>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label="Testo">
-          <div className="space-y-2">
-            <TextArea rows={8} value={text} onChange={(e) => changeText(e.target.value)} placeholder="Scrivi o incolla il testo..." />
-            <div className="flex gap-2">
-              <CopyButton text={text} />
-              <Button size="sm" variant="danger" disabled={!text && !code} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => changeText("")}>Svuota</Button>
-            </div>
-          </div>
+        <Field label="Testo" actions={<><Button size="sm" variant="danger" disabled={!text && !code} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => changeText("")}>Svuota</Button><CopyButton text={text} /></>}>
+          <TextArea rows={8} value={text} onChange={(e) => changeText(e.target.value)} placeholder="Scrivi o incolla il testo..." />
         </Field>
-        <Field label="Codice Morse">
-          <div className="space-y-2">
-            <TextArea rows={8} value={code} onChange={(e) => changeCode(e.target.value)} className="font-mono" placeholder="Oppure incolla il Morse da decodificare..." />
-            <div className="flex gap-2">
-              <CopyButton text={code} />
-            </div>
-          </div>
+        <Field label="Codice Morse" actions={<CopyButton text={code} />}>
+          <TextArea rows={8} value={code} onChange={(e) => changeCode(e.target.value)} className="font-mono" placeholder="Oppure incolla il Morse da decodificare..." />
         </Field>
       </div>
       {note && <Notice tone="warn">{note}</Notice>}

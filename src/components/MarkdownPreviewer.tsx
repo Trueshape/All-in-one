@@ -116,9 +116,9 @@ export default function MarkdownPreviewer() {
             { value: "preview", label: <span className="inline-flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> Anteprima</span> },
           ]}
         />
-        <div className="flex gap-2">
+        <div className="flex gap-2 ml-auto">
           <Button size="sm" variant="danger" disabled={!markdown} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setMarkdown("")}>
-            Pulisci
+            Svuota
           </Button>
           <Button size="sm" disabled={!markdown} icon={copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />} onClick={() => copy(toHtml(blocks))}>
             {copied ? "Copiato" : "Copia HTML"}

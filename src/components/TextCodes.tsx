@@ -50,22 +50,11 @@ export default function TextCodes() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label={`Testo · ${bytes} byte`}>
-          <div className="space-y-2">
-            <TextArea rows={8} value={text} onChange={(e) => changeText(e.target.value)} placeholder="Scrivi o incolla il testo..." />
-            <div className="flex gap-2">
-              <CopyButton text={text} />
-              <Button size="sm" variant="danger" disabled={!text} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => { changeText(""); }}>Svuota</Button>
-            </div>
-          </div>
+        <Field label={`Testo · ${bytes} byte`} actions={<><Button size="sm" variant="danger" disabled={!text} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => changeText("")}>Svuota</Button><CopyButton text={text} /></>}>
+          <TextArea rows={8} value={text} onChange={(e) => changeText(e.target.value)} placeholder="Scrivi o incolla il testo..." />
         </Field>
-        <Field label={BASES[base].label}>
-          <div className="space-y-2">
-            <TextArea rows={8} value={codes} onChange={(e) => changeCodes(e.target.value)} className="font-mono" placeholder="Oppure incolla i codici da decodificare..." />
-            <div className="flex gap-2">
-              <CopyButton text={codes} />
-            </div>
-          </div>
+        <Field label={BASES[base].label} actions={<CopyButton text={codes} />}>
+          <TextArea rows={8} value={codes} onChange={(e) => changeCodes(e.target.value)} className="font-mono" placeholder="Oppure incolla i codici da decodificare..." />
         </Field>
       </div>
 

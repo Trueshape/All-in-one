@@ -23,17 +23,11 @@ export default function RandomizeList() {
   return (
     <Stack>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Field label={`Elenco · ${count} voci`}>
-          <div className="space-y-2">
-            <TextArea rows={10} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Una voce per riga..." />
-            <Button size="sm" variant="danger" disabled={!input} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => { setInput(""); setOutput(""); }}>Svuota</Button>
-          </div>
+        <Field label={`Elenco · ${count} voci`} actions={<Button size="sm" variant="danger" disabled={!input} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => { setInput(""); setOutput(""); }}>Svuota</Button>}>
+          <TextArea rows={10} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Una voce per riga..." />
         </Field>
-        <Field label="Elenco mescolato">
-          <div className="space-y-2">
-            <TextArea rows={10} readOnly value={output} placeholder="Premi Mescola" />
-            <CopyButton text={output} />
-          </div>
+        <Field label="Elenco mescolato" actions={<CopyButton text={output} />}>
+          <TextArea rows={10} readOnly value={output} placeholder="Premi Mescola" />
         </Field>
       </div>
       <div className="flex flex-wrap items-end gap-4">

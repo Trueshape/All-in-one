@@ -72,7 +72,7 @@ export default function CodiceFiscaleCalculator() {
 
             <div className="flex gap-3">
               <Button type="submit" variant="primary" className="flex-1">Calcola codice fiscale</Button>
-              <Button onClick={reset} title="Svuota i campi" aria-label="Svuota i campi"><RefreshCw className="w-4 h-4" /></Button>
+              <Button className="!w-10 !px-0" onClick={reset} title="Svuota i campi" aria-label="Svuota i campi"><RefreshCw className="w-4 h-4" /></Button>
             </div>
           </form>
 

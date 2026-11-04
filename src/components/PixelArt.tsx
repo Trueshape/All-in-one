@@ -123,7 +123,7 @@ export default function PixelArt() {
           {mode !== "original" && <Toggle checked={dither} onChange={setDither} label="Dithering (retino a griglia)" />}
           <div className="grid grid-cols-2 gap-2">
             <Button variant="primary" disabled={!source} icon={<Download className="w-3.5 h-3.5" />} onClick={() => save(true)}>PNG grande</Button>
-            <Button disabled={!source} icon={<Download className="w-3.5 h-3.5" />} onClick={() => save(false)}>PNG 1 px = 1 pixel</Button>
+            <Button disabled={!source} icon={<Download className="w-3.5 h-3.5" />} title="1 pixel dell'immagine = 1 pixel del file" onClick={() => save(false)}>PNG 1:1</Button>
           </div>
         </div>
       </div>

@@ -147,7 +147,7 @@ export default function DecisionMaker() {
     <>
       <form onSubmit={addOption} className="flex gap-2">
         <TextInput value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Aggiungi un'opzione (es. Cinema)" />
-        <Button type="submit" variant="primary" className="h-11 w-11 p-0 shrink-0 rounded-xl" aria-label="Aggiungi opzione"><Plus className="w-4 h-4" /></Button>
+        <Button type="submit" variant="primary" className="!h-11 !w-11 !p-0 shrink-0" aria-label="Aggiungi opzione"><Plus className="w-4 h-4" /></Button>
       </form>
 
       <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">

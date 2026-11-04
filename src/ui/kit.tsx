@@ -30,12 +30,18 @@ export function useCopy(duration = 1800) {
 /** Id of the enclosing Field's label, so the control inside is named by it. */
 const FieldLabel = createContext<string | undefined>(undefined);
 
-export function Field({ label, hint, children, className }: { label?: ReactNode; hint?: ReactNode; children: ReactNode; className?: string }) {
+/** `actions`: buttons for the field (Esempio, Svuota, Copia), always in the top right corner of its label row. */
+export function Field({ label, hint, actions, children, className }: { label?: ReactNode; hint?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string }) {
   const u = useUi();
   const labelId = useId();
   return (
     <div className={className}>
-      {label && <span id={labelId} className={u.label}>{label}</span>}
+      {label && (actions ? (
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <span id={labelId} className={u.label.replace("block", "").replace("mb-1.5", "")}>{label}</span>
+          <div className="flex items-center gap-1">{actions}</div>
+        </div>
+      ) : <span id={labelId} className={u.label}>{label}</span>)}
       <FieldLabel.Provider value={label ? labelId : undefined}>{children}</FieldLabel.Provider>
       {hint && <p className={cx("mt-1.5 text-[11px]", u.muted)}>{hint}</p>}
     </div>
@@ -256,17 +262,18 @@ export function Button({ variant = "secondary", size = "md", icon, className, ch
   const u = useUi();
   const variants = { primary: u.btnPrimary, secondary: u.btnSecondary, ghost: u.btnGhost, danger: u.btnDanger };
   return (
-    <button type="button" {...rest} className={cx(u.btnBase, variants[variant], size === "sm" ? "px-2.5 py-1.5" : "px-4 py-2.5", className)}>
+    <button type="button" {...rest} className={cx(u.btnBase, variants[variant], size === "sm" ? "h-8 px-3" : "h-10 px-4", "[&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0", className)}>
       {icon}
       {children}
     </button>
   );
 }
 
-export function IconButton({ className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement>) {
+/** Square button with one icon: 32 px, or 40 px (`md`) when it sits beside a normal Button. */
+export function IconButton({ size = "sm", className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { size?: "sm" | "md" }) {
   const u = useUi();
   return (
-    <button type="button" {...rest} className={cx(u.btnBase, u.btnGhost, "p-1.5", className)}>
+    <button type="button" {...rest} className={cx(u.btnBase, u.btnGhost, size === "md" ? "h-10 w-10" : "h-8 w-8", "[&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0", className)}>
       {children}
     </button>
   );

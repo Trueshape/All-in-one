@@ -225,12 +225,12 @@ export default function ScientificCalculator({ showSettings = false }: { showSet
         <div className="flex items-center justify-between gap-3">
           <div className="flex gap-1.5">
             {(["MC", "MR", "M+", "M-"] as const).map((op) => (
-              <Button key={op} size="sm" className="px-2.5" onClick={() => memoryOp(op)}>{op}</Button>
+              <Button key={op} size="sm" className="!px-2.5" onClick={() => memoryOp(op)}>{op}</Button>
             ))}
           </div>
           <div className="flex gap-1.5">
-            <Button size="sm" className="px-2.5" variant={radians ? "primary" : "secondary"} onClick={() => setRadians(true)}>RAD</Button>
-            <Button size="sm" className="px-2.5" variant={radians ? "secondary" : "primary"} onClick={() => setRadians(false)}>DEG</Button>
+            <Button size="sm" className="!px-2.5" variant={radians ? "primary" : "secondary"} onClick={() => setRadians(true)}>RAD</Button>
+            <Button size="sm" className="!px-2.5" variant={radians ? "secondary" : "primary"} onClick={() => setRadians(false)}>DEG</Button>
           </div>
         </div>
       )}

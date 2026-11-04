@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { Notice, TextArea, Button, IconButton, CopyButton, SectionTitle, Stat, Panel, Stack } from "../ui/kit";
+import { Notice, TextArea, Button, CopyButton, SectionTitle, Stat, Panel, Stack } from "../ui/kit";
 
 const SAMPLE = "Converti questo testo di esempio in diversi formati. Analizza anche le statistiche della lettura.";
 
@@ -51,9 +51,7 @@ export default function CaseConverter() {
             right={
               <div className="flex items-center gap-1">
                 <Button size="sm" onClick={() => setText(SAMPLE)}>Esempio</Button>
-                <IconButton onClick={() => setText("")} disabled={!text} title="Pulisci">
-                  <Trash2 className="w-4 h-4" />
-                </IconButton>
+                <Button size="sm" variant="danger" disabled={!text} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setText("")}>Svuota</Button>
                 <CopyButton text={text} label="Copia testo" />
               </div>
             }
