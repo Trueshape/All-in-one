@@ -61,7 +61,7 @@ export default function EtaCalculator() {
         </div>
 
         <div className="space-y-4">
-          <Field label="Quando hai iniziato">
+          <Field label="Inizio">
             <div className="grid grid-cols-[1fr_6rem] gap-3">
               <DatePicker value={date} onChange={setDate} />
               <TextInput value={time} onChange={(e) => setTime(e.target.value)} placeholder="HH:MM" aria-label="Ora di inizio" />
