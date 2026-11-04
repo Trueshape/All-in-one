@@ -27,8 +27,8 @@ const PROVINCE_COLUMNS: Column<Province>[] = [
   { key: "cap", label: "CAP capoluogo", value: (p) => digitsOf(p.cap.split(/[ –]/)[0]), digits: true },
 ];
 const DIAL_COLUMNS: Column<DialCode>[] = [
-  { key: "country", label: "Paese", value: (d) => d.country },
   { key: "iso", label: "ISO", value: (d) => d.iso },
+  { key: "country", label: "Paese", value: (d) => d.country },
   { key: "code", label: "Prefisso", value: (d) => digitsOf(d.codes[0]), digits: true },
 ];
 
@@ -112,9 +112,9 @@ export default function ItalyCodes() {
                 ))
               : dials.map((d) => (
                   <tr key={d.iso} className={cx("border-t", u.divider)}>
+                    <td className={cx(cell, "font-mono font-bold", u.accent)}>{d.iso}</td>
                     <td className={cell}>{d.country}</td>
-                    <td className={cx(cell, "font-mono", u.muted)}>{d.iso}</td>
-                    <td className={cx(cell, "font-mono font-bold", u.accent)}>{d.codes.map(formatDial).join(", ")}</td>
+                    <td className={cx(cell, "font-mono")}>{d.codes.map(formatDial).join(", ")}</td>
                     <td className={cell}><CopyButton text={formatDial(d.codes[0])} label="Copia il prefisso" /></td>
                   </tr>
                 ))}
