@@ -52,6 +52,7 @@ import {
   Blend,
   Grid3x3,
   Gamepad2,
+  PenLine,
   ScanBarcode,
   Trophy,
   Medal,
@@ -85,6 +86,7 @@ const Translator = lazy(() => import("../components/Translator"));
 const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
 const SvgPatternGenerator = lazy(() => import("../components/SvgPatternGenerator"));
 const PixelArt = lazy(() => import("../components/PixelArt"));
+const HandwritingFont = lazy(() => import("../components/HandwritingFont"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -397,6 +399,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-emerald-400 bg-emerald-500/10",
     category: "immagini",
     component: PixelArt,
+  },
+  {
+    id: "handwriting_font",
+    name: "Scrittura a mano in font",
+    description: "Stampa il foglio, scrivi le lettere a mano, fotografalo e scarica il tuo font .ttf.",
+    icon: PenLine,
+    colorClass: "border-amber-900/30 hover:border-amber-500/50",
+    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
+    iconColor: "text-amber-400 bg-amber-500/10",
+    category: "immagini",
+    component: HandwritingFont,
   },
   {
     id: "bracket_maker",
