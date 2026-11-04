@@ -43,19 +43,19 @@ export default function EtaCalculator() {
     <Stack>
       <div className="space-y-6">
         <div className="space-y-4">
-          <Field label="Totale" hint="Es. 500 piatti, 2000 MB, 120 pagine.">
+          <Field label="Totale">
             <TextInput type="number" inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} />
           </Field>
           <Field label="Ritmo">
             <div className="grid grid-cols-2 items-start gap-3">
-              <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} suffixText="fatti" />
+              <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} />
               <div className="space-y-2">
                 <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="in" />
                 <Chips value={unit} onChange={setUnit} options={UNITS} />
+                <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
               </div>
             </div>
           </Field>
-          <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
         </div>
 
         <div className="space-y-4">
