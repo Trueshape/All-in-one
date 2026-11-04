@@ -59,6 +59,7 @@ import {
   Hash,
   MapPinned,
   PhoneCall,
+  AudioLines,
   HardDrive,
   Replace,
   Shuffle,
@@ -108,6 +109,7 @@ const RomanNumerals = lazy(() => import("../components/RomanNumerals"));
 const RandomizeList = lazy(() => import("../components/RandomizeList"));
 const TextCleaner = lazy(() => import("../components/TextCleaner"));
 const DataSizeConverter = lazy(() => import("../components/DataSizeConverter"));
+const AudioEditor = lazy(() => import("../components/AudioEditor"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -508,6 +510,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-orange-400 bg-orange-500/10",
     category: "convertitori",
     component: DataSizeConverter,
+  },
+  {
+    id: "audio_editor",
+    name: "Editor Audio",
+    description: "Ritaglia o dividi un file audio, cambia il volume con le dissolvenze e salvalo in WAV, MP3, OGG o FLAC.",
+    icon: AudioLines,
+    colorClass: "border-fuchsia-900/30 hover:border-fuchsia-500/50",
+    glowClass: "shadow-fuchsia-950/20 hover:shadow-fuchsia-500/5",
+    iconColor: "text-fuchsia-400 bg-fuchsia-500/10",
+    category: "convertitori",
+    component: AudioEditor,
   },
   {
     id: "morse_code",
