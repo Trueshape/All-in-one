@@ -5,6 +5,7 @@ import { percentChange, percentOf, wholeFrom, whatPercent } from "./percent";
 import { computeEta, formatDuration } from "./eta";
 import { DEFAULT_OPTIONS, asciiArt, renderLine } from "./asciiArt";
 import { fitTile, patternSvg } from "./pattern";
+import { fromBytes, toBytes, unitLabel } from "./dataSize";
 import { morseToText, textToMorse } from "./morse";
 import { fromRoman, toRoman } from "./roman";
 import { dedupeLines, findReplace, shuffle } from "./textTools";
@@ -181,4 +182,15 @@ test("shuffle keeps the same items", () => {
   const out = shuffle(items);
   assert.deepEqual([...out].sort((a, b) => a - b), items);
   assert.equal(items[0], 0);
+});
+
+test("data sizes convert in decimal and binary", () => {
+  assert.equal(toBytes(1, "KB", "decimal"), 1000);
+  assert.equal(toBytes(1, "KB", "binary"), 1024);
+  assert.equal(toBytes(8, "bit", "decimal"), 1);
+  assert.equal(fromBytes(1_000_000, "MB", "decimal"), 1);
+  assert.equal(fromBytes(1024 ** 3, "GB", "binary"), 1);
+  assert.equal(unitLabel("MB", "binary"), "MiB");
+  assert.equal(unitLabel("B", "binary"), "B");
+  assert.equal(unitLabel("bit", "binary"), "bit");
 });

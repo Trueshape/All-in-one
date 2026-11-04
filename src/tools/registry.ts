@@ -59,6 +59,7 @@ import {
   Hash,
   MapPinned,
   PhoneCall,
+  HardDrive,
   Replace,
   Shuffle,
   Radio,
@@ -106,6 +107,7 @@ const MorseCode = lazy(() => import("../components/MorseCode"));
 const RomanNumerals = lazy(() => import("../components/RomanNumerals"));
 const RandomizeList = lazy(() => import("../components/RandomizeList"));
 const TextCleaner = lazy(() => import("../components/TextCleaner"));
+const DataSizeConverter = lazy(() => import("../components/DataSizeConverter"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
 
@@ -495,6 +497,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-cyan-400 bg-cyan-500/10",
     category: "creative",
     component: DialCodes,
+  },
+  {
+    id: "data_size",
+    name: "Dimensioni Dati",
+    description: "Converte byte, KB, MB, GB, TB, PB e bit tra loro, a scatti di 1000 o di 1024.",
+    icon: HardDrive,
+    colorClass: "border-orange-900/30 hover:border-orange-500/50",
+    glowClass: "shadow-orange-950/20 hover:shadow-orange-500/5",
+    iconColor: "text-orange-400 bg-orange-500/10",
+    category: "convertitori",
+    component: DataSizeConverter,
   },
   {
     id: "morse_code",

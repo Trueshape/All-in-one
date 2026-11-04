@@ -128,6 +128,7 @@ export const getToolModalSize = (toolId: string): string => {
     case "geometry_calc":
     case "circle_calc":
     case "age":
+    case "data_size":
     case "scientific_calc":
     case "image_converter":
       return "max-w-3xl";
