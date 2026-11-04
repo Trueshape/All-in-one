@@ -129,11 +129,16 @@ export default function App() {
     }
   };
 
-  // Arrow keys move between tools while one is open (ignored while typing in a field)
+  // Esc closes the open tool. Arrow keys move between tools, unless focus is inside the tool: there they belong to its controls, and changing tool would lose its state.
   useEffect(() => {
     if (!activeToolId) return;
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveToolId(null);
+        return;
+      }
       const el = e.target as HTMLElement | null;
+      if (el?.closest("[data-tool-body]")) return;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
       if (e.key === "ArrowRight") handleNextTool();
       else if (e.key === "ArrowLeft") handlePrevTool();
@@ -148,7 +153,7 @@ export default function App() {
 
   return (
     <I18nContext.Provider value={i18n}>
-    <div className={`min-h-screen ${tc.bg} flex flex-col relative transition-colors duration-500`}>
+    <div className={`min-h-screen ${tc.bg} flex flex-col relative overflow-x-clip transition-colors duration-500`}>
 
       {/* Background decoration elements */}
       {activeTheme === "immersive" && (

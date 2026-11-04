@@ -159,7 +159,7 @@ export default function CryptoAndNasdaqTracker() {
               </thead>
               <tbody>
                 {visible.map((c) => (
-                  <tr key={c.id} onClick={() => setSelected(c)} className={cx("border-b last:border-0 cursor-pointer hover:bg-white/5 transition-colors", u.divider)}>
+                  <tr key={c.id} onClick={() => setSelected(c)} tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(c); } }} className={cx("border-b last:border-0 cursor-pointer hover:bg-white/5 focus-visible:bg-white/10 outline-none transition-colors", u.divider)}>
                     <td className={cx(td, "text-center", u.muted)}>{c.market_cap_rank}</td>
                     <td className={td}>
                       <div className="flex items-center gap-2.5">

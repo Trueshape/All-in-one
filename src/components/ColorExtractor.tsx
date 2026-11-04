@@ -76,7 +76,7 @@ export default function ColorExtractor() {
           <SectionTitle>Colori principali</SectionTitle>
           <Slider label="Numero di colori" value={count} min={2} max={16} onChange={setCount} />
           {palette.length === 0 ? (
-            <Notice>Carica un'immagine per vedere la sua palette.</Notice>
+            <Notice tone="empty">Carica un'immagine per vedere la sua palette.</Notice>
           ) : (
             <>
               <div className={cx("flex h-10 overflow-hidden border", u.divider)}>

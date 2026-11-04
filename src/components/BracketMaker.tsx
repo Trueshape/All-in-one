@@ -174,7 +174,7 @@ export default function BracketMaker() {
       </Panel>
 
       {names.length < 2 ? (
-        <Notice>Inserisci almeno due partecipanti per creare il tabellone.</Notice>
+        <Notice tone="empty">Inserisci almeno due partecipanti per creare il tabellone.</Notice>
       ) : (
         <>
           {champion && (
@@ -199,7 +199,7 @@ export default function BracketMaker() {
               </div>
             )}
           </div>
-          <Notice>
+          <Notice tone="empty">
             {scoring
               ? "Clic sinistro su un giocatore: +1 punto; clic destro: −1. Vince chi è avanti; con il pareggio la partita resta aperta."
               : "Clicca un nome per farlo avanzare, cliccalo di nuovo per annullare."}{" "}

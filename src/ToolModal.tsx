@@ -1,5 +1,5 @@
 import type React from "react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, ChevronLeft, ChevronRight, Heart, Info, Pencil, Settings, X } from "lucide-react";
 import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
@@ -71,6 +71,33 @@ export default function ToolModal({
   // Settings belong to one tool: close them when the open tool changes.
   useEffect(() => setShowSettings(false), [activeTool?.id]);
 
+  // Focus enters the window when it opens and goes back where it was when it closes.
+  const box = useRef<HTMLDivElement>(null);
+  const isOpen = !!activeTool;
+  useEffect(() => {
+    if (!isOpen) return;
+    const before = document.activeElement as HTMLElement | null;
+    box.current?.focus({ preventScroll: true });
+    return () => before?.focus?.({ preventScroll: true });
+  }, [isOpen]);
+
+  // Tab stays inside the window.
+  const trapTab = (e: React.KeyboardEvent) => {
+    if (e.key !== "Tab" || !box.current) return;
+    const items = [...box.current.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex="0"]')].filter((el) => el.offsetParent !== null);
+    if (items.length === 0) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    const current = document.activeElement;
+    if (e.shiftKey && (current === first || current === box.current)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && current === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
   return (
     <AnimatePresence>
       {activeTool && (
@@ -91,8 +118,14 @@ export default function ToolModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.98, opacity: 0, y: 10 }}
             transition={{ type: "spring", damping: 30, stiffness: 400 }}
-            className={sizeClass(tc.modalContainer, getToolModalSize(activeTool.id))}
+            className={`${sizeClass(tc.modalContainer, getToolModalSize(activeTool.id))} outline-none`}
             id="expanded-tool-container"
+            ref={box}
+            role="dialog"
+            aria-modal="true"
+            aria-label={customToolNames[activeTool.id] || toolText(activeTool).name}
+            tabIndex={-1}
+            onKeyDown={trapTab}
           >
             {/* Modal header details */}
             <div className={tc.modalHeader}>
@@ -109,6 +142,8 @@ export default function ToolModal({
                           if (e.key === "Enter") {
                             commitName();
                           } else if (e.key === "Escape") {
+                            // Only cancel the rename: the window stays open.
+                            e.stopPropagation();
                             setEditingToolName(false);
                           }
                         }}
@@ -150,7 +185,7 @@ export default function ToolModal({
                     </div>
                   )}
                   <p className="text-[10px] text-zinc-500 font-mono tracking-wider mt-0.5 uppercase">
-                    {activeTool.category}
+                    {t(`nav_${activeTool.category}`)}
                   </p>
                 </div>
               </div>
@@ -192,6 +227,8 @@ export default function ToolModal({
                   onClick={onClose}
                   className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic}`}
                   id="btn-close-modal"
+                  aria-label={t("close")}
+                  title={t("close")}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -199,7 +236,7 @@ export default function ToolModal({
             </div>
 
             {/* Scrollable Modal Content Workspace */}
-            <div className={tc.modalBody}>
+            <div className={tc.modalBody} data-tool-body>
               <UiContext.Provider value={UI_TOKENS[activeTheme]}>
                <InfoContext.Provider value={showInfo}>
                 <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>

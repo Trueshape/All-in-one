@@ -27,12 +27,16 @@ export function useCopy(duration = 1800) {
   return { copied, copy };
 }
 
+/** Id of the enclosing Field's label, so the control inside is named by it. */
+const FieldLabel = createContext<string | undefined>(undefined);
+
 export function Field({ label, hint, children, className }: { label?: ReactNode; hint?: ReactNode; children: ReactNode; className?: string }) {
   const u = useUi();
+  const labelId = useId();
   return (
     <div className={className}>
-      {label && <span className={u.label}>{label}</span>}
-      {children}
+      {label && <span id={labelId} className={u.label}>{label}</span>}
+      <FieldLabel.Provider value={label ? labelId : undefined}>{children}</FieldLabel.Provider>
       {hint && <p className={cx("mt-1.5 text-[11px]", u.muted)}>{hint}</p>}
     </div>
   );
@@ -42,11 +46,12 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & { prefixText?: string;
 
 export function TextInput({ prefixText, suffixText, className, ...rest }: InputProps) {
   const u = useUi();
-  if (!prefixText && !suffixText) return <input {...rest} className={cx(u.input, className)} />;
+  const labelledBy = useContext(FieldLabel);
+  if (!prefixText && !suffixText) return <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} className={cx(u.input, className)} />;
   return (
     <div className="relative">
       {prefixText && <span className={cx("absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none", u.muted)}>{prefixText}</span>}
-      <input {...rest} className={cx(u.input, prefixText && "pl-8", suffixText && "pr-10", className)} />
+      <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} className={cx(u.input, prefixText && "pl-8", suffixText && "pr-10", className)} />
       {suffixText && <span className={cx("absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none", u.muted)}>{suffixText}</span>}
     </div>
   );
@@ -54,7 +59,8 @@ export function TextInput({ prefixText, suffixText, className, ...rest }: InputP
 
 export function TextArea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const u = useUi();
-  return <textarea {...rest} className={cx(u.input, "resize-y", className)} />;
+  const labelledBy = useContext(FieldLabel);
+  return <textarea aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} className={cx(u.input, "resize-y", className)} />;
 }
 
 type SelectProps = {
@@ -79,6 +85,7 @@ const LIST_MAX = 280;
  */
 export function Select({ value, onChange, children, className, disabled, id, "aria-label": ariaLabel }: SelectProps) {
   const u = useUi();
+  const labelledBy = useContext(FieldLabel);
   const listId = useId();
   const button = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
@@ -191,6 +198,7 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
         type="button"
         role="combobox"
         aria-label={ariaLabel}
+        aria-labelledby={ariaLabel ? undefined : labelledBy}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
@@ -288,13 +296,16 @@ export function Chips<T extends string | number>({
   fill?: boolean;
 }) {
   const u = useUi();
+  const labelledBy = useContext(FieldLabel);
   return (
     <div
+      role="group"
+      aria-labelledby={labelledBy}
       className={cx(fill ? "grid gap-1.5" : "flex flex-wrap gap-1.5", className)}
       style={fill ? { gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` } : undefined}
     >
       {options.map((o) => (
-        <button type="button" key={String(o.value)} onClick={() => onChange(o.value)} className={cx(o.value === value ? u.chipActive : u.chip, fill && "w-full text-center")}>
+        <button type="button" aria-pressed={o.value === value} key={String(o.value)} onClick={() => onChange(o.value)} className={cx(o.value === value ? u.chipActive : u.chip, fill && "w-full text-center")}>
           {o.label}
         </button>
       ))}
@@ -317,10 +328,11 @@ export function Segmented<T extends string | number>({
   fill?: boolean;
 }) {
   const u = useUi();
+  const labelledBy = useContext(FieldLabel);
   return (
-    <div className={cx(u.segmentWrap, fill && "w-full", className)}>
+    <div role="group" aria-labelledby={labelledBy} className={cx(u.segmentWrap, fill && "w-full", className)}>
       {options.map((o) => (
-        <button type="button" key={String(o.value)} onClick={() => onChange(o.value)} className={cx(o.value === value ? u.segmentActive : u.segment, fill && "flex-1 flex items-center justify-center")}>
+        <button type="button" aria-pressed={o.value === value} key={String(o.value)} onClick={() => onChange(o.value)} className={cx(o.value === value ? u.segmentActive : u.segment, fill && "flex-1 flex items-center justify-center")}>
           {o.label}
         </button>
       ))}
@@ -346,14 +358,16 @@ export function Slider({
   display?: ReactNode;
 }) {
   const u = useUi();
+  const labelId = useId();
   return (
     <div className="space-y-2">
       <div className="flex items-baseline justify-between">
-        <span className={u.label.replace("block", "").replace("mb-1.5", "")}>{label}</span>
+        <span id={labelId} className={u.label.replace("block", "").replace("mb-1.5", "")}>{label}</span>
         <span className={cx("text-sm font-mono font-semibold", u.accent)}>{display ?? value}</span>
       </div>
       <input
         type="range"
+        aria-labelledby={labelId}
         min={min}
         max={max}
         step={step}
@@ -424,13 +438,14 @@ export function Row({ label, value, tone }: { label: ReactNode; value: ReactNode
 /** Whether the info notices are visible; toggled from the modal header and shared by every tool. */
 export const InfoContext = createContext(false);
 
-export function Notice({ tone = "info", children }: { tone?: "info" | "error" | "success" | "warn"; children: ReactNode }) {
+export function Notice({ tone = "info", children }: { tone?: "info" | "empty" | "error" | "success" | "warn"; children: ReactNode }) {
   const u = useUi();
   const showInfo = useContext(InfoContext);
-  // Only explanations hide behind the (i) button: errors and warnings must always be seen.
+  // Only explanations hide behind the (i) button: errors, warnings and "why there is no result yet" must always be seen.
   if (tone === "info" && !showInfo) return null;
   const tones = {
     info: cx(u.panel, u.subtle),
+    empty: cx(u.panel, u.subtle),
     error: "bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl",
     success: "bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 rounded-xl",
     warn: "bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-xl",

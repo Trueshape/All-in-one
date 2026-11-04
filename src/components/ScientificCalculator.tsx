@@ -164,7 +164,7 @@ export default function ScientificCalculator({ showSettings = false }: { showSet
       else if (key === "%") found = find((x) => x.value === "percent");
       else if (key === "Enter" || key === "=") found = find((x) => x.kind === "equal");
       else if (key === "Backspace") found = find((x) => x.kind === "back");
-      else if (key === "Escape" || key.toLowerCase() === "c") found = find((x) => x.kind === "clear");
+      else if (key.toLowerCase() === "c") found = find((x) => x.kind === "clear");
       if (found) { e.preventDefault(); press(found); }
     };
     window.addEventListener("keydown", onKey);
@@ -259,7 +259,7 @@ export default function ScientificCalculator({ showSettings = false }: { showSet
       </div>
 
       {!simple && <p className={cx("flex items-center justify-center gap-1.5 text-[11px] text-center pt-2", u.muted)}>
-        <HelpCircle className="w-3.5 h-3.5" /> Tastiera: cifre, + − * / ^ ( ), Invio (=), Backspace, Esc (C)
+        <HelpCircle className="w-3.5 h-3.5" /> Tastiera: cifre, + − * / ^ ( ), Invio (=), Backspace, C
       </p>}
     </Stack>
   );

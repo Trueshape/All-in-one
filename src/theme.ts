@@ -30,7 +30,7 @@ export const getThemeClasses = (theme: Theme) => {
         cardIndex: "text-[10px] font-mono text-emerald-600 tracking-widest uppercase",
         cardTitle: "text-xl font-bold tracking-wider uppercase text-emerald-300 group-hover:text-emerald-400 transition-colors",
         cardDesc: "text-xs text-emerald-500/70 leading-relaxed font-mono opacity-80 group-hover:opacity-100 transition-opacity",
-        cardFooter: "border-t border-emerald-950/80 text-emerald-600 group-hover:text-emerald-450 font-mono tracking-widest uppercase",
+        cardFooter: "border-t border-emerald-950/80 text-emerald-600 group-hover:text-emerald-400 font-mono tracking-widest uppercase",
         footer: "border-t border-emerald-900/40 bg-[#02050a] text-emerald-700 font-mono",
         modalContainer: "bg-[#030812] border border-emerald-500/40 rounded-none text-emerald-400 font-mono w-full max-w-xl overflow-hidden z-10 flex flex-col max-h-[90vh] relative shadow-2xl",
         modalHeader: "border-b border-emerald-950 bg-[#030812] flex items-center justify-between px-6 py-5 shrink-0",
@@ -48,11 +48,11 @@ export const getThemeClasses = (theme: Theme) => {
         headerSubtitle: "text-[10px] text-slate-400 font-sans tracking-wide uppercase",
         navText: "text-slate-400",
         navActive: "text-violet-400 border-b border-violet-400 font-bold",
-        navInactive: "text-slate-500 border-b border-transparent hover:text-slate-350",
+        navInactive: "text-slate-500 border-b border-transparent hover:text-slate-300",
         panelBg: "bg-slate-950/40 backdrop-blur-md border-b border-slate-800/40",
         searchInput: "w-full bg-slate-900/50 border border-slate-800/60 rounded-xl px-9 pr-8 py-1.5 text-xs font-sans text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/40 transition-colors",
         clockText: "text-slate-500",
-        clockTime: "text-slate-350 font-bold",
+        clockTime: "text-slate-300 font-bold",
         gridContainer: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-transparent border-0 rounded-none p-1 max-w-7xl mx-auto",
         card: "bg-slate-900/45 backdrop-blur-md border border-slate-800/50 hover:border-violet-500/30 hover:shadow-[0_10px_30px_rgba(139,92,246,0.03)] rounded-2xl pt-3 pb-2 px-4 transition-all duration-350 relative",
         cardIndex: "text-[10px] font-sans font-bold text-violet-400/85 tracking-widest uppercase",
@@ -61,10 +61,10 @@ export const getThemeClasses = (theme: Theme) => {
         cardFooter: "border-t border-slate-800/60 text-slate-500 group-hover:text-slate-300 font-sans tracking-wider uppercase",
         footer: "border-t border-slate-800/40 bg-slate-950/40 backdrop-blur-md text-slate-500",
         modalContainer: "bg-slate-900 border border-slate-800/80 rounded-2xl text-slate-100 w-full max-w-xl overflow-hidden z-10 flex flex-col max-h-[90vh] relative shadow-2xl font-sans",
-        modalHeader: "border-b border-slate-850 bg-slate-900 flex items-center justify-between px-6 py-5 shrink-0",
+        modalHeader: "border-b border-slate-800 bg-slate-900 flex items-center justify-between px-6 py-5 shrink-0",
         modalBody: "p-6 overflow-y-auto max-h-[calc(90vh-140px)] no-scrollbar bg-slate-900",
-        modalFooter: "px-6 py-4 border-t border-slate-850 bg-slate-900 flex items-center justify-between shrink-0 text-xs",
-        btnClassic: "bg-slate-900/60 hover:bg-slate-850 border border-slate-800 text-slate-300 rounded-lg",
+        modalFooter: "px-6 py-4 border-t border-slate-800 bg-slate-900 flex items-center justify-between shrink-0 text-xs",
+        btnClassic: "bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-lg",
         iconAccent: "text-violet-400",
         borderClass: "border-slate-800/40",
       };
@@ -82,7 +82,7 @@ export const getThemeClasses = (theme: Theme) => {
         searchInput: "w-full bg-zinc-900/40 border border-zinc-800 rounded px-9 pr-8 py-1.5 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-colors",
         clockText: "text-zinc-500",
         clockTime: "text-zinc-400 font-bold",
-        gridContainer: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1px] bg-zinc-850 border border-zinc-800 rounded-none overflow-hidden max-w-7xl mx-auto",
+        gridContainer: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[1px] border border-zinc-800 rounded-none overflow-hidden max-w-7xl mx-auto",
         card: "bg-[#0a0a0a] pt-3 pb-2 px-4 flex flex-col justify-between group h-36 cursor-pointer hover:bg-zinc-900/10 transition-all duration-300 relative",
         cardIndex: "text-[10px] font-mono text-zinc-500 tracking-wider uppercase",
         cardTitle: "text-2xl font-light text-zinc-100 group-hover:text-white transition-colors",
@@ -107,6 +107,7 @@ export const getToolModalSize = (toolId: string): string => {
     case "color":
       return "max-w-6xl";
     case "handwriting_font":
+    case "radar_chart":
       return "max-w-5xl";
     case "dial_codes":
       return "max-w-2xl";
@@ -117,7 +118,6 @@ export const getToolModalSize = (toolId: string): string => {
     case "case_converter":
     case "text_codes":
     case "morse_code":
-    case "radar_chart":
     case "virtual_piano":
     case "audio_editor":
     case "text_to_speech":

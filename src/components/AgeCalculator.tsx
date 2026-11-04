@@ -69,7 +69,7 @@ export default function AgeCalculator() {
       </Field>
 
       {!age ? (
-        <Notice>Inserisci una data di nascita valida, non nel futuro.</Notice>
+        <Notice tone="empty">Inserisci una data di nascita valida, non nel futuro.</Notice>
       ) : (
         <>
           <ResultCard label="Età esatta" value={`${age.years} anni ${age.months} mesi ${age.days} giorni`} />

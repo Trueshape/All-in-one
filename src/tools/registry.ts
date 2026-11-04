@@ -45,7 +45,6 @@ import {
   Coins,
   ShieldCheck,
   Wand2,
-  Languages,
   ListTodo,
   BarChart3,
   Pipette,
@@ -96,7 +95,6 @@ const DiscordTimestamp = lazy(() => import("../components/DiscordTimestamp"));
 const CodiceFiscaleCalculator = lazy(() => import("../components/CodiceFiscaleCalculator"));
 const CryptoAndNasdaqTracker = lazy(() => import("../components/CryptoAndNasdaqTracker"));
 const IbanValidator = lazy(() => import("../components/IbanValidator"));
-const Translator = lazy(() => import("../components/Translator"));
 const ColorExtractor = lazy(() => import("../components/ColorExtractor"));
 const SvgPatternGenerator = lazy(() => import("../components/SvgPatternGenerator"));
 const PixelArt = lazy(() => import("../components/PixelArt"));
@@ -384,17 +382,6 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-emerald-400 bg-emerald-500/10",
     category: "calcolo",
     component: IbanValidator,
-  },
-  {
-    id: "translator",
-    name: "Traduttore Multilingua",
-    description: "Traduci testi in oltre 35 lingue con selezione del tono di voce, pronuncia vocale e rilevamento automatico.",
-    icon: Languages,
-    colorClass: "border-cyan-900/30 hover:border-cyan-500/50",
-    glowClass: "shadow-cyan-950/20 hover:shadow-cyan-500/5",
-    iconColor: "text-cyan-400 bg-cyan-500/10",
-    category: "convertitori",
-    component: Translator,
   },
   {
     id: "color_extractor",

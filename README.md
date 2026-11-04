@@ -2,15 +2,14 @@
 
 Strumenti quotidiani (calcoli, convertitori, produttività, utilità), in un'unica pagina.
 
-- Sito pubblico: https://trueshape.github.io/All-in-one/ (senza Traduttore: richiede il server locale)
+- Sito pubblico: https://trueshape.github.io/All-in-one/
 
 ## Avvio in locale
 
 1. Installa Node.js (versione LTS).
 2. Nella cartella del progetto: `npm install`.
-3. Per il Traduttore: crea `.env.local` con `GEMINI_API_KEY=la-tua-chiave` (non va nel repo).
-4. Avvia: `npm run dev`, poi apri http://localhost:5182.
-5. Controlli prima di pubblicare: `npm run lint` (tipi) e `npm test` (test della logica).
+3. Avvia: `npm run dev`, poi apri http://localhost:5182.
+4. Controlli prima di pubblicare: `npm run lint` (tipi) e `npm test` (test della logica).
 
 ## Pubblicazione
 

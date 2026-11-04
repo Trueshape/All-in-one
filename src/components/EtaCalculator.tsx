@@ -76,7 +76,7 @@ export default function EtaCalculator() {
               </Panel>
             </>
           ) : (
-            <Notice>Inserisci quantità e tempo (tutti maggiori di zero) e un orario di inizio valido, come 14:30.</Notice>
+            <Notice tone="empty">Inserisci quantità e tempo (tutti maggiori di zero) e un orario di inizio valido, come 14:30.</Notice>
           )}
         </div>
       </div>

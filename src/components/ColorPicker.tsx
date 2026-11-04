@@ -34,6 +34,7 @@ export default function ColorPicker() {
   const [color, setColor] = useState<Color>(() => fromHsl(258, 90, 50));
   const [draft, setDraft] = useState(color.hex);
   const { copied, copy } = useCopy();
+  const [copiedLabel, setCopiedLabel] = useState("");
 
   const { hex } = color;
   const rgb = hexToRgb(hex) ?? [0, 0, 0];
@@ -91,8 +92,8 @@ export default function ColorPicker() {
                 <span className={u.statLabel}>{f.label}</span>
                 <div className={cx("font-mono text-sm", u.text)}>{f.value}</div>
               </div>
-              <button type="button" onClick={() => copy(f.value)} className={cx("p-1.5 cursor-pointer", u.muted)} title={`Copia ${f.label}`}>
-                {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              <button type="button" onClick={() => { setCopiedLabel(f.label); copy(f.value); }} className={cx("p-1.5 cursor-pointer", u.muted)} title={`Copia ${f.label}`}>
+                {copied && copiedLabel === f.label ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
               </button>
             </Panel>
           ))}

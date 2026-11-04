@@ -25,7 +25,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Clicca sul cuore sui tool per salvarli qui.", back: "Indietro", category: "Categoria", tool_one: "STRUMENTO", tool_many: "STRUMENTI",
     none_found: "NESSUNO STRUMENTO TROVATO NEL SISTEMA.", reset_filters: "RIPRISTINA FILTRI", rename: "Rinomina", rename_tool: "Rinomina strumento", save: "Salva",
     fav_add: "Aggiungi ai preferiti", fav_remove: "Rimuovi dai preferiti", info_show: "Mostra spiegazioni", info_hide: "Nascondi spiegazioni",
-    prev: "Precedente", next: "Successivo", tool_of: "STRUMENTO", language: "Lingua", settings: "Impostazioni", settings_close: "Chiudi impostazioni",
+    prev: "Precedente", next: "Successivo", tool_of: "STRUMENTO", language: "Lingua", settings: "Impostazioni", settings_close: "Chiudi impostazioni", close: "Chiudi",
   },
   en: {
     nav_all: "All tools", nav_calcolo: "Calculators", nav_convertitori: "Converters", nav_immagini: "Images", nav_produttivita: "Productivity", nav_creative: "Utilities", nav_preferiti: "Favorites",
@@ -35,7 +35,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Click the heart on a tool to save it here.", back: "Back", category: "Category", tool_one: "TOOL", tool_many: "TOOLS",
     none_found: "NO TOOL FOUND.", reset_filters: "RESET FILTERS", rename: "Rename", rename_tool: "Rename tool", save: "Save",
     fav_add: "Add to favorites", fav_remove: "Remove from favorites", info_show: "Show explanations", info_hide: "Hide explanations",
-    prev: "Previous", next: "Next", tool_of: "TOOL", language: "Language", settings: "Settings", settings_close: "Close settings",
+    prev: "Previous", next: "Next", tool_of: "TOOL", language: "Language", settings: "Settings", settings_close: "Close settings", close: "Close",
   },
   es: {
     nav_all: "Todas las herramientas", nav_calcolo: "Cálculos", nav_convertitori: "Conversores", nav_immagini: "Imágenes", nav_produttivita: "Productividad", nav_creative: "Utilidades", nav_preferiti: "Favoritos",
@@ -45,7 +45,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Haz clic en el corazón de una herramienta para guardarla aquí.", back: "Atrás", category: "Categoría", tool_one: "HERRAMIENTA", tool_many: "HERRAMIENTAS",
     none_found: "NO SE ENCONTRÓ NINGUNA HERRAMIENTA.", reset_filters: "RESTABLECER FILTROS", rename: "Renombrar", rename_tool: "Renombrar herramienta", save: "Guardar",
     fav_add: "Añadir a favoritos", fav_remove: "Quitar de favoritos", info_show: "Mostrar explicaciones", info_hide: "Ocultar explicaciones",
-    prev: "Anterior", next: "Siguiente", tool_of: "HERRAMIENTA", language: "Idioma", settings: "Ajustes", settings_close: "Cerrar ajustes",
+    prev: "Anterior", next: "Siguiente", tool_of: "HERRAMIENTA", language: "Idioma", settings: "Ajustes", settings_close: "Cerrar ajustes", close: "Cerrar",
   },
   de: {
     nav_all: "Alle Tools", nav_calcolo: "Rechner", nav_convertitori: "Umrechner", nav_immagini: "Bilder", nav_produttivita: "Produktivität", nav_creative: "Hilfsmittel", nav_preferiti: "Favoriten",
@@ -55,7 +55,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Klicke auf das Herz eines Tools, um es hier zu speichern.", back: "Zurück", category: "Kategorie", tool_one: "TOOL", tool_many: "TOOLS",
     none_found: "KEIN TOOL GEFUNDEN.", reset_filters: "FILTER ZURÜCKSETZEN", rename: "Umbenennen", rename_tool: "Tool umbenennen", save: "Speichern",
     fav_add: "Zu Favoriten hinzufügen", fav_remove: "Aus Favoriten entfernen", info_show: "Erklärungen anzeigen", info_hide: "Erklärungen ausblenden",
-    prev: "Zurück", next: "Weiter", tool_of: "TOOL", language: "Sprache", settings: "Einstellungen", settings_close: "Einstellungen schließen",
+    prev: "Zurück", next: "Weiter", tool_of: "TOOL", language: "Sprache", settings: "Einstellungen", settings_close: "Einstellungen schließen", close: "Schließen",
   },
   fr: {
     nav_all: "Tous les outils", nav_calcolo: "Calculs", nav_convertitori: "Convertisseurs", nav_immagini: "Images", nav_produttivita: "Productivité", nav_creative: "Utilitaires", nav_preferiti: "Favoris",
@@ -65,7 +65,7 @@ const UI: Record<Lang, Dict> = {
     favorites_empty: "Clique sur le cœur d’un outil pour l’enregistrer ici.", back: "Retour", category: "Catégorie", tool_one: "OUTIL", tool_many: "OUTILS",
     none_found: "AUCUN OUTIL TROUVÉ.", reset_filters: "RÉINITIALISER LES FILTRES", rename: "Renommer", rename_tool: "Renommer l’outil", save: "Enregistrer",
     fav_add: "Ajouter aux favoris", fav_remove: "Retirer des favoris", info_show: "Afficher les explications", info_hide: "Masquer les explications",
-    prev: "Précédent", next: "Suivant", tool_of: "OUTIL", language: "Langue", settings: "Paramètres", settings_close: "Fermer les paramètres",
+    prev: "Précédent", next: "Suivant", tool_of: "OUTIL", language: "Langue", settings: "Paramètres", settings_close: "Fermer les paramètres", close: "Fermer",
   },
 };
 
@@ -97,7 +97,6 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     codice_fiscale_calc: { name: "Italian tax code (Codice Fiscale)", description: "Generate the official Italian tax code from personal data and birthplace." },
     crypto_nasdaq: { name: "Crypto Top 100 & Nasdaq", description: "Live trends of the top 100 cryptocurrencies and the main NASDAQ stocks." },
     iban_validator: { name: "IBAN validator", description: "Check the format and MOD-97 check digits of a bank IBAN." },
-    translator: { name: "Multilingual translator", description: "Translate text into many languages with tone selection and speech." },
     color_extractor: { name: "Color extractor", description: "Get the main colors of an image, with percentages, HEX/RGB codes and CSS variables." },
     svg_pattern: { name: "SVG pattern generator", description: "Create repeating patterns (dots, waves, grids, checkers) with your own colors and rotation, as SVG or PNG." },
     pixel_art: { name: "Pixel art converter", description: "Turn a photo into pixel art: pixel size, adaptive or retro palette (Game Boy, PICO-8) and dithering." },
@@ -144,7 +143,6 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     codice_fiscale_calc: { name: "Código fiscal italiano", description: "Genera el código fiscal italiano oficial a partir de los datos personales y el lugar de nacimiento." },
     crypto_nasdaq: { name: "Cripto Top 100 y Nasdaq", description: "Evolución de las 100 principales criptomonedas y de las acciones del NASDAQ." },
     iban_validator: { name: "Validador de IBAN", description: "Comprueba el formato y los dígitos de control MOD-97 de un IBAN." },
-    translator: { name: "Traductor multilingüe", description: "Traduce textos a muchos idiomas con selección de tono y pronunciación." },
     color_extractor: { name: "Extractor de colores", description: "Obtén los colores principales de una imagen, con porcentajes, códigos HEX/RGB y variables CSS." },
     svg_pattern: { name: "Generador de patrones SVG", description: "Crea motivos repetidos (puntos, ondas, rejillas, ajedrez) con tus colores y rotación, en SVG o PNG." },
     pixel_art: { name: "Conversor a pixel art", description: "Convierte una foto en pixel art: tamaño de píxel, paleta adaptativa o retro (Game Boy, PICO-8) y dithering." },
@@ -191,7 +189,6 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     codice_fiscale_calc: { name: "Italienische Steuernummer", description: "Erzeuge die offizielle italienische Steuernummer aus Personendaten und Geburtsort." },
     crypto_nasdaq: { name: "Krypto Top 100 & Nasdaq", description: "Verlauf der 100 wichtigsten Kryptowährungen und der NASDAQ-Aktien." },
     iban_validator: { name: "IBAN-Prüfer", description: "Prüfe Format und MOD-97-Prüfziffern einer IBAN." },
-    translator: { name: "Mehrsprachiger Übersetzer", description: "Übersetze Texte in viele Sprachen mit Tonauswahl und Sprachausgabe." },
     color_extractor: { name: "Farbextraktor", description: "Ermittle die Hauptfarben eines Bildes mit Anteilen, HEX/RGB-Codes und CSS-Variablen." },
     svg_pattern: { name: "SVG-Muster-Generator", description: "Erstelle Wiederholmuster (Punkte, Wellen, Raster, Schachbrett) mit eigenen Farben und Drehung als SVG oder PNG." },
     pixel_art: { name: "Pixel-Art-Konverter", description: "Verwandle ein Foto in Pixel Art: Pixelgröße, adaptive oder Retro-Palette (Game Boy, PICO-8) und Dithering." },
@@ -238,7 +235,6 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     codice_fiscale_calc: { name: "Code fiscal italien", description: "Génère le code fiscal italien officiel à partir des données personnelles et du lieu de naissance." },
     crypto_nasdaq: { name: "Crypto Top 100 & Nasdaq", description: "Évolution des 100 principales cryptomonnaies et des actions du NASDAQ." },
     iban_validator: { name: "Validateur d’IBAN", description: "Vérifie le format et les chiffres de contrôle MOD-97 d’un IBAN." },
-    translator: { name: "Traducteur multilingue", description: "Traduis des textes dans de nombreuses langues avec choix du ton et prononciation." },
     color_extractor: { name: "Extracteur de couleurs", description: "Récupère les couleurs principales d’une image, avec pourcentages, codes HEX/RGB et variables CSS." },
     svg_pattern: { name: "Générateur de motifs SVG", description: "Crée des motifs répétés (pois, vagues, grilles, damier) avec tes couleurs et la rotation, en SVG ou PNG." },
     pixel_art: { name: "Convertisseur pixel art", description: "Transforme une photo en pixel art : taille du pixel, palette adaptative ou rétro (Game Boy, PICO-8) et dithering." },

@@ -238,7 +238,7 @@ export default function DecisionMaker() {
                 <p className={big}>{picked}</p>
               </div>
             ) : (
-              <p className={cx("text-xs", u.muted)}>Servono almeno 2 opzioni.</p>
+              <p className={cx("text-xs", u.muted)}>{options.length < 2 ? "Servono almeno 2 opzioni." : "Premi il bottone per scegliere."}</p>
             )}
           </Panel>
 

@@ -149,12 +149,12 @@ export default function Landing({
           <h1 className={tc.headerTitle}>
             {activeTheme === "immersive" ? "IL SITO È MIO" : "Il sito è mio"}
           </h1>
-          <span className={`${tc.headerSubtitle} hidden xl:inline-block`}>
+          <span className={`${tc.headerSubtitle} hidden min-[1700px]:inline-block`}>
             {activeTheme === "artistic" ? "Sistemi Quotidiani v1.0" : activeTheme === "immersive" ? "KERNEL_V1.0 // ONLINE" : "Elegant Suite v1.0"}
           </span>
         </div>
 
-        <nav className="flex justify-center gap-4 text-[10px] xl:absolute xl:left-1/2 xl:top-1/2 xl:-translate-x-1/2 xl:-translate-y-1/2 xl:w-max font-medium tracking-[0.2em] uppercase overflow-x-auto max-w-full pb-1 sm:pb-0 no-scrollbar">
+        <nav className="flex min-w-0 justify-center-safe gap-4 text-[10px] xl:absolute xl:left-1/2 xl:top-1/2 xl:-translate-x-1/2 xl:-translate-y-1/2 xl:w-max font-medium tracking-[0.2em] uppercase overflow-x-auto max-w-full pb-1 sm:pb-0 no-scrollbar">
           {Object.keys(CATEGORY_LABELS).map((catKey) => (
             <button
               key={catKey}
@@ -340,7 +340,7 @@ export default function Landing({
                 {
                   id: "convertitori",
                   name: t("nav_convertitori"),
-                  description: "Tassi di cambio valute, unità di misura, maiuscole e traduzioni.",
+                  description: "Tassi di cambio valute, unità di misura, maiuscole e codici di testo.",
                   icon: ArrowLeftRight,
                   count: TOOLS.filter(t => t.category === "convertitori").length,
                 },
@@ -370,7 +370,7 @@ export default function Landing({
                   name: t("nav_preferiti"),
                   description: "I tuoi strumenti preferiti salvati per un accesso rapido.",
                   icon: Heart,
-                  count: Object.keys(favoriteTools).filter(id => !!favoriteTools[id]).length,
+                  count: TOOLS.filter(t => !!favoriteTools[t.id]).length,
                 }
               ].map((category, index) => {
                 const Icon = category.icon;
