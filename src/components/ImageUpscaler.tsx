@@ -112,7 +112,7 @@ export default function ImageUpscaler({ image }: { image: ImageSourceState }) {
           <Slider label="Contrasto" value={contrast} min={-100} max={100} onChange={setContrast} />
           <Slider label="Saturazione" value={saturation} min={-100} max={100} onChange={setSaturation} />
           <Field label="Formato">
-            <Chips fill value={format} onChange={setFormat} options={[{ value: "png", label: "PNG (senza perdita)" }, { value: "webp", label: "WEBP" }, { value: "jpeg", label: "JPG" }]} />
+            <Chips fill value={format} onChange={setFormat} options={[{ value: "png", label: "PNG" }, { value: "webp", label: "WEBP" }, { value: "jpeg", label: "JPG" }]} />
           </Field>
           {tooBig && <Notice tone="error">Troppo grande: scegli un ingrandimento minore (lato massimo {MAX_SIDE} px).</Notice>}
           <div className="grid grid-cols-2 gap-2">

@@ -157,3 +157,21 @@ export function glyphFromMask(char: string, mask: Uint8Array, width: number, hei
     advance: Math.round((maxX - minX) * scale + BEARING * 2),
   };
 }
+
+/** Characters offered when drawing online (the printed sheet only has the first four groups, minus the accents). */
+export const GROUPS: Array<{ id: string; label: string; chars: string[] }> = [
+  { id: "upper", label: "Maiuscole", chars: Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ") },
+  { id: "lower", label: "Minuscole", chars: Array.from("abcdefghijklmnopqrstuvwxyz") },
+  { id: "digits", label: "Numeri", chars: Array.from("0123456789") },
+  { id: "punct", label: "Punteggiatura", chars: Array.from(".,;:!?'\"-()@&€%/+=") },
+  { id: "accents", label: "Accentate", chars: Array.from("àáâäèéêëìíîïòóôöùúûüçñÀÈÉÌÒÙÇÑ") },
+];
+
+/** Drawing pad: size in px, and where the guides sit (fractions of the height). The baseline matches `baselineInArea`. */
+export const PAD = { w: 360, h: 480, baseline: baselineInArea, capLine: 0.2, xLine: 0.47 };
+
+export interface Point {
+  x: number;
+  y: number;
+}
+export type Stroke = Point[];

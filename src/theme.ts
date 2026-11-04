@@ -106,6 +106,8 @@ export const getToolModalSize = (toolId: string): string => {
       return "max-w-[880px] w-[92vw]";
     case "color":
       return "max-w-6xl";
+    case "handwriting_font":
+      return "max-w-5xl";
     case "crypto_nasdaq":
       return "max-w-4xl";
     case "bracket_maker":
