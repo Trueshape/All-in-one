@@ -76,3 +76,4 @@
 - 2026-11-04 — La ruota è una quarta scheda di Decisioni (Moneta, Dadi, Lista, Ruota) e usa le stesse opzioni della Lista; il convertitore di fusi orari sta dentro Fusi Mondiali, sotto le città, come richiesto: nessuno strumento nuovo in questi due casi.
 - 2026-11-04 — Grafico Radar (fino a 4 serie e 12 assi, esportato su sfondo bianco per restare leggibile ovunque) e Piano Virtuale (tre ottave con oscillatori Web Audio, nessun campione audio da scaricare) sono strumenti nuovi nella categoria Creative.
 - 2026-11-04 — Card della pagina categoria: altezza data dal contenuto (non più fissa a 144 px), titolo subito sotto l'indice e tasti rinomina/preferito sovrapposti in alto a destra senza occupare una riga.
+- 2026-11-04 — Sistema visivo documentato in `DESIGN.md`: metafora "Il cassetto degli attrezzi", componenti sobri e precisi, profondità piatta con bordi (scelte dell'utente).

@@ -1,0 +1,565 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-04T11:29:27.846Z",
+  "title": "Design System: Il sito è mio",
+  "extensions": {
+    "colorMeta": {
+      "accent-indaco": {
+        "role": "primary",
+        "displayName": "Accent Indaco",
+        "canonical": "#615fff",
+        "oklch": "oklch(58.3% 0.230 277.1)",
+        "tonalRamp": [
+          "#10004f",
+          "#240090",
+          "#3405b7",
+          "#4b3fdf",
+          "#6767ff",
+          "#868dff",
+          "#adbbff",
+          "#e4ecff"
+        ]
+      },
+      "accent-indaco-chiaro": {
+        "role": "primary",
+        "displayName": "Accent Indaco Chiaro",
+        "canonical": "#7776ff",
+        "oklch": "oklch(63.7% 0.198 279.5)",
+        "tonalRamp": [
+          "#0e0044",
+          "#230080",
+          "#371ea6",
+          "#5147cd",
+          "#6f6cf4",
+          "#8f91ff",
+          "#b5bdff",
+          "#e7ecff"
+        ]
+      },
+      "accent-indaco-testo": {
+        "role": "primary",
+        "displayName": "Accent Indaco Testo",
+        "canonical": "#a5a4ff",
+        "oklch": "oklch(75.6% 0.130 283.4)",
+        "tonalRamp": [
+          "#0b0030",
+          "#221060",
+          "#3c3383",
+          "#5954a7",
+          "#7976cd",
+          "#9b99f3",
+          "#c0c1ff",
+          "#ebecff"
+        ]
+      },
+      "accent-smeraldo": {
+        "role": "primary",
+        "displayName": "Accent Smeraldo",
+        "canonical": "#10b981",
+        "oklch": "oklch(69.6% 0.149 162.5)",
+        "tonalRamp": [
+          "#001600",
+          "#00370a",
+          "#005828",
+          "#007947",
+          "#009d67",
+          "#25c189",
+          "#7be1b2",
+          "#daf7e7"
+        ]
+      },
+      "accent-smeraldo-testo": {
+        "role": "primary",
+        "displayName": "Accent Smeraldo Testo",
+        "canonical": "#34d399",
+        "oklch": "oklch(77.3% 0.153 163.2)",
+        "tonalRamp": [
+          "#001600",
+          "#00380b",
+          "#005828",
+          "#007a47",
+          "#009e67",
+          "#0ec289",
+          "#77e2b3",
+          "#d9f7e8"
+        ]
+      },
+      "accent-viola": {
+        "role": "primary",
+        "displayName": "Accent Viola",
+        "canonical": "#8b5cf6",
+        "oklch": "oklch(60.6% 0.219 292.7)",
+        "tonalRamp": [
+          "#170045",
+          "#350082",
+          "#4e00a8",
+          "#6c35cf",
+          "#8b5df7",
+          "#ad82ff",
+          "#ceb1ff",
+          "#efe9ff"
+        ]
+      },
+      "accent-viola-testo": {
+        "role": "primary",
+        "displayName": "Accent Viola Testo",
+        "canonical": "#a78bfa",
+        "oklch": "oklch(70.9% 0.159 293.5)",
+        "tonalRamp": [
+          "#120035",
+          "#2e0068",
+          "#4a258c",
+          "#6849b1",
+          "#896bd7",
+          "#ab8ffe",
+          "#cdb9ff",
+          "#efeaff"
+        ]
+      },
+      "fondo-nero-caldo": {
+        "role": "neutral",
+        "displayName": "Fondo Nero Caldo",
+        "canonical": "#0a0a0a",
+        "oklch": "oklch(14.5% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "fondo-notte-verde": {
+        "role": "neutral",
+        "displayName": "Fondo Notte Verde",
+        "canonical": "#02050a",
+        "oklch": "oklch(11.3% 0.017 250.8)",
+        "tonalRamp": [
+          "#080c10",
+          "#1f262d",
+          "#3b434b",
+          "#5a626b",
+          "#7b838c",
+          "#9da6b0",
+          "#c3cad2",
+          "#eceff1"
+        ]
+      },
+      "fondo-pannello-verde": {
+        "role": "neutral",
+        "displayName": "Fondo Pannello Verde",
+        "canonical": "#030812",
+        "oklch": "oklch(13.3% 0.025 256.7)",
+        "tonalRamp": [
+          "#070b13",
+          "#1d2631",
+          "#394350",
+          "#586270",
+          "#798392",
+          "#9ba6b5",
+          "#c1cad6",
+          "#eceff3"
+        ]
+      },
+      "fondo-notte-blu": {
+        "role": "neutral",
+        "displayName": "Fondo Notte Blu",
+        "canonical": "#090d16",
+        "oklch": "oklch(16.0% 0.020 265.6)",
+        "tonalRamp": [
+          "#080b11",
+          "#20252f",
+          "#3d424d",
+          "#5c616d",
+          "#7c828f",
+          "#9fa5b2",
+          "#c4c9d4",
+          "#edeef2"
+        ]
+      },
+      "fondo-ardesia": {
+        "role": "neutral",
+        "displayName": "Fondo Ardesia",
+        "canonical": "#0f172a",
+        "oklch": "oklch(20.8% 0.040 265.8)",
+        "tonalRamp": [
+          "#060b17",
+          "#1c2539",
+          "#384258",
+          "#566178",
+          "#77829b",
+          "#99a5bf",
+          "#bfc9de",
+          "#ebeef5"
+        ]
+      },
+      "bordo-zinco": {
+        "role": "neutral",
+        "displayName": "Bordo Zinco",
+        "canonical": "#27272a",
+        "oklch": "oklch(27.4% 0.005 286.0)",
+        "tonalRamp": [
+          "#0b0b0d",
+          "#252528",
+          "#424245",
+          "#616164",
+          "#828285",
+          "#a4a4a8",
+          "#c9c9cc",
+          "#eeeeef"
+        ]
+      },
+      "bordo-ardesia": {
+        "role": "neutral",
+        "displayName": "Bordo Ardesia",
+        "canonical": "#1e293b",
+        "oklch": "oklch(27.9% 0.037 260.0)",
+        "tonalRamp": [
+          "#050b16",
+          "#1a2537",
+          "#374256",
+          "#556277",
+          "#768399",
+          "#98a6bd",
+          "#becadd",
+          "#ebeff5"
+        ]
+      },
+      "bordo-bosco": {
+        "role": "neutral",
+        "displayName": "Bordo Bosco",
+        "canonical": "#064e3b",
+        "oklch": "oklch(37.8% 0.073 168.9)",
+        "tonalRamp": [
+          "#001107",
+          "#00301f",
+          "#064e3b",
+          "#306f5a",
+          "#53917b",
+          "#76b49d",
+          "#a5d6c3",
+          "#e4f2ec"
+        ]
+      },
+      "testo-zinco": {
+        "role": "neutral",
+        "displayName": "Testo Zinco",
+        "canonical": "#f4f4f5",
+        "oklch": "oklch(96.7% 0.001 286.4)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828283",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ]
+      },
+      "testo-zinco-medio": {
+        "role": "neutral",
+        "displayName": "Testo Zinco Medio",
+        "canonical": "#a1a1aa",
+        "oklch": "oklch(71.2% 0.013 286.1)",
+        "tonalRamp": [
+          "#0b0b0f",
+          "#24242b",
+          "#414149",
+          "#606068",
+          "#81818a",
+          "#a4a4ad",
+          "#c8c8d0",
+          "#eeeef0"
+        ]
+      },
+      "testo-zinco-spento": {
+        "role": "neutral",
+        "displayName": "Testo Zinco Spento",
+        "canonical": "#71717a",
+        "oklch": "oklch(55.2% 0.014 285.9)",
+        "tonalRamp": [
+          "#0b0b0f",
+          "#24242c",
+          "#414149",
+          "#606069",
+          "#81818a",
+          "#a4a4ae",
+          "#c8c8d0",
+          "#eeeef1"
+        ]
+      },
+      "testo-menta": {
+        "role": "neutral",
+        "displayName": "Testo Menta",
+        "canonical": "#6ee7b7",
+        "oklch": "oklch(84.5% 0.130 165.0)",
+        "tonalRamp": [
+          "#001502",
+          "#003613",
+          "#005630",
+          "#00774e",
+          "#009a6f",
+          "#40be91",
+          "#85dfb9",
+          "#dcf6e9"
+        ]
+      },
+      "testo-bosco-spento": {
+        "role": "neutral",
+        "displayName": "Testo Bosco Spento",
+        "canonical": "#047857",
+        "oklch": "oklch(50.8% 0.105 165.6)",
+        "tonalRamp": [
+          "#001304",
+          "#003318",
+          "#005234",
+          "#007353",
+          "#369673",
+          "#5dba95",
+          "#95dbbc",
+          "#e0f4ea"
+        ]
+      },
+      "testo-ardesia": {
+        "role": "neutral",
+        "displayName": "Testo Ardesia",
+        "canonical": "#f1f5f9",
+        "oklch": "oklch(96.8% 0.007 247.9)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#222528",
+          "#3f4246",
+          "#5e6265",
+          "#7f8386",
+          "#a2a5a9",
+          "#c6c9cc",
+          "#edeeef"
+        ]
+      },
+      "testo-ardesia-spento": {
+        "role": "neutral",
+        "displayName": "Testo Ardesia Spento",
+        "canonical": "#94a3b8",
+        "oklch": "oklch(71.1% 0.035 256.8)",
+        "tonalRamp": [
+          "#050b16",
+          "#1a2636",
+          "#364355",
+          "#556275",
+          "#758498",
+          "#97a6bb",
+          "#becadc",
+          "#ebeff4"
+        ]
+      },
+      "errore": {
+        "role": "error",
+        "displayName": "Errore",
+        "canonical": "#f87171",
+        "oklch": "oklch(71.1% 0.166 22.2)",
+        "tonalRamp": [
+          "#2d0000",
+          "#5e0000",
+          "#840012",
+          "#ac2933",
+          "#d35053",
+          "#fc7474",
+          "#ffa6a2",
+          "#ffe5e2"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title-card-artistic": {
+        "displayName": "Titolo scheda (Artistic)",
+        "purpose": "Titoli delle schede, sottili."
+      },
+      "title-card-immersive": {
+        "displayName": "Titolo scheda (Immersive)",
+        "purpose": "Titoli maiuscoli e spaziati."
+      },
+      "title-card-sophisticated": {
+        "displayName": "Titolo scheda (Sophisticated)",
+        "purpose": "Titoli semibold compatti."
+      },
+      "body": {
+        "displayName": "Corpo",
+        "purpose": "Testo nei campi e nei menu."
+      },
+      "description": {
+        "displayName": "Descrizione",
+        "purpose": "Descrizione delle schede."
+      },
+      "label": {
+        "displayName": "Etichetta",
+        "purpose": "Etichette dei campi, indici e bottoni."
+      }
+    },
+    "shadows": [
+      {
+        "name": "floating",
+        "value": "0 25px 50px -12px rgba(0,0,0,0.25)",
+        "purpose": "Finestre, menu e liste aperte."
+      },
+      {
+        "name": "hover-viola",
+        "value": "0 10px 30px rgba(139,92,246,0.03)",
+        "purpose": "Alone delle schede in Sophisticated al passaggio del mouse."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state",
+        "value": "150ms",
+        "purpose": "Colori e bordi dei controlli."
+      },
+      {
+        "name": "card",
+        "value": "300ms",
+        "purpose": "Fondo e bordo delle schede."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "home-tutte-affiancate",
+        "value": "1500px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Bottone principale (Artistic)",
+      "kind": "button",
+      "refersTo": "button-primary-artistic",
+      "description": "L'unica azione colorata di una zona.",
+      "html": "<button class=\"ds-btn-p\">PNG</button>",
+      "css": ".ds-btn-p{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:10px 16px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;background:#615fff;color:#fff;border:1px solid #615fff;border-radius:12px}.ds-btn-p:hover{background:#7776ff}.ds-btn-p:focus-visible{outline:2px solid #a5a4ff;outline-offset:2px}"
+    },
+    {
+      "name": "Bottone secondario (Artistic)",
+      "kind": "button",
+      "description": "Azioni di contorno.",
+      "html": "<button class=\"ds-btn-s\">Svuota</button>",
+      "css": ".ds-btn-s{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:10px 16px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;background:#18181b;color:#d4d4d8;border:1px solid #27272a;border-radius:12px}.ds-btn-s:hover{border-color:#52525b;color:#f4f4f5}.ds-btn-s:focus-visible{outline:2px solid #71717a;outline-offset:2px}"
+    },
+    {
+      "name": "Bottone principale (Immersive)",
+      "kind": "button",
+      "refersTo": "button-primary-immersive",
+      "description": "Tinta trasparente, angoli vivi.",
+      "html": "<button class=\"ds-btn-i\">Converti</button>",
+      "css": ".ds-btn-i{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:10px 16px;cursor:pointer;transition:background .15s,border-color .15s,color .15s;background:rgba(16,185,129,.15);color:#6ee7b7;border:1px solid rgba(16,185,129,.5);border-radius:0}.ds-btn-i:hover{background:rgba(16,185,129,.25)}.ds-btn-i:focus-visible{outline:2px solid #34d399;outline-offset:2px}"
+    },
+    {
+      "name": "Bottone principale (Sophisticated)",
+      "kind": "button",
+      "refersTo": "button-primary-sophisticated",
+      "description": "Viola pieno, Inter senza maiuscole.",
+      "html": "<button class=\"ds-btn-v\">Converti</button>",
+      "css": ".ds-btn-v{font:500 12px Inter,sans-serif;padding:10px 16px;background:#8b5cf6;color:#fff;border:1px solid #8b5cf6;border-radius:12px;cursor:pointer;transition:background .15s}.ds-btn-v:hover{background:#a78bfa}.ds-btn-v:focus-visible{outline:2px solid #a78bfa;outline-offset:2px}"
+    },
+    {
+      "name": "Campo (Artistic)",
+      "kind": "input",
+      "refersTo": "input-artistic",
+      "description": "Campo di testo degli strumenti.",
+      "html": "<input class=\"ds-input\" value=\"100\" aria-label=\"Importo\">",
+      "css": ".ds-input{width:220px;background:rgba(24,24,27,.4);border:1px solid #27272a;border-radius:12px;padding:10px 16px;font:14px 'JetBrains Mono',monospace;color:#f4f4f5;transition:border-color .15s}.ds-input:focus-visible{outline:none;border-color:#52525b}"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip-artistic",
+      "description": "Scelta rapida tra poche opzioni.",
+      "html": "<button class=\"ds-chip\">WAV</button> <button class=\"ds-chip ds-chip-on\">MP3</button>",
+      "css": ".ds-chip{font:10px 'JetBrains Mono',monospace;padding:4px 10px;border:1px solid #27272a;border-radius:8px;background:transparent;color:#71717a;cursor:pointer;transition:color .15s}.ds-chip:hover{color:#e4e4e7}.ds-chip-on{border-color:#615fff;color:#a5a4ff;background:rgba(97,95,255,.15)}.ds-chip:focus-visible{outline:2px solid #a5a4ff;outline-offset:2px}"
+    },
+    {
+      "name": "Scheda strumento",
+      "kind": "card",
+      "description": "Voce nella pagina di categoria.",
+      "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-i\">05 / CALCOLO</span><strong>Calcolatore Percentuali</strong><span class=\"ds-d\">Due numeri e i quattro risultati usuali.</span></a>",
+      "css": ".ds-card{display:flex;flex-direction:column;gap:4px;width:300px;padding:12px 16px;background:#0a0a0a;border:1px solid #27272a;text-decoration:none;transition:background .3s}.ds-card:hover{background:rgba(24,24,27,.4)}.ds-card:focus-visible{outline:2px solid #71717a;outline-offset:2px}.ds-i{font:10px 'JetBrains Mono',monospace;letter-spacing:.05em;color:#71717a}.ds-card strong{font:300 24px Inter,sans-serif;color:#f4f4f5}.ds-d{font:12px/1.625 Inter,sans-serif;color:#a1a1aa}"
+    },
+    {
+      "name": "Navigazione categorie",
+      "kind": "nav",
+      "description": "Categorie nell'intestazione, con filetto sull'attiva.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" class=\"on\">Tutti</a><a href=\"#\">Calcoli</a><a href=\"#\">Immagini</a></nav>",
+      "css": ".ds-nav{display:flex;gap:16px;font:10px 'JetBrains Mono',monospace;background:#0a0a0a;padding:8px}.ds-nav a{color:#71717a;text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}.ds-nav a:hover{color:#f4f4f5}.ds-nav a.on{color:#f4f4f5;font-weight:700;border-bottom-color:#f4f4f5}.ds-nav a:focus-visible{outline:2px solid #71717a;outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Il cassetto degli attrezzi",
+    "overview": "Il sito è un cassetto ordinato: si apre, si prende lo strumento giusto, si usa e si richiude. Ogni strumento vive in una finestra sopra la home e deve essere pronto subito, senza spiegazioni in primo piano e senza scorrere. La personalità sta nella precisione: controlli piccoli e densi, il colore solo sull'azione principale, nomi brevi.\n\nLo stesso cassetto ha tre finiture che l'utente può scegliere. **Artistic** è il neutro quasi nero con titoli sottili e griglia a filo. **Immersive** è il terminale verde su nero, tutto monospazio e tutto ad angoli vivi. **Sophisticated** è l'ardesia blu con accento viola, angoli morbidi e vetro sfocato sulle schede. Cambiano colore, forma e carattere, mai la struttura: posizione, ordine e comportamento dei controlli restano identici.\n\nIl sito è sempre scuro: non esiste una versione chiara.",
+    "keyCharacteristics": [
+      "Tre finiture, una sola struttura.",
+      "Controlli piccoli e densi, gerarchia data da dimensione e tono.",
+      "Livelli piatti separati da bordi, con ombra solo su ciò che galleggia.",
+      "Ogni strumento entra in una finestra da 2560×1300 senza scorrere.",
+      "Nessun menu nativo del browser."
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Ogni finitura ha un solo accento. Un secondo colore compare solo per dare uno stato (errore, avviso, successo), e i colori di stato sono uguali in tutte le finiture.",
+        "section": "colors"
+      },
+      {
+        "name": "The Token Rule",
+        "body": "I colori degli strumenti arrivano da `useUi()`. Un colore scritto a mano in un componente vale per una sola finitura e rompe le altre due.",
+        "section": "colors"
+      },
+      {
+        "name": "The Small Label Rule",
+        "body": "Etichette e bottoni sono piccoli di proposito: la gerarchia è data dal valore o dal risultato, non dal controllo che lo produce.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Scroll Rule",
+        "body": "Su 2560×1300 nessuno strumento scorre nello stato iniziale. Se non entra, si allarga la finestra; gli elenchi lunghi scorrono nel proprio riquadro.",
+        "section": "layout"
+      },
+      {
+        "name": "The Balanced Columns Rule",
+        "body": "Due colonne non differiscono oltre circa 150 px e 1,4 volte in altezza. Si misura il contenuto, non la cella della griglia. Se sono sbilanciate, si passa a una colonna sola o si spostano i blocchi secondari in quella più corta.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Until It Floats Rule",
+        "body": "Solo ciò che sta sopra la pagina ha un'ombra: finestre, menu e liste aperte.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do prendere colori, raggi e font da `useUi()` negli strumenti e da `getThemeClasses()` nella home.",
+      "Do controllare ogni modifica in tutte e tre le finiture.",
+      "Do usare `Select` di `src/ui/kit.tsx` per ogni menu a tendina.",
+      "Do chiamare i bottoni di download solo col formato.",
+      "Do misurare l'altezza del contenuto delle colonne, non delle celle."
+    ],
+    "donts": [
+      "Don't usare menu a tendina nativi del browser.",
+      "Don't scrivere \"Scarica PNG\" o simili su un bottone.",
+      "Don't far scorrere uno strumento nello stato iniziale su 2560×1300.",
+      "Don't aggiungere un secondo accento a una finitura.",
+      "Don't cambiare posizione o ordine dei controlli tra una finitura e l'altra."
+    ]
+  }
+}

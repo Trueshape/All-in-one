@@ -48,3 +48,5 @@
 - `README.md` — cos'è il progetto, come si avvia, come si pubblica su Pages.
 - `CLAUDE.md` — regole per l'AI in questo progetto.
 - `decisions.md` — elenco delle scelte importanti.
+- `DESIGN.md` — sistema visivo del sito (token e regole), generato dal codice.
+- `.impeccable/` — dati di Impeccable: `design.json` (supporto a DESIGN.md) e `critique/` (archivio delle critiche).
