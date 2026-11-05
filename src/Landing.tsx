@@ -12,7 +12,6 @@ import {
   Calculator,
   ArrowLeftRight,
   Timer,
-  Heart,
   Pencil,
   ChevronLeft,
   Image as ImageIcon,
@@ -26,8 +25,6 @@ import { LangMenu } from "./ui/kit";
 interface LandingProps {
   activeTheme: Theme;
   setActiveTheme: (theme: Theme) => void;
-  favoriteTools: Record<string, boolean>;
-  toggleFavorite: (id: string, e?: React.MouseEvent) => void;
   customToolNames: Record<string, string>;
   setCustomToolNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   onOpenTool: (id: string) => void;
@@ -91,8 +88,6 @@ function HeaderClock({ tc }: { tc: ReturnType<typeof getThemeClasses> }) {
 export default function Landing({
   activeTheme,
   setActiveTheme,
-  favoriteTools,
-  toggleFavorite,
   customToolNames,
   setCustomToolNames,
   onOpenTool,
@@ -138,9 +133,7 @@ export default function Landing({
   const filteredTools = orderedTools.filter((tool) => {
     const query = searchQuery.toLowerCase();
     const matchesSearch = nameOf(tool).toLowerCase().includes(query) || toolText(tool).description.toLowerCase().includes(query);
-    const matchesTab =
-      activeTab === "all" ||
-      (activeTab === "preferiti" ? !!favoriteTools[tool.id] : tool.category === activeTab);
+    const matchesTab = activeTab === "all" || tool.category === activeTab;
     return matchesSearch && matchesTab;
   });
 
@@ -375,21 +368,10 @@ export default function Landing({
                   icon: Palette,
                   count: TOOLS.filter(t => t.category === "creative").length,
                 },
-                {
-                  id: "preferiti",
-                  name: t("nav_preferiti"),
-                  description: "I tuoi strumenti preferiti salvati per un accesso rapido.",
-                  icon: Heart,
-                  count: TOOLS.filter(t => !!favoriteTools[t.id]).length,
-                }
               ].map((category, index) => {
                 const Icon = category.icon;
                 const formattedIndex = String(index + 1).padStart(2, "0");
-                const isPreferiti = category.id === "preferiti";
-                const categoryTools = (isPreferiti
-                  ? TOOLS.filter(t => !!favoriteTools[t.id])
-                  : TOOLS.filter(t => t.category === category.id)
-                ).sort(byName);
+                const categoryTools = TOOLS.filter(t => t.category === category.id).sort(byName);
                 return (
                   <motion.div
                     key={category.id}
@@ -408,7 +390,7 @@ export default function Landing({
                     <div className="flex justify-between items-start select-none relative z-20 gap-3">
                       <div className="flex flex-col gap-1">
                         <span className={tc.cardIndex}>
-                          {formattedIndex} / {isPreferiti ? "PERSONAL" : "CATEGORY"}
+                          {formattedIndex} / CATEGORY
                         </span>
                         <h2 className={tc.cardTitle}>
                           {category.name}
@@ -447,10 +429,6 @@ export default function Landing({
                             </span>
                           </div>
                         ))
-                      ) : isPreferiti ? (
-                        <p className="text-[10px] font-mono text-zinc-500/80 leading-normal">
-                          {t("favorites_empty")}
-                        </p>
                       ) : null}
                     </div>
                   </motion.div>
@@ -516,9 +494,6 @@ export default function Landing({
                       <div className="flex justify-between items-start select-none relative z-20">
                         <span className={`${tc.cardIndex} flex items-center gap-1`}>
                           {formattedIndex} / {tool.category}
-                          {!!favoriteTools[tool.id] && (
-                            <Heart className="w-2.5 h-2.5 text-red-500 fill-current animate-pulse ml-0.5" />
-                          )}
                         </span>
 
                         <div className="absolute right-4 top-3 flex items-center gap-3">
@@ -542,21 +517,6 @@ export default function Landing({
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
 
-                            {/* Favorite button */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavorite(tool.id);
-                              }}
-                              className={`p-1 transition-colors rounded cursor-pointer ${
-                                !!favoriteTools[tool.id]
-                                  ? "text-red-500 hover:text-red-400 bg-red-500/10"
-                                  : "text-zinc-500 hover:text-zinc-200"
-                              }`}
-                              title={!!favoriteTools[tool.id] ? t("fav_remove") : t("fav_add")}
-                            >
-                              <Heart className={`w-3.5 h-3.5 ${!!favoriteTools[tool.id] ? "fill-current text-red-500" : ""}`} />
-                            </button>
                           </div>
 
                           <CategoryIcon className={`w-4 h-4 ${tc.iconAccent} group-hover:text-zinc-200 transition-colors`} />

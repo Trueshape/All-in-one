@@ -1,4 +1,3 @@
-import type React from "react";
 import { useState, useEffect } from "react";
 import { TOOLS } from "./tools/registry";
 import { getThemeClasses, type Theme } from "./theme";
@@ -47,17 +46,6 @@ export default function App() {
   }, [lang]);
   const i18n = makeI18n(lang, setLang);
 
-  // Favorite Tools State
-  const [favoriteTools, setFavoriteTools] = useState<Record<string, boolean>>(() => {
-    const saved = readStorage("utilita365_favorite_tools");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
-    }
-    return {};
-  });
-
   // Custom Tool Names State
   const [customToolNames, setCustomToolNames] = useState<Record<string, string>>(() => {
     const saved = readStorage("utilita365_custom_tool_names");
@@ -90,18 +78,6 @@ export default function App() {
   useEffect(() => {
     writeStorage("utilita365_theme", activeTheme);
   }, [activeTheme]);
-
-  useEffect(() => {
-    writeStorage("utilita365_favorite_tools", JSON.stringify(favoriteTools));
-  }, [favoriteTools]);
-
-  const toggleFavorite = (id: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setFavoriteTools((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
 
   // Always sort the tools alphabetically by name (taking custom names into account)
   const orderedTools = [...TOOLS].sort((a, b) => {
@@ -169,8 +145,6 @@ export default function App() {
       <Landing
         activeTheme={activeTheme}
         setActiveTheme={setActiveTheme}
-        favoriteTools={favoriteTools}
-        toggleFavorite={toggleFavorite}
         customToolNames={customToolNames}
         setCustomToolNames={setCustomToolNames}
         onOpenTool={setActiveToolId}
@@ -187,8 +161,6 @@ export default function App() {
         setTempToolName={setTempToolName}
         customToolNames={customToolNames}
         setCustomToolNames={setCustomToolNames}
-        favoriteTools={favoriteTools}
-        toggleFavorite={(id) => toggleFavorite(id)}
         onClose={() => setActiveToolId(null)}
         onNext={handleNextTool}
         onPrev={handlePrevTool}

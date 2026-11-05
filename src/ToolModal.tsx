@@ -1,7 +1,7 @@
 import type React from "react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronLeft, ChevronRight, Heart, Info, Pencil, Settings, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Info, Pencil, Settings, X } from "lucide-react";
 import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
 import { UiContext, UI_TOKENS } from "./ui/tokens";
@@ -23,8 +23,6 @@ interface ToolModalProps {
   setTempToolName: (value: string) => void;
   customToolNames: Record<string, string>;
   setCustomToolNames: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  favoriteTools: Record<string, boolean>;
-  toggleFavorite: (id: string) => void;
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
@@ -43,8 +41,6 @@ export default function ToolModal({
   setTempToolName,
   customToolNames,
   setCustomToolNames,
-  favoriteTools,
-  toggleFavorite,
   onClose,
   onNext,
   onPrev,
@@ -190,7 +186,7 @@ export default function ToolModal({
                 </div>
               </div>
 
-              {/* Close Button and Favorite Toggle */}
+              {/* Settings, info and close buttons */}
               <div className="flex items-center gap-2">
                 {activeTool.id === "scientific_calc" && (
                   <button
@@ -212,15 +208,6 @@ export default function ToolModal({
                   id="btn-toggle-info"
                 >
                   <Info className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => toggleFavorite(activeTool.id)}
-                  className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic}`}
-                  title={!!favoriteTools[activeTool.id] ? t("fav_remove") : t("fav_add")}
-                  id="btn-toggle-favorite-modal"
-                >
-                  <Heart className={`w-4 h-4 ${!!favoriteTools[activeTool.id] ? "fill-current text-red-500" : "text-zinc-400"}`} />
                 </button>
 
                 <button

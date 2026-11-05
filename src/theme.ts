@@ -6,7 +6,6 @@ export const CATEGORY_LABELS: Record<string, string> = {
   testo: "Testo",
   produttivita: "Produttività",
   creative: "Utilità",
-  preferiti: "Preferiti",
 };
 
 export type Theme = "artistic" | "immersive" | "sophisticated";
