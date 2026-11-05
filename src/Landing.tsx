@@ -324,7 +324,7 @@ export default function Landing({
               </p>
             </div>
 
-            <div className={`${tc.gridContainer} min-[1500px]:grid-cols-7! min-[1500px]:w-full min-[1500px]:max-w-none!`}>
+            <div className={`${tc.gridContainer} min-[1500px]:grid-cols-6! min-[1500px]:w-full min-[1500px]:max-w-none!`}>
               {[
                 {
                   id: "calcolo",
