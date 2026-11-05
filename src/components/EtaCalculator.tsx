@@ -53,7 +53,7 @@ export default function EtaCalculator() {
                 <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
               </div>
               <div className="space-y-2">
-                <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="in" />
+                <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="ogni" />
                 <Chips value={unit} onChange={setUnit} options={UNITS} />
               </div>
             </div>
