@@ -57,7 +57,7 @@ export function TextInput({ prefixText, suffixText, className, ...rest }: InputP
   return (
     <div className="relative">
       {prefixText && <span className={cx("absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none", u.muted)}>{prefixText}</span>}
-      <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} className={cx(u.input, prefixText && "pl-8", suffixText && "pr-10", className)} />
+      <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} style={prefixText ? { paddingLeft: `calc(0.75rem + ${prefixText.length}ch + 0.5rem)` } : undefined} className={cx(u.input, suffixText && "pr-10", className)} />
       {suffixText && <span className={cx("absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none", u.muted)}>{suffixText}</span>}
     </div>
   );
