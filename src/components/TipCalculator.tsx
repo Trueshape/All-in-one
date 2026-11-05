@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Percent, Users } from "lucide-react";
-import { Field, TextInput, ResultCard, Row, Stack, cx } from "../ui/kit";
+import { Field, TextInput, ResultCard, Row, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const eur = (n: number) => n.toLocaleString("it-IT", { style: "currency", currency: "EUR" });
@@ -101,6 +101,7 @@ export default function TipCalculator() {
         <Row label={`Mancia (${tip}%)`} value={`+${eur(tipAmount)}`} />
         <Row label="Totale finale" value={eur(total)} />
       </ResultCard>
+      <Notice>Lo sconto si calcola sul prezzo originale, la mancia sul prezzo scontato. La quota a persona è il totale diviso per il numero di persone.</Notice>
     </Stack>
   );
 }

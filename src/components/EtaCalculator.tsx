@@ -80,6 +80,7 @@ export default function EtaCalculator() {
           )}
         </div>
       </div>
+      <Notice>Dato il totale e quante unità completi in ogni intervallo di tempo, calcola quanto dura il lavoro e a che ora finisce.</Notice>
     </Stack>
   );
 }

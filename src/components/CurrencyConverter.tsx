@@ -114,6 +114,7 @@ export default function CurrencyConverter() {
           ))}
         </div>
       </div>
+      <Notice>Cambia la valuta di partenza o di arrivo: il risultato si aggiorna subito.</Notice>
     </Stack>
   );
 }

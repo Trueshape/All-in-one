@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
-import { Field, TextInput, IconButton, ResultCard, Stack, fmtNumber } from "../ui/kit";
+import { Field, TextInput, IconButton, ResultCard, Notice, Stack, fmtNumber } from "../ui/kit";
 import { percentChange, percentOf, whatPercent, wholeFrom } from "../lib/percent";
 
 const num = (value: string) => (value.trim() === "" ? NaN : Number(value.replace(",", ".")));
@@ -37,6 +37,7 @@ export default function PercentageCalculator() {
       <div className="space-y-3">
         {cards.map((c) => <ResultCard key={c.label} label={c.label} value={c.value} copyText={c.copy ?? c.value} />)}
       </div>
+      <Notice>Le quattro risposte si aggiornano mentre scrivi: A è il primo numero, B il secondo. Inverti con la freccia per scambiarli.</Notice>
     </Stack>
   );
 }

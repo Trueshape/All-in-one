@@ -228,6 +228,7 @@ export default function CryptoAndNasdaqTracker() {
           </div>
         </div>
       )}
+      <Notice>Le crypto arrivano da CoinGecko quando il servizio risponde; altrimenti vedi valori di riferimento fissi.</Notice>
     </Stack>
   );
 }

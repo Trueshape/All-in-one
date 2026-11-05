@@ -208,6 +208,7 @@ export default function BracketMaker() {
           </Notice>
         </>
       )}
+      <Notice>Il tabellone nasce dai nomi inseriti, uno per riga. Il vincitore di ogni incontro passa al turno successivo.</Notice>
     </Stack>
   );
 }

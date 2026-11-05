@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer, useState } from "react";
 import type { CSSProperties } from "react";
 import { HelpCircle } from "lucide-react";
-import { Button, Field, Panel, Segmented, Stack, cx } from "../ui/kit";
+import { Button, Field, Notice, Panel, Segmented, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import type { Ui } from "../ui/tokens";
 import { evaluate, formatResult, isOperator } from "../lib/calcEngine";
@@ -261,6 +261,7 @@ export default function ScientificCalculator({ showSettings = false }: { showSet
       {!simple && <p className={cx("flex items-center justify-center gap-1.5 text-[11px] text-center pt-2", u.muted)}>
         <HelpCircle className="w-3.5 h-3.5" /> Tastiera: cifre, + − * / ^ ( ), Invio (=), Backspace, C
       </p>}
+      <Notice>Puoi usare anche la tastiera: i numeri e gli operatori funzionano come nel computer, e Invio calcola il risultato.</Notice>
     </Stack>
   );
 }

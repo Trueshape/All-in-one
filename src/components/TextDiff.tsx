@@ -153,6 +153,7 @@ export default function TextDiff() {
           )}
         </div>
       </Panel>
+      <Notice>Confronta due testi riga per riga e mostra le differenze.</Notice>
     </Stack>
   );
 }

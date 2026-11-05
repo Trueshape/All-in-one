@@ -60,6 +60,7 @@ export default function TextCleaner() {
         </Field>
       </div>
       {out.error && <Notice tone="error">{out.error}</Notice>}
+      <Notice>Sostituisce ogni occorrenza di "Trova" nel testo. Con l'espressione regolare puoi cercare schemi, per esempio [0-9]+ per trovare i numeri.</Notice>
     </Stack>
   );
 }

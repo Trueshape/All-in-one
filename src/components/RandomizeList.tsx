@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Shuffle, Trash2 } from "lucide-react";
-import { Field, TextArea, TextInput, Button, CopyButton, Toggle, Stack } from "../ui/kit";
+import { Field, TextArea, TextInput, Button, CopyButton, Toggle, Notice, Stack } from "../ui/kit";
 import { shuffle } from "../lib/textTools";
 
 const lines = (text: string) => text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -37,6 +37,7 @@ export default function RandomizeList() {
         <Toggle checked={numbered} onChange={setNumbered} label="Numera" />
         <Button variant="primary" disabled={count === 0} icon={<Shuffle className="w-4 h-4" />} onClick={run}>Mescola</Button>
       </div>
+      <Notice>Mescola le righe a caso. Con "Prendi solo i primi" ottieni un sorteggio di N voci, senza ripetizioni.</Notice>
     </Stack>
   );
 }
