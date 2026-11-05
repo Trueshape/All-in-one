@@ -541,6 +541,8 @@ export function DatePicker({ value, onChange, max }: { value: string; onChange: 
   const [open, setOpen] = useState(false);
   const selected = parseIso(value);
   const [view, setView] = useState(() => selected ?? new Date());
+  // First year of the twelve-year block shown in year mode; null shows the month calendar.
+  const [yearBase, setYearBase] = useState<number | null>(null);
   const root = useRef<HTMLDivElement>(null);
   const today = toIso(new Date());
   const maxIso = max ?? "";
@@ -561,17 +563,60 @@ export function DatePicker({ value, onChange, max }: { value: string; onChange: 
 
   return (
     <div ref={root} className="relative">
-      <button type="button" onClick={() => { setView(selected ?? new Date()); setOpen((o) => !o); }} className={cx(u.input, "flex items-center justify-between gap-2 text-left cursor-pointer")}>
+      <button type="button" onClick={() => { setView(selected ?? new Date()); setYearBase(null); setOpen((o) => !o); }} className={cx(u.input, "flex items-center justify-between gap-2 text-left cursor-pointer")}>
         <span className={selected ? "" : u.muted}>{shown}</span>
         <Calendar className={cx("h-4 w-4 shrink-0", u.accent)} />
       </button>
       {open && (
         <div className={cx("absolute left-0 right-0 z-50 mt-2 p-3 shadow-2xl", u.panel, "bg-zinc-950 rounded-2xl")} style={{ maxWidth: 300 }}>
           <div className="mb-2 flex items-center justify-between">
-            <button type="button" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() - 1, 1))} className={cx("p-1 cursor-pointer rounded-lg hover:bg-white/5", u.muted)} aria-label="Mese precedente"><ChevronLeft className="h-4 w-4" /></button>
-            <span className={cx("text-xs font-semibold capitalize", u.text)}>{label}</span>
-            <button type="button" onClick={() => setView(new Date(view.getFullYear(), view.getMonth() + 1, 1))} className={cx("p-1 cursor-pointer rounded-lg hover:bg-white/5", u.muted)} aria-label="Mese successivo"><ChevronRight className="h-4 w-4" /></button>
+            <button
+              type="button"
+              onClick={() => (yearBase === null ? setView(new Date(view.getFullYear(), view.getMonth() - 1, 1)) : setYearBase(yearBase - 12))}
+              className={cx("p-1 cursor-pointer rounded-lg hover:bg-white/5", u.muted)}
+              aria-label={yearBase === null ? "Mese precedente" : "Dodici anni precedenti"}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            {/* Clicking the title switches between the month calendar and a year list, so far years are one click away. */}
+            <button
+              type="button"
+              onClick={() => setYearBase(yearBase === null ? view.getFullYear() - 5 : null)}
+              aria-expanded={yearBase !== null}
+              className={cx("px-2 py-1 text-xs font-semibold capitalize cursor-pointer rounded-lg hover:bg-white/5", u.text)}
+            >
+              {yearBase === null ? label : `${yearBase} – ${yearBase + 11}`}
+            </button>
+            <button
+              type="button"
+              onClick={() => (yearBase === null ? setView(new Date(view.getFullYear(), view.getMonth() + 1, 1)) : setYearBase(yearBase + 12))}
+              className={cx("p-1 cursor-pointer rounded-lg hover:bg-white/5", u.muted)}
+              aria-label={yearBase === null ? "Mese successivo" : "Dodici anni successivi"}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
+          {yearBase !== null ? (
+            <div className="grid grid-cols-4 gap-1">
+              {Array.from({ length: 12 }, (_, i) => yearBase + i).map((y) => {
+                const current = y === view.getFullYear();
+                const disabled = !!maxIso && y > Number(maxIso.slice(0, 4));
+                return (
+                  <button
+                    key={y}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => { setView(new Date(y, view.getMonth(), 1)); setYearBase(null); }}
+                    className={cx("h-8 rounded-lg text-xs font-mono cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed", !current && "hover:bg-white/5", !current && u.text)}
+                    style={current ? { background: u.accentHex, color: "#fff" } : undefined}
+                  >
+                    {y}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+          <>
           <div className="grid grid-cols-7 gap-1 pb-1">
             {WEEKDAYS.map((w) => <span key={w} className={cx("text-center text-[10px] font-mono", u.muted)}>{w}</span>)}
           </div>
@@ -596,6 +641,8 @@ export function DatePicker({ value, onChange, max }: { value: string; onChange: 
               );
             })}
           </div>
+          </>
+          )}
         </div>
       )}
     </div>
