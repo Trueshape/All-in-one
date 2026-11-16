@@ -53,15 +53,19 @@ test("a glyph sits on the baseline and gets side bearings; an empty cell gives n
 });
 
 test("cyclingGsub is null without variants and has one rule per variant slot otherwise", () => {
-  assert.equal(cyclingGsub([2, 3], [], []), null);
-  const one = cyclingGsub([2, 3], [{ base: 2, alt: 4 }], []);
+  assert.equal(cyclingGsub([2, 3], []), null);
+  assert.equal(cyclingGsub([2, 3], [[], []]), null);
+  const one = cyclingGsub([2, 3], [[{ base: 2, alt: 4 }]]);
   assert.equal(one?.lookups.length, 2);
   assert.equal(one?.lookups[0].subtables.length, 1);
-  const two = cyclingGsub([2, 3], [{ base: 3, alt: 5 }, { base: 2, alt: 4 }], [{ base: 2, alt: 6 }]);
+  const two = cyclingGsub([2, 3], [[{ base: 3, alt: 5 }, { base: 2, alt: 4 }], [{ base: 2, alt: 6 }]]);
   assert.equal(two?.lookups.length, 3);
   assert.equal(two?.lookups[0].subtables.length, 2);
   // single substitutions keep the coverage sorted and the replacements aligned with it
   assert.deepEqual(two?.lookups[1].subtables[0], { substFormat: 2, coverage: { format: 1, glyphs: [2, 3] }, substitute: [4, 5] });
+  const four = cyclingGsub([2], [[{ base: 2, alt: 3 }], [{ base: 2, alt: 4 }], [{ base: 2, alt: 5 }], [{ base: 2, alt: 6 }]]);
+  assert.equal(four?.lookups.length, 5);
+  assert.equal(four?.lookups[0].subtables.length, 4);
 });
 
 test("a font with the calt table can be written and read back", () => {
@@ -81,7 +85,7 @@ test("a font with the calt table can be written and read back", () => {
     glyph("a.alt2", undefined, 300),
   ];
   const font = new opentype.Font({ familyName: "Test", styleName: "Regular", unitsPerEm: 1000, ascender: 760, descender: -240, glyphs });
-  (font.tables as Record<string, unknown>).gsub = cyclingGsub([1], [{ base: 1, alt: 2 }], [{ base: 1, alt: 3 }]);
+  (font.tables as Record<string, unknown>).gsub = cyclingGsub([1], [[{ base: 1, alt: 2 }], [{ base: 1, alt: 3 }]]);
   const back = opentype.parse(font.toArrayBuffer());
   const gsub = back.tables.gsub as { features: Array<{ tag: string }>; lookups: Array<{ lookupType: number; subtables: unknown[] }> };
   assert.equal(gsub.features[0].tag, "calt");

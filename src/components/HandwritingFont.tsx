@@ -12,15 +12,15 @@ import type { Glyph, Stroke } from "../lib/handwriting";
 const MAX_SIDE = 3200;
 const SAMPLE = "Nel mezzo del cammin di nostra vita 0123456789";
 const STORAGE = "utilita365_handwriting";
-/** Versions of one character that can be drawn: the normal one and two variants. */
-const VARIANTS = [1, 2, 3];
+/** Versions of one character that can be drawn: the normal one and four variants. */
+const VARIANTS = [1, 2, 3, 4, 5];
 /** Key of a drawing: the character for the normal version, `a#2` and `a#3` for the variants. */
 const drawKey = (char: string, variant: number) => (variant === 1 ? char : `${char}#${variant}`);
 
-/** A variant glyph and which turn it takes in the rotation (1 = first variant, 2 = second). */
+/** A variant glyph and which turn it takes in the rotation (1 = first variant, 2 = second, ...). */
 interface Alternate {
   char: string;
-  slot: 1 | 2;
+  slot: number;
   glyph: Glyph;
 }
 
@@ -174,9 +174,9 @@ function makeFont(glyphs: Glyph[], alternates: Alternate[], family: string): Fon
   const font = new opentype.Font({ familyName: family, styleName: "Regular", unitsPerEm: UNITS, ascender: ASCENT, descender: -DESCENT, glyphs: [notdef, space, ...made, ...extra] });
   // Glyph ids: 0 notdef, 1 space, then the normal glyphs, then the variants.
   const baseId = new Map(glyphs.map((g, i) => [g.char, 2 + i]));
-  const swaps = (slot: 1 | 2) =>
+  const swaps = (slot: number) =>
     alternates.flatMap((a, i) => (a.slot === slot ? [{ base: baseId.get(a.char)!, alt: 2 + glyphs.length + i }] : []));
-  const gsub = cyclingGsub([...baseId.values()], swaps(1), swaps(2));
+  const gsub = cyclingGsub([...baseId.values()], VARIANTS.slice(1).map((_, i) => swaps(i + 1)));
   if (gsub) (font.tables as Record<string, unknown>).gsub = gsub;
   return { buffer: font.toArrayBuffer(), found: glyphs.map((g) => g.char) };
 }
@@ -340,7 +340,7 @@ export default function HandwritingFont() {
     const alternates: Alternate[] = [];
     for (const [char, list] of variants) {
       if (!byChar.has(char)) continue;
-      list.sort((a, b) => a.variant - b.variant).slice(0, 2).forEach((item, i) => alternates.push({ char, slot: (i + 1) as 1 | 2, glyph: item.glyph }));
+      list.sort((a, b) => a.variant - b.variant).slice(0, VARIANTS.length - 1).forEach((item, i) => alternates.push({ char, slot: i + 1, glyph: item.glyph }));
     }
     return { glyphs: [...byChar.values()], alternates };
   }, [sheetGlyphs, drawn, thickness, variance]);
@@ -425,9 +425,9 @@ export default function HandwritingFont() {
                   fill
                   value={String(variant)}
                   onChange={(v) => setVariant(Number(v))}
-                  options={VARIANTS.map((n) => ({ value: String(n), label: `Variante ${n}${drawn[drawKey(current, n)]?.length ? " ✓" : ""}` }))}
+                  options={VARIANTS.map((n) => ({ value: String(n), label: `${n}${drawn[drawKey(current, n)]?.length ? " ✓" : ""}` }))}
                 />
-                <p className="text-xs leading-relaxed">Disegna la stessa lettera in due o tre modi leggermente diversi: nel font le versioni si alternano a rotazione.</p>
+                <p className="text-xs leading-relaxed">Scegli la variante (da 1 a 5) e disegna la stessa lettera in modi leggermente diversi: nel font le versioni si alternano a rotazione. Se un programma non supporta le alternative contestuali, usa sempre la variante 1.</p>
               </>
             )}
             <DrawPad char={current} strokes={strokes} thickness={thickness} onStroke={(stroke) => setDrawn((prev) => ({ ...prev, [key]: [...(prev[key] ?? []), stroke] }))} />

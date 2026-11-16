@@ -187,30 +187,26 @@ const single = (list: Substitution[]) => ({
 
 /**
  * GSUB table (opentype.js shape) with a `calt` feature that makes the variants take turns: after a normal glyph the next letter takes
- * its first variant, after a first variant the next takes its second, after a second variant the next goes back to the normal one.
+ * its first variant, after a first variant the next takes its second, and so on; after the last variant it goes back to the normal one.
  * A font file cannot pick at random, so this rotation is what makes two equal letters side by side look different.
- * `bases` are all the normal glyphs; `first` and `second` the variant substitutions. Null when there is no variant at all.
+ * `bases` are all the normal glyphs; `slots[i]` the substitutions for turn i + 1. Null when there is no variant at all.
  */
-export function cyclingGsub(bases: number[], first: Substitution[], second: Substitution[]) {
-  if (!first.length) return null;
-  const chain = {
-    lookupType: 6,
-    lookupFlag: 0,
-    subtables: [
-      { substFormat: 3, backtrackCoverage: [coverage(bases)], inputCoverage: [coverage(first.map((s) => s.base))], lookaheadCoverage: [], lookupRecords: [{ sequenceIndex: 0, lookupListIndex: 1 }] },
-    ] as object[],
-  };
-  const lookups = [chain, single(first)];
-  if (second.length) {
+export function cyclingGsub(bases: number[], slots: Substitution[][]) {
+  const used = slots.filter((s) => s.length);
+  if (!used.length) return null;
+  const chain = { lookupType: 6, lookupFlag: 0, subtables: [] as object[] };
+  const lookups: Array<{ lookupType: number; lookupFlag: number; subtables: object[] }> = [chain];
+  used.forEach((swaps, i) => {
     chain.subtables.push({
       substFormat: 3,
-      backtrackCoverage: [coverage(first.map((s) => s.alt))],
-      inputCoverage: [coverage(second.map((s) => s.base))],
+      // the glyph before: a normal glyph for the first turn, otherwise a variant from the previous turn
+      backtrackCoverage: [coverage(i === 0 ? bases : used[i - 1].map((s) => s.alt))],
+      inputCoverage: [coverage(swaps.map((s) => s.base))],
       lookaheadCoverage: [],
-      lookupRecords: [{ sequenceIndex: 0, lookupListIndex: 2 }],
+      lookupRecords: [{ sequenceIndex: 0, lookupListIndex: i + 1 }],
     });
-    lookups.push(single(second));
-  }
+    lookups.push(single(swaps));
+  });
   const langSys = { reserved: 0, reqFeatureIndex: 0xffff, featureIndexes: [0] };
   return {
     version: 1,
