@@ -21,6 +21,9 @@ function loadCalibration(): Calibration | null {
   }
 }
 
+// Leaves room in the window for the controls and the readout around the two rulers
+const verticalHeight = () => Math.max(120, Math.min(window.innerHeight - 560, 640));
+
 export default function ScreenRuler() {
   const u = useUi();
   const [saved, setSaved] = useState<Calibration | null>(loadCalibration);
@@ -28,7 +31,9 @@ export default function ScreenRuler() {
   const [draft, setDraft] = useState(saved?.pxPerMm ?? DEFAULT_PX_PER_MM);
   const [unit, setUnit] = useState<"cm" | "in">("cm");
   const [marker, setMarker] = useState<number | null>(null); // px from the zero edge
+  const [vMarker, setVMarker] = useState<number | null>(null); // px from the top edge of the vertical ruler
   const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(verticalHeight);
   const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,6 +43,12 @@ export default function ScreenRuler() {
     obs.observe(box);
     return () => obs.disconnect();
   }, [mode]);
+
+  useEffect(() => {
+    const onResize = () => setHeight(verticalHeight());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const pxPerMm = saved?.pxPerMm ?? DEFAULT_PX_PER_MM;
   // Browser zoom or a different screen changes devicePixelRatio: the saved scale is no longer true
@@ -55,27 +66,33 @@ export default function ScreenRuler() {
   };
 
   // Ticks: millimeters (cm) or sixteenths of an inch
-  const ticks: { x: number; h: number; label?: string }[] = [];
-  if (width > 0) {
+  const makeTicks = (length: number) => {
+    const out: { x: number; h: number; label?: string }[] = [];
+    if (length <= 0) return out;
     if (unit === "cm") {
-      for (let mm = 0; mm * pxPerMm <= width; mm++) {
+      for (let mm = 0; mm * pxPerMm <= length; mm++) {
         const x = mm * pxPerMm;
-        if (mm % 10 === 0) ticks.push({ x, h: 34, label: String(mm / 10) });
-        else ticks.push({ x, h: mm % 5 === 0 ? 24 : 14 });
+        if (mm % 10 === 0) out.push({ x, h: 34, label: String(mm / 10) });
+        else out.push({ x, h: mm % 5 === 0 ? 24 : 14 });
       }
     } else {
       const step = (MM_PER_INCH * pxPerMm) / 16;
-      for (let i = 0; i * step <= width; i++) {
+      for (let i = 0; i * step <= length; i++) {
         const x = i * step;
-        if (i % 16 === 0) ticks.push({ x, h: 34, label: String(i / 16) });
-        else ticks.push({ x, h: i % 8 === 0 ? 26 : i % 4 === 0 ? 20 : i % 2 === 0 ? 15 : 10 });
+        if (i % 16 === 0) out.push({ x, h: 34, label: String(i / 16) });
+        else out.push({ x, h: i % 8 === 0 ? 26 : i % 4 === 0 ? 20 : i % 2 === 0 ? 15 : 10 });
       }
     }
-  }
+    return out;
+  };
+  const hTicks = makeTicks(width);
+  const vTicks = makeTicks(height);
 
-  const markerMm = marker === null ? null : marker / pxPerMm;
-  const markerText =
-    markerMm === null ? "" : unit === "cm" ? `${(markerMm / 10).toFixed(2)} cm` : `${(markerMm / MM_PER_INCH).toFixed(2)} in`;
+  const lengthText = (px: number) => {
+    const mm = px / pxPerMm;
+    return unit === "cm" ? `${(mm / 10).toFixed(2)} cm` : `${(mm / MM_PER_INCH).toFixed(2)} in`;
+  };
+  const readout = [marker !== null && `Orizzontale ${lengthText(marker)}`, vMarker !== null && `Verticale ${lengthText(vMarker)}`].filter(Boolean).join("  ·  ");
 
   return (
     <Stack>
@@ -108,30 +125,51 @@ export default function ScreenRuler() {
           {!saved && <Notice tone="warn">Righello non calibrato: le misure sono una stima. Usa "Calibra" con una carta di credito.</Notice>}
           {stale && <Notice tone="warn">Zoom del browser o schermo cambiati dalla calibrazione: ricalibra per misure esatte.</Notice>}
           <Notice>
-            Appoggia l'oggetto allo schermo con un'estremità sul bordo sinistro del righello (lo zero). Clicca sul righello per segnare l'altra estremità.
+            Appoggia l'oggetto allo schermo con un'estremità sul bordo sinistro del righello orizzontale o sul bordo alto di quello verticale (lo zero). Clicca sul righello per segnare l'altra estremità.
           </Notice>
-          <div
-            ref={boxRef}
-            className={cx("relative w-full cursor-crosshair select-none", u.text)}
-            onClick={(e) => setMarker(e.clientX - e.currentTarget.getBoundingClientRect().left)}
-          >
-            <svg width={width} height={60} className="block" aria-label="Righello">
-              <line x1={0} y1={0} x2={width} y2={0} stroke="currentColor" />
-              {ticks.map((t, i) => (
-                <g key={i}>
-                  <line x1={t.x + 0.5} y1={0} x2={t.x + 0.5} y2={t.h} stroke="currentColor" />
-                  {t.label && (
-                    <text x={t.x + 3} y={50} fontSize={12} fill="currentColor">
-                      {t.label}
-                    </text>
-                  )}
-                </g>
-              ))}
-              {marker !== null && <line x1={marker} y1={0} x2={marker} y2={60} stroke={u.accentHex} strokeWidth={2} />}
-            </svg>
+          <div ref={boxRef} className={cx("w-full select-none", u.text)}>
+            <div
+              className="relative w-full cursor-crosshair"
+              onClick={(e) => setMarker(e.clientX - e.currentTarget.getBoundingClientRect().left)}
+            >
+              <svg width={width} height={60} className="block" aria-label="Righello orizzontale">
+                <line x1={0} y1={0} x2={width} y2={0} stroke="currentColor" />
+                {hTicks.map((t, i) => (
+                  <g key={i}>
+                    <line x1={t.x + 0.5} y1={0} x2={t.x + 0.5} y2={t.h} stroke="currentColor" />
+                    {t.label && (
+                      <text x={t.x + 3} y={50} fontSize={12} fill="currentColor">
+                        {t.label}
+                      </text>
+                    )}
+                  </g>
+                ))}
+                {marker !== null && <line x1={marker} y1={0} x2={marker} y2={60} stroke={u.accentHex} strokeWidth={2} />}
+              </svg>
+            </div>
+            {/* Hangs from the bottom-left corner of the horizontal ruler: the two corners touch */}
+            <div
+              className="relative w-[60px] cursor-crosshair"
+              onClick={(e) => setVMarker(e.clientY - e.currentTarget.getBoundingClientRect().top)}
+            >
+              <svg width={60} height={height} className="block" aria-label="Righello verticale">
+                <line x1={0} y1={0} x2={0} y2={height} stroke="currentColor" />
+                {vTicks.map((t, i) => (
+                  <g key={i}>
+                    <line x1={0} y1={t.x + 0.5} x2={t.h} y2={t.x + 0.5} stroke="currentColor" />
+                    {t.label && (
+                      <text x={40} y={t.x + 4} fontSize={12} fill="currentColor">
+                        {t.label}
+                      </text>
+                    )}
+                  </g>
+                ))}
+                {vMarker !== null && <line x1={0} y1={vMarker} x2={60} y2={vMarker} stroke={u.accentHex} strokeWidth={2} />}
+              </svg>
+            </div>
           </div>
           <div className={cx("text-sm", u.subtle)}>
-            {marker === null ? "Clicca sul righello per misurare." : <span className={cx("font-mono font-semibold", u.accent)}>{markerText}</span>}
+            {readout ? <span className={cx("font-mono font-semibold", u.accent)}>{readout}</span> : "Clicca sui righelli per misurare."}
           </div>
         </>
       ) : (
