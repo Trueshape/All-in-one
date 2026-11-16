@@ -21,6 +21,8 @@ function loadCalibration(): Calibration | null {
   }
 }
 
+// Width of the number bands (top and left); the shared zero sits at (OFFSET, OFFSET)
+const OFFSET = 60;
 // Leaves room in the window for the controls and the readout around the two rulers
 const verticalHeight = () => Math.max(120, Math.min(window.innerHeight - 560, 640));
 
@@ -85,7 +87,7 @@ export default function ScreenRuler() {
     }
     return out;
   };
-  const hTicks = makeTicks(width);
+  const hTicks = makeTicks(width - OFFSET);
   const vTicks = makeTicks(height);
 
   const lengthText = (px: number) => {
@@ -125,48 +127,48 @@ export default function ScreenRuler() {
           {!saved && <Notice tone="warn">Righello non calibrato: le misure sono una stima. Usa "Calibra" con una carta di credito.</Notice>}
           {stale && <Notice tone="warn">Zoom del browser o schermo cambiati dalla calibrazione: ricalibra per misure esatte.</Notice>}
           <Notice>
-            Appoggia l'oggetto allo schermo con un'estremità sul bordo sinistro del righello orizzontale o sul bordo alto di quello verticale (lo zero). Clicca sul righello per segnare l'altra estremità.
+            Appoggia l'oggetto allo schermo con un'estremità nell'angolo dove i due righelli si incontrano (lo zero). Clicca sulla fascia dei numeri in alto o a sinistra per segnare l'altra estremità.
           </Notice>
+          {/* One L-shaped frame: both rulers share the zero at the inner corner (OFFSET, OFFSET); numbers sit outside, on the top and left bands. */}
           <div ref={boxRef} className={cx("w-full select-none", u.text)}>
-            <div
-              className="relative w-full cursor-crosshair"
-              onClick={(e) => setMarker(e.clientX - e.currentTarget.getBoundingClientRect().left)}
+            <svg
+              width={width}
+              height={OFFSET + height}
+              className="block cursor-crosshair"
+              aria-label="Righelli"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                if (y < OFFSET && x >= OFFSET) setMarker(x - OFFSET);
+                else if (x < OFFSET && y >= OFFSET) setVMarker(y - OFFSET);
+              }}
             >
-              <svg width={width} height={60} className="block" aria-label="Righello orizzontale">
-                <line x1={0} y1={0} x2={width} y2={0} stroke="currentColor" />
-                {hTicks.map((t, i) => (
-                  <g key={i}>
-                    <line x1={t.x + 0.5} y1={0} x2={t.x + 0.5} y2={t.h} stroke="currentColor" />
-                    {t.label && (
-                      <text x={t.x + 3} y={50} fontSize={12} fill="currentColor">
-                        {t.label}
-                      </text>
-                    )}
-                  </g>
-                ))}
-                {marker !== null && <line x1={marker} y1={0} x2={marker} y2={60} stroke={u.accentHex} strokeWidth={2} />}
-              </svg>
-            </div>
-            {/* Hangs from the bottom-left corner of the horizontal ruler: the two corners touch */}
-            <div
-              className="relative w-[60px] cursor-crosshair"
-              onClick={(e) => setVMarker(e.clientY - e.currentTarget.getBoundingClientRect().top)}
-            >
-              <svg width={60} height={height} className="block" aria-label="Righello verticale">
-                <line x1={0} y1={0} x2={0} y2={height} stroke="currentColor" />
-                {vTicks.map((t, i) => (
-                  <g key={i}>
-                    <line x1={0} y1={t.x + 0.5} x2={t.h} y2={t.x + 0.5} stroke="currentColor" />
-                    {t.label && (
-                      <text x={40} y={t.x + 4} fontSize={12} fill="currentColor">
-                        {t.label}
-                      </text>
-                    )}
-                  </g>
-                ))}
-                {vMarker !== null && <line x1={0} y1={vMarker} x2={60} y2={vMarker} stroke={u.accentHex} strokeWidth={2} />}
-              </svg>
-            </div>
+              <line x1={OFFSET} y1={OFFSET} x2={width} y2={OFFSET} stroke="currentColor" />
+              {hTicks.map((t, i) => (
+                <g key={i}>
+                  <line x1={OFFSET + t.x + 0.5} y1={OFFSET} x2={OFFSET + t.x + 0.5} y2={OFFSET - t.h} stroke="currentColor" />
+                  {t.label && (
+                    <text x={OFFSET + t.x + 3} y={14} fontSize={12} fill="currentColor">
+                      {t.label}
+                    </text>
+                  )}
+                </g>
+              ))}
+              {marker !== null && <line x1={OFFSET + marker} y1={0} x2={OFFSET + marker} y2={OFFSET} stroke={u.accentHex} strokeWidth={2} />}
+              <line x1={OFFSET} y1={OFFSET} x2={OFFSET} y2={OFFSET + height} stroke="currentColor" />
+              {vTicks.map((t, i) => (
+                <g key={i}>
+                  <line x1={OFFSET} y1={OFFSET + t.x + 0.5} x2={OFFSET - t.h} y2={OFFSET + t.x + 0.5} stroke="currentColor" />
+                  {t.label && (
+                    <text x={4} y={OFFSET + t.x + 14} fontSize={12} fill="currentColor">
+                      {t.label}
+                    </text>
+                  )}
+                </g>
+              ))}
+              {vMarker !== null && <line x1={0} y1={OFFSET + vMarker} x2={OFFSET} y2={OFFSET + vMarker} stroke={u.accentHex} strokeWidth={2} />}
+            </svg>
           </div>
           <div className={cx("text-sm", u.subtle)}>
             {readout ? <span className={cx("font-mono font-semibold", u.accent)}>{readout}</span> : "Clicca sui righelli per misurare."}
