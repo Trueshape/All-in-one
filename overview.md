@@ -35,7 +35,7 @@
 - `src/components/ItalyCodes.tsx` — Province Italiane: sigla, regione, prefisso e CAP del capoluogo (`src/lib/italyCodes.ts`).
 - `src/components/DialCodes.tsx` — Prefissi Internazionali: ISO, Paese e prefisso, con ordinamento per colonna.
 - `src/ui/LookupTable.tsx` — tabella con ricerca, titoli ordinabili e titoli fissi, usata dai due strumenti precedenti.
-- `src/components/HandwritingFont.tsx` — Scrittura a mano in font: foglio PNG da stampare, lettura della foto e download del .ttf (usa `opentype.js`; logica in `src/lib/handwriting.ts`).
+- `src/components/HandwritingFont.tsx` — Scrittura a mano in font: foglio PNG da stampare, lettura della foto e download del .ttf, anche con varianti delle lettere che si alternano (usa `opentype.js`; logica in `src/lib/handwriting.ts`).
 - `src/ui/ImageDrop.tsx` — caricamento di un'immagine (trascina o scegli) e hook `useImageSource`, usati dagli strumenti per immagini.
 - `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `marketData.ts`, `color.ts` (conversioni e armonie), `palette.ts` (colori dominanti), `imageOps.ts` (ricampionamento, nitidezza, filtri), `imageEncoders.ts` (BMP, TIFF, ICO), `barcode.ts` (Code 128, EAN-13), `pattern.ts` (pattern SVG), `handwriting.ts` (foglio e contorni dei glifi per il font a mano), `bracket.ts` (tabellone a eliminazione), `timeInput.ts` (tempo scritto a mano nel timer), `passwordModes.ts` e `wordlist.ts` (frasi, pronunciabili, PIN, token). Ogni modulo con logica ha il suo `*.test.ts` (`npm test`).
 - `src/index.css`, `src/main.tsx`, `src/vite-env.d.ts` — stili globali, entry React, tipi Vite.

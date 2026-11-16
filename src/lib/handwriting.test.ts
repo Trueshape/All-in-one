@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ASCENT, CHARS, COLS, DESCENT, ROWS, cellArea, glyphFromMask, inkBox, maskToRects, otsu } from "./handwriting";
+import * as opentypeModule from "opentype.js";
+import { ASCENT, CHARS, COLS, DESCENT, ROWS, cellArea, cyclingGsub, glyphFromMask, inkBox, maskToRects, otsu } from "./handwriting";
+
+// Under Node the package is loaded as CommonJS, so its exports sit on `default`; bundlers give them directly.
+const opentype: typeof opentypeModule = (opentypeModule as unknown as { default?: typeof opentypeModule }).default ?? opentypeModule;
 
 test("the sheet has a cell for every character", () => {
   assert.ok(COLS * ROWS >= CHARS.length);
@@ -46,4 +50,41 @@ test("a glyph sits on the baseline and gets side bearings; an empty cell gives n
   assert.ok(top <= ASCENT && bottom >= -DESCENT);
   assert.ok(g.advance > 4 * ((ASCENT + DESCENT) / h));
   assert.equal(glyphFromMask("I", new Uint8Array(w * h), w, h), null);
+});
+
+test("cyclingGsub is null without variants and has one rule per variant slot otherwise", () => {
+  assert.equal(cyclingGsub([2, 3], [], []), null);
+  const one = cyclingGsub([2, 3], [{ base: 2, alt: 4 }], []);
+  assert.equal(one?.lookups.length, 2);
+  assert.equal(one?.lookups[0].subtables.length, 1);
+  const two = cyclingGsub([2, 3], [{ base: 3, alt: 5 }, { base: 2, alt: 4 }], [{ base: 2, alt: 6 }]);
+  assert.equal(two?.lookups.length, 3);
+  assert.equal(two?.lookups[0].subtables.length, 2);
+  // single substitutions keep the coverage sorted and the replacements aligned with it
+  assert.deepEqual(two?.lookups[1].subtables[0], { substFormat: 2, coverage: { format: 1, glyphs: [2, 3] }, substitute: [4, 5] });
+});
+
+test("a font with the calt table can be written and read back", () => {
+  const glyph = (name: string, unicode: number | undefined, width: number) => {
+    const path = new opentype.Path();
+    path.moveTo(0, 0);
+    path.lineTo(0, 100);
+    path.lineTo(width, 100);
+    path.lineTo(width, 0);
+    path.close();
+    return new opentype.Glyph({ name, unicode, advanceWidth: width + 100, path });
+  };
+  const glyphs = [
+    new opentype.Glyph({ name: ".notdef", unicode: 0, advanceWidth: 500, path: new opentype.Path() }),
+    glyph("a", 97, 100),
+    glyph("a.alt1", undefined, 200),
+    glyph("a.alt2", undefined, 300),
+  ];
+  const font = new opentype.Font({ familyName: "Test", styleName: "Regular", unitsPerEm: 1000, ascender: 760, descender: -240, glyphs });
+  (font.tables as Record<string, unknown>).gsub = cyclingGsub([1], [{ base: 1, alt: 2 }], [{ base: 1, alt: 3 }]);
+  const back = opentype.parse(font.toArrayBuffer());
+  const gsub = back.tables.gsub as { features: Array<{ tag: string }>; lookups: Array<{ lookupType: number; subtables: unknown[] }> };
+  assert.equal(gsub.features[0].tag, "calt");
+  assert.deepEqual(gsub.lookups.map((l) => l.lookupType), [6, 1, 1]);
+  assert.equal(gsub.lookups[0].subtables.length, 2);
 });

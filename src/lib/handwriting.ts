@@ -170,6 +170,59 @@ export const GROUPS: Array<{ id: string; label: string; chars: string[] }> = [
 /** Drawing pad: size in px, and where the guides sit (fractions of the height). The baseline matches `baselineInArea`. */
 export const PAD = { w: 360, h: 480, baseline: baselineInArea, capLine: 0.2, xLine: 0.47 };
 
+/** Glyph ids: `base` is the normal glyph of a character, `alt` the variant that replaces it. */
+export interface Substitution {
+  base: number;
+  alt: number;
+}
+
+const sorted = (ids: number[]) => [...ids].sort((a, b) => a - b);
+const coverage = (ids: number[]) => ({ format: 1, glyphs: sorted(ids) });
+const byBase = (list: Substitution[]) => [...list].sort((a, b) => a.base - b.base);
+const single = (list: Substitution[]) => ({
+  lookupType: 1,
+  lookupFlag: 0,
+  subtables: [{ substFormat: 2, coverage: coverage(list.map((s) => s.base)), substitute: byBase(list).map((s) => s.alt) }],
+});
+
+/**
+ * GSUB table (opentype.js shape) with a `calt` feature that makes the variants take turns: after a normal glyph the next letter takes
+ * its first variant, after a first variant the next takes its second, after a second variant the next goes back to the normal one.
+ * A font file cannot pick at random, so this rotation is what makes two equal letters side by side look different.
+ * `bases` are all the normal glyphs; `first` and `second` the variant substitutions. Null when there is no variant at all.
+ */
+export function cyclingGsub(bases: number[], first: Substitution[], second: Substitution[]) {
+  if (!first.length) return null;
+  const chain = {
+    lookupType: 6,
+    lookupFlag: 0,
+    subtables: [
+      { substFormat: 3, backtrackCoverage: [coverage(bases)], inputCoverage: [coverage(first.map((s) => s.base))], lookaheadCoverage: [], lookupRecords: [{ sequenceIndex: 0, lookupListIndex: 1 }] },
+    ] as object[],
+  };
+  const lookups = [chain, single(first)];
+  if (second.length) {
+    chain.subtables.push({
+      substFormat: 3,
+      backtrackCoverage: [coverage(first.map((s) => s.alt))],
+      inputCoverage: [coverage(second.map((s) => s.base))],
+      lookaheadCoverage: [],
+      lookupRecords: [{ sequenceIndex: 0, lookupListIndex: 2 }],
+    });
+    lookups.push(single(second));
+  }
+  const langSys = { reserved: 0, reqFeatureIndex: 0xffff, featureIndexes: [0] };
+  return {
+    version: 1,
+    scripts: [
+      { tag: "DFLT", script: { defaultLangSys: langSys, langSysRecords: [] } },
+      { tag: "latn", script: { defaultLangSys: langSys, langSysRecords: [] } },
+    ],
+    features: [{ tag: "calt", feature: { featureParams: 0, lookupListIndexes: [0] } }],
+    lookups,
+  };
+}
+
 export interface Point {
   x: number;
   y: number;

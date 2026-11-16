@@ -6,12 +6,23 @@ import { useUi } from "../ui/tokens";
 import { ImageDrop, useImageSource } from "../ui/ImageDrop";
 import type { Source } from "../ui/ImageDrop";
 import { download, toBlob } from "../lib/imageOps";
-import { BASELINE, CELL, CHARS, COLS, FRAME, GROUPS, MARGIN, PAD, ROWS, UNITS, ASCENT, DESCENT, cellArea, glyphFromMask, inkBox, otsu, sheetSize } from "../lib/handwriting";
+import { BASELINE, CELL, CHARS, COLS, FRAME, GROUPS, MARGIN, PAD, ROWS, UNITS, ASCENT, DESCENT, cellArea, cyclingGsub, glyphFromMask, inkBox, otsu, sheetSize } from "../lib/handwriting";
 import type { Glyph, Stroke } from "../lib/handwriting";
 
 const MAX_SIDE = 3200;
 const SAMPLE = "Nel mezzo del cammin di nostra vita 0123456789";
 const STORAGE = "utilita365_handwriting";
+/** Versions of one character that can be drawn: the normal one and two variants. */
+const VARIANTS = [1, 2, 3];
+/** Key of a drawing: the character for the normal version, `a#2` and `a#3` for the variants. */
+const drawKey = (char: string, variant: number) => (variant === 1 ? char : `${char}#${variant}`);
+
+/** A variant glyph and which turn it takes in the rotation (1 = first variant, 2 = second). */
+interface Alternate {
+  char: string;
+  slot: 1 | 2;
+  glyph: Glyph;
+}
 
 /** The printable sheet: a black frame, one cell per character with its label and a baseline guide. */
 function drawSheet(): HTMLCanvasElement {
@@ -142,10 +153,10 @@ interface FontFile {
   found: string[];
 }
 
-function makeFont(glyphs: Glyph[], family: string): FontFile {
+function makeFont(glyphs: Glyph[], alternates: Alternate[], family: string): FontFile {
   const notdef = new opentype.Glyph({ name: ".notdef", unicode: 0, advanceWidth: 500, path: new opentype.Path() });
   const space = new opentype.Glyph({ name: "space", unicode: 32, advanceWidth: 300, path: new opentype.Path() });
-  const made = glyphs.map((g) => {
+  const build = (g: Glyph, name: string, unicode?: number) => {
     const path = new opentype.Path();
     for (const r of g.rects) {
       // Clockwise in a y-up font, so overlapping rectangles never cancel out.
@@ -155,25 +166,35 @@ function makeFont(glyphs: Glyph[], family: string): FontFile {
       path.lineTo(r.x + r.w, r.y);
       path.close();
     }
-    return new opentype.Glyph({ name: `u${g.char.codePointAt(0)}`, unicode: g.char.codePointAt(0), advanceWidth: g.advance, path });
-  });
-  const font = new opentype.Font({ familyName: family, styleName: "Regular", unitsPerEm: UNITS, ascender: ASCENT, descender: -DESCENT, glyphs: [notdef, space, ...made] });
+    return new opentype.Glyph({ name, unicode, advanceWidth: g.advance, path });
+  };
+  const made = glyphs.map((g) => build(g, `u${g.char.codePointAt(0)}`, g.char.codePointAt(0)));
+  // Variants follow the normal glyphs and have no character of their own: the calt table swaps them in.
+  const extra = alternates.map((a) => build(a.glyph, `u${a.char.codePointAt(0)}.alt${a.slot}`));
+  const font = new opentype.Font({ familyName: family, styleName: "Regular", unitsPerEm: UNITS, ascender: ASCENT, descender: -DESCENT, glyphs: [notdef, space, ...made, ...extra] });
+  // Glyph ids: 0 notdef, 1 space, then the normal glyphs, then the variants.
+  const baseId = new Map(glyphs.map((g, i) => [g.char, 2 + i]));
+  const swaps = (slot: 1 | 2) =>
+    alternates.flatMap((a, i) => (a.slot === slot ? [{ base: baseId.get(a.char)!, alt: 2 + glyphs.length + i }] : []));
+  const gsub = cyclingGsub([...baseId.values()], swaps(1), swaps(2));
+  if (gsub) (font.tables as Record<string, unknown>).gsub = gsub;
   return { buffer: font.toArrayBuffer(), found: glyphs.map((g) => g.char) };
 }
 
 interface Saved {
   drawn: Record<string, Stroke[]>;
   thickness: number;
+  variance: boolean;
 }
 
 function readSaved(): Saved {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE) ?? "null");
-    if (saved && typeof saved.drawn === "object" && saved.drawn) return { drawn: saved.drawn, thickness: Number(saved.thickness) || 16 };
+    if (saved && typeof saved.drawn === "object" && saved.drawn) return { drawn: saved.drawn, thickness: Number(saved.thickness) || 16, variance: saved.variance === true };
   } catch {
     // nothing saved, or storage is blocked
   }
-  return { drawn: {}, thickness: 16 };
+  return { drawn: {}, thickness: 16, variance: false };
 }
 
 /** One character's drawing area: guides, a faint model letter, and pointer drawing. */
@@ -262,6 +283,8 @@ export default function HandwritingFont() {
   const [text, setText] = useState(SAMPLE);
   const [drawn, setDrawn] = useState(saved.drawn);
   const [thickness, setThickness] = useState(saved.thickness);
+  const [variance, setVariance] = useState(saved.variance);
+  const [variant, setVariant] = useState(1);
   const [group, setGroup] = useState(GROUPS[1].id);
   const [current, setCurrent] = useState("a");
   const [sheetGlyphs, setSheetGlyphs] = useState<Glyph[]>([]);
@@ -275,11 +298,11 @@ export default function HandwritingFont() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE, JSON.stringify({ drawn, thickness }));
+      localStorage.setItem(STORAGE, JSON.stringify({ drawn, thickness, variance }));
     } catch {
       // storage unavailable: the drawing still works for this visit
     }
-  }, [drawn, thickness]);
+  }, [drawn, thickness, variance]);
 
   // The photographed sheet is read once per image.
   useEffect(() => {
@@ -295,19 +318,32 @@ export default function HandwritingFont() {
   }, [source]);
 
   // Drawn glyphs win over the ones from the sheet; each is rebuilt only when its strokes or the pen change.
-  const glyphs = useMemo(() => {
+  // The variants (keys like `a#2`) only count with "Con varianza", and only for characters that have a normal glyph.
+  const { glyphs, alternates } = useMemo(() => {
     const byChar = new Map(sheetGlyphs.map((g) => [g.char, g]));
-    for (const [char, strokes] of Object.entries(drawn)) {
+    const variants = new Map<string, Array<{ variant: number; glyph: Glyph }>>();
+    for (const [key, strokes] of Object.entries(drawn)) {
       if (!strokes.length) continue;
-      let hit = cache.current.get(char);
+      const [char, v] = key.split("#");
+      const number = v ? Number(v) : 1;
+      if (number > 1 && !variance) continue;
+      let hit = cache.current.get(key);
       if (!hit || hit.strokes !== strokes || hit.thickness !== thickness) {
         hit = { strokes, thickness, glyph: glyphFromStrokes(char, strokes, thickness) };
-        cache.current.set(char, hit);
+        cache.current.set(key, hit);
       }
-      if (hit.glyph) byChar.set(char, hit.glyph);
+      if (!hit.glyph) continue;
+      if (number === 1) byChar.set(char, hit.glyph);
+      else variants.set(char, [...(variants.get(char) ?? []), { variant: number, glyph: hit.glyph }]);
     }
-    return [...byChar.values()];
-  }, [sheetGlyphs, drawn, thickness]);
+    // A character that skips a variant simply uses the next one drawn in its place.
+    const alternates: Alternate[] = [];
+    for (const [char, list] of variants) {
+      if (!byChar.has(char)) continue;
+      list.sort((a, b) => a.variant - b.variant).slice(0, 2).forEach((item, i) => alternates.push({ char, slot: (i + 1) as 1 | 2, glyph: item.glyph }));
+    }
+    return { glyphs: [...byChar.values()], alternates };
+  }, [sheetGlyphs, drawn, thickness, variance]);
 
   useEffect(() => {
     setFile(null);
@@ -316,7 +352,7 @@ export default function HandwritingFont() {
     let cancelled = false;
     let loaded: FontFace | null = null;
     const timer = window.setTimeout(async () => {
-      const made = makeFont(glyphs, cleanName);
+      const made = makeFont(glyphs, alternates, cleanName);
       if (cancelled) return;
       const name = `hw-${Date.now()}`;
       loaded = new FontFace(name, made.buffer.slice(0));
@@ -334,10 +370,11 @@ export default function HandwritingFont() {
       window.clearTimeout(timer);
       if (loaded) document.fonts.delete(loaded);
     };
-  }, [glyphs, cleanName]);
+  }, [glyphs, alternates, cleanName]);
 
-  const strokes = drawn[current] ?? [];
-  const setStrokes = (next: Stroke[]) => setDrawn((prev) => ({ ...prev, [current]: next }));
+  const key = drawKey(current, variance ? variant : 1);
+  const strokes = drawn[key] ?? [];
+  const setStrokes = (next: Stroke[]) => setDrawn((prev) => ({ ...prev, [key]: next }));
   const step = (delta: number) => {
     const i = chars.indexOf(current);
     setCurrent(chars[(i + delta + chars.length) % chars.length] ?? chars[0]);
@@ -346,7 +383,8 @@ export default function HandwritingFont() {
     setGroup(id);
     setCurrent(GROUPS.find((g) => g.id === id)?.chars[0] ?? "a");
   };
-  const drawnCount = Object.values(drawn).filter((s) => s.length).length;
+  const drawnCount = Object.entries(drawn).filter(([k, s]) => s.length && !k.includes("#")).length;
+  const variantCount = variance ? alternates.length : 0;
 
   const saveSheet = async () => {
     const blob = await toBlob(drawSheet(), "image/png");
@@ -358,7 +396,18 @@ export default function HandwritingFont() {
 
   return (
     <Stack>
-      <Segmented fill value={mode} onChange={setMode} options={[{ value: "draw", label: "Disegna online" }, { value: "sheet", label: "Foglio da stampare" }]} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Segmented fill value={mode} onChange={setMode} options={[{ value: "draw", label: "Disegna online" }, { value: "sheet", label: "Foglio da stampare" }]} />
+        <Segmented
+          fill
+          value={variance ? "variance" : "normal"}
+          onChange={(v) => {
+            setVariance(v === "variance");
+            setVariant(1);
+          }}
+          options={[{ value: "normal", label: "Font normale" }, { value: "variance", label: "Con varianza" }]}
+        />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {mode === "draw" ? (
@@ -370,7 +419,18 @@ export default function HandwritingFont() {
               <span className={cx("text-2xl font-bold", u.accent)}>{current}</span>
               <IconButton onClick={() => step(1)} title="Carattere successivo"><ChevronRight className="w-4 h-4" /></IconButton>
             </div>
-            <DrawPad char={current} strokes={strokes} thickness={thickness} onStroke={(stroke) => setDrawn((prev) => ({ ...prev, [current]: [...(prev[current] ?? []), stroke] }))} />
+            {variance && (
+              <>
+                <Segmented
+                  fill
+                  value={String(variant)}
+                  onChange={(v) => setVariant(Number(v))}
+                  options={VARIANTS.map((n) => ({ value: String(n), label: `Variante ${n}${drawn[drawKey(current, n)]?.length ? " ✓" : ""}` }))}
+                />
+                <p className="text-xs leading-relaxed">Disegna la stessa lettera in due o tre modi leggermente diversi: nel font le versioni si alternano a rotazione.</p>
+              </>
+            )}
+            <DrawPad char={current} strokes={strokes} thickness={thickness} onStroke={(stroke) => setDrawn((prev) => ({ ...prev, [key]: [...(prev[key] ?? []), stroke] }))} />
             <div className="flex gap-2">
               <Button size="sm" disabled={!strokes.length} icon={<Undo2 className="w-3.5 h-3.5" />} onClick={() => setStrokes(strokes.slice(0, -1))}>Annulla</Button>
               <Button size="sm" variant="danger" disabled={!strokes.length} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setStrokes([])}>Svuota</Button>
@@ -383,6 +443,7 @@ export default function HandwritingFont() {
             <SectionTitle>1 · Il foglio</SectionTitle>
             <p className="text-xs leading-relaxed">Scarica il foglio, stampalo e scrivi ogni carattere nella sua casella, appoggiandolo alla linea tratteggiata, con una penna nera.</p>
             <Button variant="primary" icon={<FileImage className="w-3.5 h-3.5" />} onClick={saveSheet}>PNG</Button>
+            {variance && <p className="text-xs leading-relaxed">Il foglio dà la versione normale di ogni lettera. Le varianti si aggiungono da "Disegna online".</p>}
             <SectionTitle>2 · La foto</SectionTitle>
             {!source ? (
               <ImageDrop onFile={load} hint="Foto o scansione del foglio compilato" />
@@ -419,7 +480,7 @@ export default function HandwritingFont() {
             </button>
           ))}
         </div>
-        <p className={cx("text-xs", u.muted)}>{drawnCount} caratteri disegnati · il lavoro resta salvato in questo browser</p>
+        <p className={cx("text-xs", u.muted)}>{drawnCount} caratteri disegnati{variance ? ` · ${variantCount} varianti` : ""} · il lavoro resta salvato in questo browser</p>
             </div>
           )}
           <SectionTitle>{mode === "draw" ? "2" : "3"} · Il font</SectionTitle>
@@ -435,6 +496,7 @@ export default function HandwritingFont() {
           {file && (
             <div className="space-y-1.5">
               <Row label="Caratteri nel font" value={`${file.found.length}`} />
+              {variantCount > 0 && <Row label="Varianti nel font" value={`${variantCount}`} />}
               {mode === "sheet" && sheetGlyphs.length > 0 && <Row label="Dal foglio" value={`${sheetGlyphs.length} su ${CHARS.length}`} />}
             </div>
           )}
@@ -444,7 +506,7 @@ export default function HandwritingFont() {
 
       {(problem || error) && mode === "sheet" && <Notice tone="error">{problem ?? error}</Notice>}
       <Notice>
-        Tutto avviene nel browser, nessun file viene inviato. Puoi mescolare le due modalità: le lettere disegnate online sostituiscono quelle lette dal foglio. Il contorno segue la penna ma resta approssimato.
+        Tutto avviene nel browser, nessun file viene inviato. Puoi mescolare le due modalità: le lettere disegnate online sostituiscono quelle lette dal foglio. Il contorno segue la penna ma resta approssimato. Con la varianza il font alterna le versioni a rotazione (funzione OpenType "alternative contestuali"): non è casuale, ma due lettere uguali vicine escono diverse. Funziona nei browser e nei programmi che la supportano.
       </Notice>
     </Stack>
   );
