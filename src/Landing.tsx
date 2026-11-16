@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   Image as ImageIcon,
   Type as TypeIcon,
+  FileText,
 } from "lucide-react";
 import { TOOLS, type ToolItem } from "./tools/registry";
 import { CATEGORY_LABELS, getThemeClasses, type Theme } from "./theme";
@@ -44,6 +45,8 @@ const getCategoryIcon = (category: string) => {
       return Timer;
     case "creative":
       return Palette;
+    case "pdf":
+      return FileText;
     default:
       return Timer;
   }
@@ -324,7 +327,7 @@ export default function Landing({
               </p>
             </div>
 
-            <div className={`${tc.gridContainer} min-[1500px]:grid-cols-6! min-[1500px]:w-full min-[1500px]:max-w-none!`}>
+            <div className={`${tc.gridContainer} min-[1500px]:grid-cols-7! min-[1500px]:w-full min-[1500px]:max-w-none!`}>
               {[
                 {
                   id: "calcolo",
@@ -367,6 +370,13 @@ export default function Landing({
                   description: "Decisioni casuali, QR e codici a barre, piano, grafici e prefissi.",
                   icon: Palette,
                   count: TOOLS.filter(t => t.category === "creative").length,
+                },
+                {
+                  id: "pdf",
+                  name: t("nav_pdf"),
+                  description: "Unisci, separa, ruota, riordina e modifica i PDF, tutto nel browser.",
+                  icon: FileText,
+                  count: TOOLS.filter(t => t.category === "pdf").length,
                 },
               ].map((category, index) => {
                 const Icon = category.icon;

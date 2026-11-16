@@ -72,6 +72,12 @@ import {
   Watch,
   Scaling,
   ZoomIn,
+  Combine,
+  Split,
+  FileMinus,
+  RotateCw,
+  ListOrdered,
+  Crop,
 } from "lucide-react";
 
 // Import Components
@@ -124,6 +130,12 @@ const RadarChartMaker = lazy(() => import("../components/RadarChartMaker"));
 const VirtualPiano = lazy(() => import("../components/VirtualPiano"));
 const BracketMaker = lazy(() => import("../components/BracketMaker"));
 const Scoreboard = lazy(() => import("../components/Scoreboard"));
+const PdfMerge = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfMerge })));
+const PdfSplit = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfSplit })));
+const PdfRemovePages = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfRemovePages })));
+const PdfRotate = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfRotate })));
+const PdfReorder = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfReorder })));
+const PdfCrop = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfCrop })));
 
 export interface ToolItem {
   id: string;
@@ -133,7 +145,7 @@ export interface ToolItem {
   colorClass: string;
   glowClass: string;
   iconColor: string;
-  category: "convertitori" | "calcolo" | "produttivita" | "creative" | "immagini" | "testo";
+  category: "convertitori" | "calcolo" | "produttivita" | "creative" | "immagini" | "testo" | "pdf";
   component: React.ComponentType<any>;
 }
 
@@ -677,5 +689,70 @@ export const TOOLS: ToolItem[] = [
     category: "produttivita",
     component: Scoreboard,
   },
+  {
+    id: "pdf_merge",
+    name: "Unisci PDF",
+    description: "Unisci più PDF in un unico file, nell'ordine che scegli.",
+    icon: Combine,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfMerge,
+  },
+  {
+    id: "pdf_split",
+    name: "Separa PDF",
+    description: "Dividi un PDF in più file: ogni pagina, ogni N pagine o per intervalli.",
+    icon: Split,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfSplit,
+  },
+  {
+    id: "pdf_remove_pages",
+    name: "Rimuovi pagine PDF",
+    description: "Togli le pagine che non servono, scegliendole dalle anteprime.",
+    icon: FileMinus,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfRemovePages,
+  },
+  {
+    id: "pdf_rotate",
+    name: "Ruota pagine PDF",
+    description: "Ruota una pagina o tutte di 90°, con l'anteprima.",
+    icon: RotateCw,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfRotate,
+  },
+  {
+    id: "pdf_reorder",
+    name: "Riordina pagine PDF",
+    description: "Trascina le pagine per cambiarne l'ordine.",
+    icon: ListOrdered,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfReorder,
+  },
+  {
+    id: "pdf_crop",
+    name: "Ritaglia PDF",
+    description: "Togli i margini da una pagina o da tutte, in millimetri.",
+    icon: Crop,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfCrop,
+  },
 ];
-

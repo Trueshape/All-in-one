@@ -4,6 +4,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   convertitori: "Convertitori",
   immagini: "Immagini",
   testo: "Testo",
+  pdf: "PDF",
   produttivita: "Produttività",
   creative: "Utilità",
 };
@@ -102,6 +103,15 @@ export const getThemeClasses = (theme: Theme) => {
 
 export const getToolModalSize = (toolId: string): string => {
   switch (toolId) {
+    case "pdf_merge":
+    case "pdf_split":
+      return "max-w-3xl";
+    case "pdf_crop":
+      return "max-w-5xl";
+    case "pdf_remove_pages":
+    case "pdf_rotate":
+    case "pdf_reorder":
+      return "max-w-6xl";
     case "aspect_ratio_calc":
       return "max-w-[880px] w-[92vw]";
     case "screen_ruler":
