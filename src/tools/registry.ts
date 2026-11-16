@@ -100,6 +100,7 @@ const AgeCalculator = lazy(() => import("../components/AgeCalculator"));
 const ScientificCalculator = lazy(() => import("../components/ScientificCalculator"));
 const GeometryCalculator = lazy(() => import("../components/GeometryCalculator"));
 const AspectRatioCalculator = lazy(() => import("../components/AspectRatioCalculator"));
+const ScreenRuler = lazy(() => import("../components/ScreenRuler"));
 const CaseConverter = lazy(() => import("../components/CaseConverter"));
 const CompoundInterestCalculator = lazy(() => import("../components/CompoundInterestCalculator"));
 const TextDiff = lazy(() => import("../components/TextDiff"));
@@ -345,6 +346,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-blue-400 bg-blue-500/10",
     category: "calcolo",
     component: AspectRatioCalculator,
+  },
+  {
+    id: "screen_ruler",
+    name: "Righello a schermo",
+    description: "Righello in centimetri o pollici a grandezza reale: calibralo con una carta di credito e misura gli oggetti appoggiati allo schermo.",
+    icon: Ruler,
+    colorClass: "border-amber-900/30 hover:border-amber-500/50",
+    glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
+    iconColor: "text-amber-400 bg-amber-500/10",
+    category: "calcolo",
+    component: ScreenRuler,
   },
   {
     id: "case_converter",

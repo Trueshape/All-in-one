@@ -104,6 +104,9 @@ export const getToolModalSize = (toolId: string): string => {
   switch (toolId) {
     case "aspect_ratio_calc":
       return "max-w-[880px] w-[92vw]";
+    case "screen_ruler":
+      // as wide as the window: the ruler is longer
+      return "w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)]";
     case "color":
       return "max-w-6xl";
     case "handwriting_font":

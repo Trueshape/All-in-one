@@ -12,6 +12,7 @@
 - `src/ui/ColorWheel.tsx` — ruota dei colori (trascinabile con mouse o frecce, oppure solo di sola lettura) e nomi delle armonie.
 - `src/ui/ShapePreview.tsx` — disegno animato della forma scelta in Geometria.
 - `src/components/UnitConverter.tsx` — Unità di misura: una scheda per grandezza e la scheda Dati (`DataSizeConverter`).
+- `src/components/ScreenRuler.tsx` — Righello a schermo: calibrazione con una carta di credito (salvata nel browser) e righello in cm o pollici.
 - `src/components/PomodoroTimer.tsx` — esporta le due pagine Timer Pomodoro e Cronometro.
 - `src/components/GeometryCalculator.tsx` — Geometria: forme 2D e 3D (perimetro, area, superficie, volume), calcoli in `src/lib/geometry.ts`.
 - `src/components/ImageToolPages.tsx` — le tre pagine immagini (Converti, Ridimensiona, Ingrandisci): ognuna carica la propria immagine (`ImageConverter`, `ImageResizer`, `ImageUpscaler`).
