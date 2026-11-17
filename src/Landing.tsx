@@ -378,7 +378,7 @@ export default function Landing({
                   icon: FileText,
                   count: TOOLS.filter(t => t.category === "pdf").length,
                 },
-              ].map((category, index) => {
+              ].sort((x, y) => CATEGORY_ORDER.indexOf(x.id as ToolItem["category"]) - CATEGORY_ORDER.indexOf(y.id as ToolItem["category"])).map((category, index) => {
                 const Icon = category.icon;
                 const formattedIndex = String(index + 1).padStart(2, "0");
                 const categoryTools = TOOLS.filter(t => t.category === category.id).sort(byName);

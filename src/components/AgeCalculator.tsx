@@ -1,11 +1,10 @@
 import { useMemo } from "react";
 import { usePersisted } from "../lib/persist";
+import { computeAge, utcDay } from "../lib/age";
 import { Gift, Heart, Moon, Wind } from "lucide-react";
 import { DatePicker, Field, TextInput, Panel, ResultCard, Row, Stat, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
-const WEEKDAYS = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
-const DAY_MS = 86_400_000;
 
 const toDateInput = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -16,40 +15,6 @@ function parseLocalDate(value: string): Date | null {
   if (!m) return null;
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
   return Number.isNaN(d.getTime()) ? null : d;
-}
-
-const utcDay = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
-
-function computeAge(birth: Date, today: Date) {
-  let years = today.getFullYear() - birth.getFullYear();
-  let months = today.getMonth() - birth.getMonth();
-  let days = today.getDate() - birth.getDate();
-
-  if (days < 0) {
-    months -= 1;
-    days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-  }
-  if (months < 0) {
-    years -= 1;
-    months += 12;
-  }
-
-  const totalDays = Math.round((utcDay(today) - utcDay(birth)) / DAY_MS);
-
-  let next = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
-  if (utcDay(next) < utcDay(today)) next = new Date(today.getFullYear() + 1, birth.getMonth(), birth.getDate());
-  const daysToBirthday = Math.round((utcDay(next) - utcDay(today)) / DAY_MS);
-
-  return {
-    years,
-    months,
-    days,
-    totalDays,
-    totalWeeks: Math.floor(totalDays / 7),
-    totalMonths: years * 12 + months,
-    weekday: WEEKDAYS[birth.getDay()],
-    daysToBirthday,
-  };
 }
 
 export default function AgeCalculator() {
