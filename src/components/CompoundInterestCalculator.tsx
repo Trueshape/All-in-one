@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Field, TextInput, Chips, ResultCard, Panel, Stat, Notice, Stack } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { simulate } from "../lib/compound";
 
 const FREQUENCIES = [
   { value: 1, label: "Annuale" },
@@ -10,32 +11,6 @@ const FREQUENCIES = [
 ];
 
 const eur = (n: number) => new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
-
-/**
- * Month-by-month simulation. Interest accrues every month on the capitalized
- * balance and is added to it every 12/frequency months; contributions are
- * deposited at the end of each month.
- */
-function simulate(principal: number, monthly: number, annualRate: number, years: number, frequency: number) {
-  const months = Math.floor(years * 12);
-  const monthlyRate = annualRate / 100 / 12;
-  const capitalizeEvery = 12 / frequency;
-  let balance = principal;
-  let accrued = 0;
-  let invested = principal;
-
-  for (let m = 1; m <= months; m++) {
-    accrued += balance * monthlyRate;
-    balance += monthly;
-    invested += monthly;
-    if (m % capitalizeEvery === 0) {
-      balance += accrued;
-      accrued = 0;
-    }
-  }
-  const final = balance + accrued;
-  return { invested, interest: Math.max(0, final - invested), final };
-}
 
 export default function CompoundInterestCalculator() {
   const u = useUi();

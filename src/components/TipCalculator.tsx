@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Euro, Percent, Users } from "lucide-react";
 import { Field, TextInput, Chips, ResultCard, Row, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { splitBill } from "../lib/bill";
 
 const eur = (n: number) => n.toLocaleString("it-IT", { style: "currency", currency: "EUR" });
 const num = (s: string) => Math.max(parseFloat(s) || 0, 0);
@@ -128,12 +129,12 @@ export default function TipCalculator() {
   const [people, setPeople] = useState(2);
 
   const billValue = num(bill);
-  // a fixed discount cannot be bigger than the bill
-  const discountAmount = discountMode === "percent" ? billValue * (discountPct / 100) : Math.min(num(discountFixed), billValue);
-  const discounted = billValue - discountAmount;
-  const tipAmount = tipMode === "percent" ? discounted * (tipPct / 100) : num(tipFixed);
-  const total = discounted + tipAmount;
-  const perPerson = total / people;
+  const { discountAmount, tipAmount, total, perPerson } = splitBill({
+    bill: billValue,
+    discount: discountMode === "percent" ? { percent: discountPct } : { fixed: num(discountFixed) },
+    tip: tipMode === "percent" ? { percent: tipPct } : { fixed: num(tipFixed) },
+    people,
+  });
 
   const discountShown = discountMode === "percent" ? `${discountPct}%` : eur(num(discountFixed));
   const tipShown = tipMode === "percent" ? `${tipPct}%` : eur(num(tipFixed));
