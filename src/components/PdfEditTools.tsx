@@ -148,7 +148,7 @@ export function PdfWatermark() {
               <Field label="Pagine"><TextInput value={pages} placeholder="Tutte (es. 1-3, 5)" onChange={(e) => setPages(e.target.value)} /></Field>
             </div>
             {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
-            <Button variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>PDF</Button>
+            <Button variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>Salva</Button>
           </div>
           <PageStage pdf={pdf} page={page} onPage={setPage} width={300}>
             {preview && (
@@ -251,7 +251,7 @@ export function PdfProperties() {
             </div>
           </div>
           {saver.error && <Notice tone="error">{saver.error}</Notice>}
-          <Button variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>PDF</Button>
+          <Button variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>Salva</Button>
         </>
       )}
     </SinglePdf>
@@ -359,7 +359,7 @@ export function PdfAddText() {
               </div>
             )}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>PDF</Button>
+            <Button variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>Salva</Button>
           </div>
         </div>
       )}
@@ -460,7 +460,7 @@ export function PdfAddImage() {
               </div>
             )}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>PDF</Button>
+            <Button variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </div>
         </div>
       )}
@@ -637,7 +637,7 @@ export function PdfForms() {
           )}
           <div className="flex flex-wrap items-center gap-4">
             <Toggle checked={flatten} onChange={setFlatten} label="Rendi non modificabile" />
-            <Button variant="primary" className="ml-auto" disabled={(!editable.length && !added.length) || saver.busy} onClick={() => void save(pdf)}>PDF</Button>
+            <Button variant="primary" className="ml-auto" disabled={(!editable.length && !added.length) || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </div>
           {saver.error && <Notice tone="error">{saver.error}</Notice>}
         </>

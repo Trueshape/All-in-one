@@ -189,7 +189,7 @@ export function PdfConvert() {
           </div>
           {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="primary" disabled={!images.length || saver.busy} onClick={() => void toPdf()}>PDF</Button>
+            <Button variant="primary" disabled={!images.length || saver.busy} onClick={() => void toPdf()}>Salva</Button>
             {images.length > 0 && <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setImages([])}>Svuota</Button>}
           </div>
           <Notice>Ogni immagine diventa una pagina. PNG e JPG entrano senza perdere qualità, gli altri formati vengono ridisegnati come PNG.</Notice>
@@ -609,7 +609,7 @@ export function PdfEditText() {
             )}
             {!loading && boxes.every((b) => b.page !== page) && <Notice tone="warn">In questa pagina non trovo testo: potrebbe essere una scansione.</Notice>}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>PDF</Button>
+            <Button variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>Salva</Button>
           </div>
         </div>
       )}

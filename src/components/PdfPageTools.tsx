@@ -99,7 +99,7 @@ export function PdfMerge() {
 
   return (
     <Stack>
-      <PdfDrop multiple onFiles={(files) => void add(files)} className="h-36" hint="Aggiungi i PDF nell'ordine che preferisci: poi puoi spostarli" />
+      <PdfDrop multiple onFiles={(files) => void add(files)} hint="Aggiungi i PDF nell'ordine che preferisci: poi puoi spostarli" />
       {items.length > 0 && (
         <div className={cx("max-h-[420px] overflow-auto border divide-y", u.divider)}>
           {items.map((item, i) => (
@@ -115,7 +115,7 @@ export function PdfMerge() {
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>PDF</Button>
+        <Button variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>Salva</Button>
         <span className={cx("text-xs", u.muted)}>{items.length < 2 ? "Servono almeno due PDF." : `${items.length} file, ${total} pagine in tutto`}</span>
         {items.length > 0 && <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setItems([])}>Svuota</Button>}
       </div>
@@ -186,7 +186,7 @@ export function PdfSplit() {
                 groups.map((group, i) => (
                   <div key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 text-xs">
                     <span className={cx("font-mono", u.muted)}>Parte {i + 1} · {groupLabel(group)}</span>
-                    <Button size="sm" disabled={saver.busy} onClick={() => void save(pdf, groups, [i])}>PDF</Button>
+                    <Button size="sm" disabled={saver.busy} onClick={() => void save(pdf, groups, [i])}>Salva</Button>
                   </div>
                 ))}
             </div>
@@ -242,7 +242,7 @@ export function PdfRemovePages() {
             </Button>
             <Button disabled={!removed.size} onClick={() => setRemoved(new Set())}>Nessuna</Button>
             <span className={cx("text-xs", u.muted)}>{removed.size} da togliere · restano {pdf.pages - removed.size}</span>
-            <Button variant="primary" className="ml-auto" disabled={!removed.size || removed.size === pdf.pages || saver.busy} onClick={() => void save(pdf)}>PDF</Button>
+            <Button variant="primary" className="ml-auto" disabled={!removed.size || removed.size === pdf.pages || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </div>
           {typedError && <Notice tone="warn">{typedError}</Notice>}
           {removed.size === pdf.pages && <Notice tone="warn">Non puoi togliere tutte le pagine.</Notice>}
@@ -288,7 +288,7 @@ export function PdfRotate() {
             <Button icon={<RotateCw />} onClick={() => Array.from({ length: pdf.pages }, (_, i) => turn(i, 90))}>Tutte a destra</Button>
             <Button disabled={!changed} onClick={reset}>Ripristina</Button>
             <span className={cx("text-xs", u.muted)}>{changed === 1 ? "1 pagina ruotata" : `${changed} pagine ruotate`}</span>
-            <Button variant="primary" className="ml-auto" disabled={!changed || saver.busy} onClick={() => void save(pdf)}>PDF</Button>
+            <Button variant="primary" className="ml-auto" disabled={!changed || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </div>
           {saver.error && <Notice tone="error">{saver.error}</Notice>}
           <div className={GRID} style={GRID_COLUMNS}>
@@ -331,7 +331,7 @@ export function PdfReorder() {
               <Button onClick={() => setOrder([...list].reverse())}>Inverti ordine</Button>
               <Button disabled={!moved} onClick={() => setOrder(null)}>Ripristina</Button>
               <span className={cx("text-xs", u.muted)}>{moved ? "Ordine cambiato" : "Ordine originale"}</span>
-              <Button variant="primary" className="ml-auto" disabled={!moved || saver.busy} onClick={() => void save(pdf, list)}>PDF</Button>
+              <Button variant="primary" className="ml-auto" disabled={!moved || saver.busy} onClick={() => void save(pdf, list)}>Salva</Button>
             </div>
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
             <div className={GRID} style={GRID_COLUMNS}>
@@ -429,7 +429,7 @@ export function PdfCrop() {
             )}
             {(tooBig || negative) && <Notice tone="warn">{negative ? "I margini non possono essere negativi." : "I margini sono più grandi della pagina."}</Notice>}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={tooBig || negative || saver.busy} onClick={() => void save(pdf)}>PDF</Button>
+            <Button variant="primary" disabled={tooBig || negative || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </div>
           <div className="space-y-3 min-w-0 flex flex-col items-center">
             <div className="flex items-center gap-3">
