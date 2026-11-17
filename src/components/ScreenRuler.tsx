@@ -23,6 +23,9 @@ function loadCalibration(): Calibration | null {
 
 // Width of the number bands (top and left); the shared zero sits at (OFFSET, OFFSET)
 const OFFSET = 60;
+// Longest ruler, in millimeters
+const MAX_H_MM = 500;
+const MAX_V_MM = 150;
 // Leaves room in the window for the controls and the readout around the two rulers
 const verticalHeight = () => Math.max(120, Math.min(window.innerHeight - 560, 640));
 
@@ -41,7 +44,9 @@ export default function ScreenRuler() {
   useEffect(() => {
     const box = boxRef.current;
     if (!box) return;
-    const obs = new ResizeObserver(() => setWidth(box.clientWidth));
+    const measure = () => setWidth(box.clientWidth);
+    measure();
+    const obs = new ResizeObserver(measure);
     obs.observe(box);
     return () => obs.disconnect();
   }, [mode]);
@@ -87,8 +92,11 @@ export default function ScreenRuler() {
     }
     return out;
   };
-  const hTicks = makeTicks(width - OFFSET);
-  const vTicks = makeTicks(height);
+  // Longest ruler: 50 cm across, 15 cm down (less when the window is smaller)
+  const hLen = Math.max(0, Math.min(width - OFFSET, MAX_H_MM * pxPerMm));
+  const vLen = Math.min(height, MAX_V_MM * pxPerMm);
+  const hTicks = makeTicks(hLen);
+  const vTicks = makeTicks(vLen);
 
   const lengthText = (px: number) => {
     const mm = px / pxPerMm;
@@ -132,8 +140,8 @@ export default function ScreenRuler() {
           {/* One L-shaped frame: both rulers share the zero at the inner corner (OFFSET, OFFSET); numbers sit outside, on the top and left bands. */}
           <div ref={boxRef} className={cx("w-full select-none", u.text)}>
             <svg
-              width={width}
-              height={OFFSET + height}
+              width={OFFSET + hLen}
+              height={OFFSET + vLen}
               className="block cursor-crosshair"
               aria-label="Righelli"
               onClick={(e) => {
@@ -144,7 +152,7 @@ export default function ScreenRuler() {
                 else if (x < OFFSET && y >= OFFSET) setVMarker(y - OFFSET);
               }}
             >
-              <line x1={OFFSET} y1={OFFSET} x2={width} y2={OFFSET} stroke="currentColor" />
+              <line x1={OFFSET} y1={OFFSET} x2={OFFSET + hLen} y2={OFFSET} stroke="currentColor" />
               {hTicks.map((t, i) => (
                 <g key={i}>
                   <line x1={OFFSET + t.x + 0.5} y1={OFFSET} x2={OFFSET + t.x + 0.5} y2={OFFSET - t.h} stroke="currentColor" />
@@ -156,7 +164,7 @@ export default function ScreenRuler() {
                 </g>
               ))}
               {marker !== null && <line x1={OFFSET + marker} y1={0} x2={OFFSET + marker} y2={OFFSET} stroke={u.accentHex} strokeWidth={2} />}
-              <line x1={OFFSET} y1={OFFSET} x2={OFFSET} y2={OFFSET + height} stroke="currentColor" />
+              <line x1={OFFSET} y1={OFFSET} x2={OFFSET} y2={OFFSET + vLen} stroke="currentColor" />
               {vTicks.map((t, i) => (
                 <g key={i}>
                   <line x1={OFFSET} y1={OFFSET + t.x + 0.5} x2={OFFSET - t.h} y2={OFFSET + t.x + 0.5} stroke="currentColor" />
