@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
-import { Clock } from "lucide-react";
-import { DatePicker, Field, TextInput, Button, Chips, ResultCard, Row, Panel, Notice, Stack } from "../ui/kit";
+import { useEffect, useMemo, useState } from "react";
+import { DatePicker, Field, TextInput, Chips, ResultCard, Row, Panel, Notice, Stack } from "../ui/kit";
 import { UNIT_MS, computeEta, formatDuration } from "../lib/eta";
 import type { TimeUnit } from "../lib/eta";
 
@@ -15,12 +14,21 @@ const pad = (n: number) => String(n).padStart(2, "0");
 const dateInput = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const timeInput = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-/** "YYYY-MM-DD" and "HH:MM" as a local date; null when either is incomplete. */
+/** "YYYY-MM-DD" and "H:MM" or "HH:MM" as a local date; null when either is incomplete or out of range. */
 function parseStart(date: string, time: string): Date | null {
   const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  const t = /^(\d{1,2}):(\d{2})$/.exec(time.trim());
+  const t = /^(\d{1,2}):(\d{1,2})$/.exec(time);
   if (!d || !t || Number(t[1]) > 23 || Number(t[2]) > 59) return null;
   return new Date(Number(d[1]), Number(d[2]) - 1, Number(d[3]), Number(t[1]), Number(t[2]));
+}
+
+/** Whether a typed time can still become a valid HH:MM: no hour above 23 and no minute above 59, at most 5 characters. */
+function timeAllowed(s: string): boolean {
+  const m = /^(\d{0,2})(?::(\d{0,2}))?$/.exec(s);
+  if (!m) return false;
+  if (m[1].length === 2 && Number(m[1]) > 23) return false;
+  if (m[2] !== undefined && m[2].length === 2 && Number(m[2]) > 59) return false;
+  return true;
 }
 
 const whenFormat = new Intl.DateTimeFormat("it-IT", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -35,7 +43,13 @@ export default function EtaCalculator() {
   const [date, setDate] = useState(dateInput(now));
   const [time, setTime] = useState(timeInput(now));
 
-  const start = parseStart(date, time);
+  // While the time is half typed (e.g. "14:" after deleting a digit), keep the last valid start instead of hiding the result.
+  const [lastStart, setLastStart] = useState<Date | null>(() => parseStart(date, time));
+  useEffect(() => {
+    const p = parseStart(date, time);
+    if (p) setLastStart(p);
+  }, [date, time]);
+  const start = parseStart(date, time) ?? lastStart;
   const eta = useMemo(() => (start ? computeEta(num(total), num(done), num(span), unit, start) : null), [total, done, span, unit, start?.getTime()]);
   const speed = num(done) > 0 && num(span) > 0 ? `${(num(done) / (num(span) * UNIT_MS[unit] / 60_000)).toLocaleString("it-IT", { maximumFractionDigits: 3 })} al minuto` : "—";
 
@@ -50,7 +64,6 @@ export default function EtaCalculator() {
             <div className="grid grid-cols-2 items-start gap-3">
               <div className="space-y-2">
                 <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} />
-                <Button size="sm" icon={<Clock className="w-3.5 h-3.5" />} onClick={() => { const d = new Date(); setDate(dateInput(d)); setTime(timeInput(d)); }}>Start</Button>
               </div>
               <div className="space-y-2">
                 <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="ogni" />
@@ -64,7 +77,13 @@ export default function EtaCalculator() {
           <Field label="Inizio">
             <div className="grid grid-cols-[1fr_6rem] gap-3">
               <DatePicker value={date} onChange={setDate} />
-              <TextInput value={time} onChange={(e) => setTime(e.target.value)} placeholder="HH:MM" aria-label="Ora di inizio" />
+              <TextInput
+                value={time}
+                onChange={(e) => { if (timeAllowed(e.target.value.trim())) setTime(e.target.value.trim()); }}
+                onBlur={() => { const p = parseStart(date, time); if (p) setTime(timeInput(p)); }}
+                placeholder="HH:MM"
+                aria-label="Ora di inizio"
+              />
             </div>
           </Field>
           {eta ? (
