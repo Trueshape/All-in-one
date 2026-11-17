@@ -202,7 +202,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "tip",
-    name: "Mance e Sconti",
+    name: "Conto ristorante",
     description: "Calcola le percentuali di sconto, la mancia del conto e dividi la quota a persona.",
     icon: Percent,
     colorClass: "border-amber-900/30 hover:border-amber-500/50",
