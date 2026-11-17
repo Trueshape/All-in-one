@@ -1,19 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, Globe, Moon, Sun } from "lucide-react";
-import { DatePicker, Field, IconButton, Notice, Panel, Select, Slider, Button, Stack, TextInput, cx } from "../ui/kit";
+import { ArrowLeftRight, Globe, Moon, RotateCcw, Sun } from "lucide-react";
+import { DatePicker, Field, HeaderAction, IconButton, Notice, Panel, Select, Slider, Button, Stack, TextInput, cx } from "../ui/kit";
+import { usePersisted } from "../lib/persist";
 import { offsetDifference, zonedTimeToInstant } from "../lib/timeZones";
 import { useUi } from "../ui/tokens";
 
+/** In the order of the clock, starting from Rome and going east, then round through the west: Rome +1, Dubai +4, Tokyo +9, Sydney +10, Los Angeles -8, New York -5, San Paolo -3, London 0 (the order holds with summer time too). */
 const CITIES = [
   { name: "Roma", country: "Italia", zone: "Europe/Rome" },
-  { name: "Londra", country: "Regno Unito", zone: "Europe/London" },
-  { name: "New York", country: "USA", zone: "America/New_York" },
-  { name: "Los Angeles", country: "USA", zone: "America/Los_Angeles" },
+  { name: "Dubai", country: "Emirati Arabi", zone: "Asia/Dubai" },
   { name: "Tokyo", country: "Giappone", zone: "Asia/Tokyo" },
   { name: "Sydney", country: "Australia", zone: "Australia/Sydney" },
-  { name: "Dubai", country: "Emirati Arabi", zone: "Asia/Dubai" },
+  { name: "Los Angeles", country: "USA", zone: "America/Los_Angeles" },
+  { name: "New York", country: "USA", zone: "America/New_York" },
   { name: "San Paolo", country: "Brasile", zone: "America/Sao_Paulo" },
+  { name: "Londra", country: "Regno Unito", zone: "Europe/London" },
 ];
+const DEFAULT_ZONES = CITIES.map((c) => c.zone);
 
 /** "GMT+05:30" becomes "UTC+5:30", "GMT-03:00" becomes "UTC-3" and plain "GMT" becomes "UTC". */
 const utcLabel = (raw: string) => {
@@ -24,6 +27,13 @@ const utcLabel = (raw: string) => {
 };
 
 const ZONE_NAMES = Object.fromEntries(CITIES.map((c) => [c.zone, `${c.name} (${c.country})`]));
+/** Short name and region of a card: the city and country when known, otherwise the last part of the zone and its continent. */
+const cardName = (zone: string) => {
+  const city = CITIES.find((c) => c.zone === zone);
+  if (city) return { name: city.name, country: city.country };
+  const parts = zone.split("/");
+  return { name: parts[parts.length - 1].replace(/_/g, " "), country: parts.length > 1 ? parts[0] : "" };
+};
 /** The cities above first, then every other zone the browser knows. */
 const ZONES = [...CITIES.map((c) => c.zone), ...((Intl as unknown as { supportedValuesOf?: (key: string) => string[] }).supportedValuesOf?.("timeZone") ?? []).filter((z) => !ZONE_NAMES[z])];
 
@@ -42,6 +52,10 @@ export default function WorldClock() {
   const u = useUi();
   const [now, setNow] = useState(() => new Date());
   const [offset, setOffset] = useState(0);
+  // the zone of each of the 8 cards, remembered; anything that is not 8 known zones falls back to the default
+  const [saved, setSaved] = usePersisted<string[]>("world_clock_zones", DEFAULT_ZONES);
+  const zones = Array.isArray(saved) && saved.length === DEFAULT_ZONES.length && saved.every((z) => ZONES.includes(z)) ? saved : DEFAULT_ZONES;
+  const isDefault = zones.every((z, i) => z === DEFAULT_ZONES[i]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000);
@@ -66,23 +80,26 @@ export default function WorldClock() {
   const formatters = useMemo(
     () =>
       Object.fromEntries(
-        CITIES.map((c) => [
-          c.zone,
+        zones.map((zone) => [
+          zone,
           {
-            time: new Intl.DateTimeFormat("it-IT", { timeZone: c.zone, hour: "2-digit", minute: "2-digit", ...(offset === 0 && { second: "2-digit" }), hourCycle: "h23" }),
-            date: new Intl.DateTimeFormat("it-IT", { timeZone: c.zone, weekday: "short", day: "numeric", month: "short" }),
-            hour: new Intl.DateTimeFormat("en-GB", { timeZone: c.zone, hour: "numeric", hourCycle: "h23" }),
-            zone: new Intl.DateTimeFormat("it-IT", { timeZone: c.zone, timeZoneName: "longOffset" }),
+            time: new Intl.DateTimeFormat("it-IT", { timeZone: zone, hour: "2-digit", minute: "2-digit", ...(offset === 0 && { second: "2-digit" }), hourCycle: "h23" }),
+            date: new Intl.DateTimeFormat("it-IT", { timeZone: zone, weekday: "short", day: "numeric", month: "short" }),
+            hour: new Intl.DateTimeFormat("en-GB", { timeZone: zone, hour: "numeric", hourCycle: "h23" }),
+            zone: new Intl.DateTimeFormat("it-IT", { timeZone: zone, timeZoneName: "longOffset" }),
           },
         ]),
       ),
-    [offset],
+    [offset, zones.join("|")],
   );
 
   const zoneLabel = (zone: string) => utcLabel(formatters[zone].zone.formatToParts(shifted).find((p) => p.type === "timeZoneName")?.value ?? "");
 
   return (
     <Stack>
+      <HeaderAction onClick={() => setSaved(DEFAULT_ZONES)} disabled={isDefault} title="Ripristina i fusi orari predefiniti">
+        <RotateCcw className="w-4 h-4" />
+      </HeaderAction>
       <Panel className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <span className={cx("inline-flex items-center gap-2", u.statLabel)}><Globe className="w-4 h-4" /> Pianificatore fusi orari</span>
@@ -92,22 +109,33 @@ export default function WorldClock() {
       </Panel>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {CITIES.map((city) => {
-          const f = formatters[city.zone];
+        {zones.map((zone, slot) => {
+          const f = formatters[zone];
           const hour = Number(f.hour.format(shifted));
           const day = hour >= 6 && hour < 18;
+          const { name, country } = cardName(zone);
           return (
-            <Panel key={city.zone} className="flex flex-col justify-between gap-5">
+            <Panel key={slot} className="flex flex-col justify-between gap-5">
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <span className={cx("block text-[10px]", u.muted)}>{city.country}</span>
-                  <span className={cx("block text-sm font-semibold truncate", u.text)}>{city.name}</span>
+                <div className="min-w-0 flex-1">
+                  <span className={cx("block text-[10px] truncate", u.muted)}>{country || "\u00a0"}</span>
+                  {/* the name is the field: click it to pick another zone for this card */}
+                  <Select
+                    value={zone}
+                    onChange={(e) => setSaved(zones.map((z, i) => (i === slot ? e.target.value : z)))}
+                    aria-label={`Fuso orario della scheda ${slot + 1}`}
+                    shownLabel={name}
+                    listMinWidth={260}
+                    className="border-transparent! bg-transparent! px-0! py-0! h-6! text-sm font-semibold [&_svg]:hidden hover:underline underline-offset-4 decoration-dotted"
+                  >
+                    {ZONES.map((z) => <option key={z} value={z}>{zoneName(z)}</option>)}
+                  </Select>
                 </div>
                 {day ? <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0" /> : <Moon className={cx("w-3.5 h-3.5 shrink-0", u.accent)} />}
               </div>
               <div>
                 <span className={cx("block text-2xl font-light tabular-nums", u.text)}>{f.time.format(shifted)}</span>
-                <span className={cx("block text-[10px] uppercase mt-0.5", u.muted)}>{f.date.format(shifted)} · {zoneLabel(city.zone)}</span>
+                <span className={cx("block text-[10px] uppercase mt-0.5", u.muted)}>{f.date.format(shifted)} · {zoneLabel(zone)}</span>
               </div>
             </Panel>
           );

@@ -137,6 +137,10 @@ type SelectProps = {
   disabled?: boolean;
   id?: string;
   "aria-label"?: string;
+  /** Text shown in the closed field instead of the selected option's label (the list keeps the full labels). */
+  shownLabel?: ReactNode;
+  /** The open list is at least this wide (px), even when the field is narrower. */
+  listMinWidth?: number;
 };
 
 /** Background of the open list: the same as the tool modal of each theme, so the list reads as part of it. */
@@ -151,7 +155,7 @@ const norm = (t: string) => t.toLowerCase().replace(/_/g, " ");
  * children and calls onChange with { target: { value } }, so it is a drop-in for <select>.
  * The list is a portal on <body>: it is not clipped by the modal's scroll area.
  */
-export function Select({ value, onChange, children, className, disabled, id, "aria-label": ariaLabel }: SelectProps) {
+export function Select({ value, onChange, children, className, disabled, id, "aria-label": ariaLabel, shownLabel, listMinWidth }: SelectProps) {
   const u = useUi();
   const labelledBy = useContext(FieldLabel);
   const listId = useId();
@@ -185,7 +189,8 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
     const below = window.innerHeight - r.bottom - 12;
     const above = r.top - 12;
     const up = below < 180 && above > below;
-    setBox({ left: r.left, width: r.width, maxHeight: Math.min(LIST_MAX, up ? above : below), ...(up ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }) });
+    const width = Math.min(Math.max(r.width, listMinWidth ?? 0), window.innerWidth - 24);
+    setBox({ left: Math.max(12, Math.min(r.left, window.innerWidth - width - 12)), width, maxHeight: Math.min(LIST_MAX, up ? above : below), ...(up ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }) });
     setActive(Math.max(0, options.findIndex((o) => o.value === value)));
     setQuery("");
     setOpen(true);
@@ -297,7 +302,7 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
         onKeyDown={onKeyDown}
         className={cx(u.input, "flex items-center justify-between gap-2 text-left", disabled ? "cursor-not-allowed" : "cursor-pointer", className)}
       >
-        <span className="truncate">{selected?.label ?? ""}</span>
+        <span className="truncate">{shownLabel ?? selected?.label ?? ""}</span>
         <ChevronDown className={cx("w-4 h-4 shrink-0 transition-transform", u.muted, open && "rotate-180")} aria-hidden />
       </button>
       {open && box && createPortal(
