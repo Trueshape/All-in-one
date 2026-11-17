@@ -31,6 +31,7 @@
 - `src/components/VirtualPiano.tsx` — Piano Virtuale: tre ottave, tastiera del computer, onde Web Audio (`src/lib/piano.ts`).
 - `src/components/PercentageCalculator.tsx` — Calcolatore Percentuali: le quattro domande più comuni (`src/lib/percent.ts`).
 - `src/components/InflationCalculator.tsx` — Calcolatore inflazione (categoria Convertitori): potere d'acquisto di una somma tra due anni, in euro, dollari, yen e lire (`src/lib/inflation.ts`, dati inclusi nel sito).
+- `src/components/AudioTags.tsx` — Metadati audio: album, artista, titolo, genere, anno, numero traccia e testo di MP3, FLAC e WAV (`src/lib/audioTags.ts`, senza dipendenze).
 - `src/lib/fxHistory.ts` — Tassi di cambio storici annuali (unità di valuta per 1 dollaro, dal 1900 o dal suo primo anno) per il Convertitore di Valuta.
 - `src/lib/persist.ts` — Hook `usePersisted`: ricorda gli ultimi valori inseriti nello strumento in questo browser (localStorage, prefisso `tool:`).
 - `src/components/EtaCalculator.tsx` — Calcolatore ETA: durata e ora di fine di un'attività dalla velocità (`src/lib/eta.ts`).

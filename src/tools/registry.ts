@@ -60,6 +60,7 @@ import {
   Radar,
   Volume2,
   AudioLines,
+  Tags,
   Replace,
   Shuffle,
   ScanBarcode,
@@ -134,6 +135,7 @@ const DialCodes = lazy(() => import("../components/DialCodes"));
 const RandomizeList = lazy(() => import("../components/RandomizeList"));
 const TextCleaner = lazy(() => import("../components/TextCleaner"));
 const AudioEditor = lazy(() => import("../components/AudioEditor"));
+const AudioTags = lazy(() => import("../components/AudioTags"));
 const TextToSpeech = lazy(() => import("../components/TextToSpeech"));
 const RadarChartMaker = lazy(() => import("../components/RadarChartMaker"));
 const VirtualPiano = lazy(() => import("../components/VirtualPiano"));
@@ -642,6 +644,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-fuchsia-400 bg-fuchsia-500/10",
     category: "convertitori",
     component: AudioEditor,
+  },
+  {
+    id: "audio_tags",
+    name: "Metadati audio",
+    description: "Modifica album, artista, titolo, genere, anno, numero traccia e testo di file MP3, FLAC e WAV.",
+    icon: Tags,
+    colorClass: "border-fuchsia-900/30 hover:border-fuchsia-500/50",
+    glowClass: "shadow-fuchsia-950/20 hover:shadow-fuchsia-500/5",
+    iconColor: "text-fuchsia-400 bg-fuchsia-500/10",
+    category: "convertitori",
+    component: AudioTags,
   },
   {
     id: "text_to_speech",
