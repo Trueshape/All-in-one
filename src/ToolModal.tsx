@@ -5,7 +5,7 @@ import { Check, ChevronLeft, ChevronRight, Info, Pencil, Settings, X } from "luc
 import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
 import { UiContext, UI_TOKENS } from "./ui/tokens";
-import { InfoContext } from "./ui/kit";
+import { HeaderActionsContext, InfoContext } from "./ui/kit";
 import { useI18n } from "./i18n";
 
 /** Fixed-width sizes replace the default max width; a size that starts with w-fit also drops w-full so the window can follow its content. */
@@ -63,6 +63,7 @@ export default function ToolModal({
     });
     setEditingToolName(false);
   };
+  const [actionsEl, setActionsEl] = useState<HTMLElement | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   // Settings belong to one tool: close them when the open tool changes.
   useEffect(() => setShowSettings(false), [activeTool?.id]);
@@ -188,6 +189,7 @@ export default function ToolModal({
 
               {/* Settings, info and close buttons */}
               <div className="flex items-center gap-2">
+                <div ref={setActionsEl} className="contents" />
                 {activeTool.id === "scientific_calc" && (
                   <button
                     onClick={() => setShowSettings(!showSettings)}
@@ -226,9 +228,11 @@ export default function ToolModal({
             <div className={tc.modalBody} data-tool-body>
               <UiContext.Provider value={UI_TOKENS[activeTheme]}>
                <InfoContext.Provider value={showInfo}>
-                <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
-                  <activeTool.component showSettings={showSettings} />
-                </Suspense>
+                <HeaderActionsContext.Provider value={{ el: actionsEl, buttonClass: `${tc.borderClass} ${tc.btnClassic}` }}>
+                  <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
+                    <activeTool.component showSettings={showSettings} />
+                  </Suspense>
+                </HeaderActionsContext.Provider>
                </InfoContext.Provider>
               </UiContext.Provider>
             </div>

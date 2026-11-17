@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CPI, adjust, yearRange } from "./inflation";
 
-const CURRENCIES = ["EUR", "USD", "JPY", "ITL"] as const;
+const CURRENCIES = ["EUR", "USD", "JPY", "GBP", "CAD", "AUD", "CHF", "CNY", "ITL"] as const;
 
 test("same year changes nothing", () => {
   const r = adjust("EUR", 100, 2015, 2015)!;
@@ -31,6 +31,8 @@ test("a year without data gives null and the ranges match the series", () => {
   assert.deepEqual(yearRange("USD"), { first: 1900, last: 2024 });
   assert.deepEqual(yearRange("JPY"), { first: 1900, last: 2025 });
   assert.deepEqual(yearRange("ITL"), { first: 1861, last: 2001 });
+  for (const c of ["GBP", "CAD", "AUD", "CHF"] as const) assert.deepEqual(yearRange(c), { first: 1900, last: 2025 });
+  assert.deepEqual(yearRange("CNY"), { first: 1986, last: 2025 });
 });
 
 test("every series has no gaps between its first and last year", () => {

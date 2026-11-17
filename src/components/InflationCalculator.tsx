@@ -1,18 +1,28 @@
 import { useMemo, useState } from "react";
-import { Field, TextInput, Chips, Select, ResultCard, Stat, Notice, Stack } from "../ui/kit";
+import { Field, TextInput, Select, ResultCard, Stat, Notice, Stack } from "../ui/kit";
 import { adjust, yearRange, type InflationCurrency } from "../lib/inflation";
 
 const CURRENCIES: Array<{ value: InflationCurrency; label: string; symbol: string }> = [
   { value: "EUR", label: "Euro", symbol: "€" },
   { value: "USD", label: "Dollaro", symbol: "$" },
   { value: "JPY", label: "Yen", symbol: "¥" },
+  { value: "GBP", label: "Sterlina", symbol: "£" },
+  { value: "CAD", label: "Dollaro canadese", symbol: "C$" },
+  { value: "AUD", label: "Dollaro australiano", symbol: "A$" },
+  { value: "CHF", label: "Franco svizzero", symbol: "CHF" },
+  { value: "CNY", label: "Renminbi", symbol: "¥" },
   { value: "ITL", label: "Lira", symbol: "₤" },
 ];
 
 const SOURCE: Record<InflationCurrency, string> = {
   EUR: "Eurostat (indice HICP dell'area euro, dal 1999)",
   USD: "FRED e Banca Mondiale (prezzi al consumo degli Stati Uniti), prima del 1913 Macrohistory Database",
-  JPY: "Banca Mondiale (prezzi al consumo del Giappone) dal 1990, prima Macrohistory Database",
+  JPY: "Banca Mondiale (prezzi al consumo del Giappone) dal 1960, prima Macrohistory Database",
+  GBP: "Banca Mondiale (prezzi al consumo del Regno Unito) dal 1960, prima Macrohistory Database",
+  CAD: "Banca Mondiale (prezzi al consumo del Canada) dal 1960, prima Macrohistory Database",
+  AUD: "Banca Mondiale (prezzi al consumo dell'Australia) dal 1960, prima Macrohistory Database",
+  CHF: "Banca Mondiale (prezzi al consumo della Svizzera) dal 1960, prima Macrohistory Database",
+  CNY: "Banca Mondiale (prezzi al consumo della Cina)",
   ITL: "ISTAT (prezzi al consumo delle famiglie di operai e impiegati), fino al 2001, ultimo anno della lira",
 };
 
@@ -39,7 +49,11 @@ export default function InflationCalculator() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <Field label="Valuta">
-            <Chips fill value={currency} onChange={setCurrency} options={CURRENCIES.map(({ value: v, label }) => ({ value: v, label }))} />
+            <Select value={currency} onChange={(e) => setCurrency(e.target.value as InflationCurrency)}>
+              {CURRENCIES.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </Select>
           </Field>
           <Field label="Importo">
             <TextInput type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} prefixText={CURRENCIES.find((c) => c.value === currency)!.symbol} />

@@ -445,6 +445,21 @@ export function Row({ label, value, tone }: { label: ReactNode; value: ReactNode
 /** Whether the info notices are visible; toggled from the modal header and shared by every tool. */
 export const InfoContext = createContext(false);
 
+/** Where a tool can put its own buttons in the window header (left of the info button), and the look those buttons share. */
+export const HeaderActionsContext = createContext<{ el: HTMLElement | null; buttonClass: string }>({ el: null, buttonClass: "" });
+
+/** A button in the window header, next to the info button. */
+export function HeaderAction({ title, onClick, disabled, children }: { title: string; onClick: () => void; disabled?: boolean; children: ReactNode }) {
+  const { el, buttonClass } = useContext(HeaderActionsContext);
+  if (!el) return null;
+  return createPortal(
+    <button type="button" onClick={onClick} disabled={disabled} title={title} aria-label={title} className={cx("p-1.5 transition-colors border disabled:opacity-50", buttonClass)}>
+      {children}
+    </button>,
+    el,
+  );
+}
+
 export function Notice({ tone = "info", children }: { tone?: "info" | "empty" | "error" | "success" | "warn"; children: ReactNode }) {
   const u = useUi();
   const showInfo = useContext(InfoContext);

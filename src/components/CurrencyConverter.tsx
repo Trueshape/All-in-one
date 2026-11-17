@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { ArrowLeftRight, RefreshCw, TrendingUp } from "lucide-react";
-import { Field, TextInput, Select, IconButton, ResultCard, Row, Panel, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
+import { Field, TextInput, Select, IconButton, HeaderAction, ResultCard, Row, Panel, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { CPI, adjust, yearRange, type InflationCurrency } from "../lib/inflation";
 
@@ -17,7 +17,7 @@ const CURRENCIES: Record<string, { name: string; symbol: string; fallback: numbe
   ITL: { name: "Lira italiana", symbol: "₤", fallback: 1936.27 },
 };
 
-/** Years offered for the "then" column: the longest series (dollar and yen) starts in 1900. */
+/** Years offered for the "then" column: most series start in 1900. */
 const THEN_YEARS = Array.from({ length: 2025 - 1900 + 1 }, (_, i) => 2025 - i);
 
 /** What `amount` of a currency, as of the last year with price data, was worth in `year`; null when there is no price series for it. */
@@ -29,7 +29,7 @@ function worthIn(code: string, amount: number, year: number): number | null {
 
 const FALLBACK_RATES = Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, c.fallback]));
 
-type Status = { kind: "fallback" } | { kind: "loading" } | { kind: "live"; at: string } | { kind: "error" };
+type Status = { kind: "fallback" } | { kind: "loading" } | { kind: "live" } | { kind: "error" };
 
 export default function CurrencyConverter() {
   const u = useUi();
@@ -48,8 +48,7 @@ export default function CurrencyConverter() {
       const data = await res.json();
       if (!data?.rates) throw new Error("Risposta non valida");
       setRates(Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, code === "ITL" ? c.fallback : Number(data.rates[code]) || c.fallback])));
-      const at = new Date(data.time_last_update_utc);
-      setStatus({ kind: "live", at: Number.isNaN(at.getTime()) ? "ora" : at.toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" }) });
+      setStatus({ kind: "live" });
     } catch (err) {
       if (signal?.aborted) return;
       setStatus({ kind: "error" });
@@ -67,21 +66,11 @@ export default function CurrencyConverter() {
   const converted = valid ? (value / rates[from]) * rates[to] : 0;
   const rate = rates[to] / rates[from];
 
-  const statusText = {
-    fallback: "Tassi di riserva",
-    loading: "Aggiornamento in corso…",
-    live: `Aggiornati: ${status.kind === "live" ? status.at : ""}`,
-    error: "Offline: tassi di riserva, non aggiornati",
-  }[status.kind];
-
   return (
     <Stack>
-      <div className="flex items-center justify-between gap-3">
-        <span className={cx("text-xs", status.kind === "error" ? "text-amber-400" : u.muted)}>{statusText}</span>
-        <IconButton onClick={() => load()} disabled={status.kind === "loading"} title="Aggiorna tassi">
-          <RefreshCw className={cx("w-4 h-4", status.kind === "loading" && "animate-spin")} />
-        </IconButton>
-      </div>
+      <HeaderAction onClick={() => load()} disabled={status.kind === "loading"} title="Aggiorna tassi">
+        <RefreshCw className={cx("w-4 h-4", status.kind === "loading" && "animate-spin")} />
+      </HeaderAction>
 
       {status.kind === "error" && <Notice tone="warn">Impossibile contattare il servizio di cambio: i risultati usano valori indicativi fissi.</Notice>}
 
@@ -135,7 +124,7 @@ export default function CurrencyConverter() {
             return (
               <Fragment key={code}>
                 <span className={cx("font-medium px-2 py-1.5", u.muted)}>{code}</span>
-                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, u.text)}>{fmtNumber(rates[code], 4)}</span>
+                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, u.text)}>{fmtNumber(rates[code], 2)}</span>
                 <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, past === null ? u.muted : u.text)}>{past === null ? "—" : fmtNumber(past, 2)}</span>
               </Fragment>
             );
@@ -143,7 +132,7 @@ export default function CurrencyConverter() {
         </div>
       </div>
       <Notice>
-        Cambia la valuta di partenza o di arrivo: il risultato si aggiorna subito. «Valeva nel» riporta il tasso di oggi con il potere d'acquisto dell'anno scelto, usando l'inflazione di ciascuna valuta (dollaro, yen e lira; dato fermo all'ultimo anno disponibile: 2024 dollaro, 2025 yen, 2001 lira). «—» se per quella valuta non ci sono dati o l'anno è fuori dalla sua serie.
+        Cambia la valuta di partenza o di arrivo: il risultato si aggiorna subito. «Valeva nel» riporta il tasso di oggi con il potere d'acquisto dell'anno scelto, usando l'inflazione di ciascuna valuta, ferma all'ultimo anno con dati (2025; 2024 il dollaro USA, 2001 la lira). «—» se l'anno è fuori dalla serie di quella valuta (il renminbi parte dal 1986).
       </Notice>
     </Stack>
   );
