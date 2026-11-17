@@ -6,6 +6,7 @@ import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
 import { UiContext, UI_TOKENS } from "./ui/tokens";
 import { HeaderActionsContext, InfoContext } from "./ui/kit";
+import { ToolErrorBoundary } from "./ui/ToolErrorBoundary";
 import { useI18n } from "./i18n";
 
 /** Fixed-width sizes replace the default max width; a size that starts with w-fit also drops w-full so the window can follow its content. */
@@ -231,9 +232,11 @@ export default function ToolModal({
                 <HeaderActionsContext.Provider value={{ el: actionsEl, buttonClass: `${tc.borderClass} ${tc.btnClassic}` }}>
                   {/* PDF tools have a minimum height: their content sits in the middle of it, not glued to the top */}
                   <div className={activeTool.category === "pdf" ? "my-auto" : undefined}>
-                    <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
-                      <activeTool.component showSettings={showSettings} />
-                    </Suspense>
+                    <ToolErrorBoundary key={activeTool.id}>
+                      <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
+                        <activeTool.component showSettings={showSettings} />
+                      </Suspense>
+                    </ToolErrorBoundary>
                   </div>
                 </HeaderActionsContext.Provider>
                </InfoContext.Provider>

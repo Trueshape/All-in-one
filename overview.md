@@ -35,6 +35,7 @@
 - `src/lib/fxHistory.ts` — Tassi di cambio storici annuali (unità di valuta per 1 dollaro, dal 1900 o dal suo primo anno) per il Convertitore di Valuta.
 - `src/lib/persist.ts` — Hook `usePersisted`: ricorda gli ultimi valori inseriti nello strumento in questo browser (localStorage, prefisso `tool:`).
 - `src/lib/inputGuards.ts` — Regole pure per i campi: blocco di `e`, `+` e del segno meno, limite di decimali e di massimo, minimo applicato all'uscita, caratteri ammessi (`ALLOW`). Le usano `TextInput` e `TextArea` in `src/ui/kit.tsx`.
+- `src/ui/ToolErrorBoundary.tsx` — Se uno strumento non si scarica o va in errore mostra un messaggio con «Ricarica la pagina» al posto suo, senza svuotare il sito. Usato in `src/ToolModal.tsx`.
 - `src/ui/unsaved.tsx` — Avviso prima di cambiare pagina con un file in lavorazione: `useUnsaved` (file aperto e toccato, finché non si scarica) e `useUnsavedFlag`; l'App chiede conferma su Esc, Precedente, Successivo, chiusura e ricarica.
 - `src/components/EtaCalculator.tsx` — Calcolatore ETA: durata e ora di fine di un'attività dalla velocità (`src/lib/eta.ts`).
 - `src/components/AsciiArt.tsx` — Testo in ASCII Art con font 5×7 incluso (`src/lib/asciiArt.ts`).
