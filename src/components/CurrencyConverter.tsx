@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { ArrowLeftRight, RefreshCw, TrendingUp } from "lucide-react";
 import { Field, TextInput, Select, IconButton, ResultCard, Row, Panel, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { CPI, adjust, yearRange, type InflationCurrency } from "../lib/inflation";
 
 const CURRENCIES: Record<string, { name: string; symbol: string; fallback: number }> = {
   EUR: { name: "Euro", symbol: "€", fallback: 1 },
@@ -16,6 +17,16 @@ const CURRENCIES: Record<string, { name: string; symbol: string; fallback: numbe
   ITL: { name: "Lira italiana", symbol: "₤", fallback: 1936.27 },
 };
 
+/** Years offered for the "then" column: the longest series (dollar and yen) starts in 1900. */
+const THEN_YEARS = Array.from({ length: 2025 - 1900 + 1 }, (_, i) => 2025 - i);
+
+/** What `amount` of a currency, as of the last year with price data, was worth in `year`; null when there is no price series for it. */
+function worthIn(code: string, amount: number, year: number): number | null {
+  if (!(code in CPI)) return null;
+  const c = code as InflationCurrency;
+  return adjust(c, amount, yearRange(c).last, year)?.value ?? null;
+}
+
 const FALLBACK_RATES = Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, c.fallback]));
 
 type Status = { kind: "fallback" } | { kind: "loading" } | { kind: "live"; at: string } | { kind: "error" };
@@ -27,6 +38,7 @@ export default function CurrencyConverter() {
   const [amount, setAmount] = useState("100");
   const [from, setFrom] = useState("EUR");
   const [to, setTo] = useState("USD");
+  const [thenYear, setThenYear] = useState(2000);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     setStatus({ kind: "loading" });
@@ -107,16 +119,32 @@ export default function CurrencyConverter() {
           <TrendingUp className={cx("w-3.5 h-3.5", u.accent)} />
           <span>Tassi di Cambio Riferimento (1 EUR)</span>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").map((code) => (
-            <div key={code} className={cx("flex items-center justify-between px-2 py-1.5 rounded-lg", u.panelInset)}>
-              <span className={cx("font-medium", u.muted)}>{code}</span>
-              <span className={cx("font-mono font-semibold", u.text)}>{fmtNumber(rates[code], 4)}</span>
+        <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-3 gap-y-1.5 text-xs">
+          <span />
+          <span className={cx("px-2 text-right font-medium", u.subtle)}>Oggi</span>
+          <div className="flex items-center justify-end gap-2">
+            <span className={cx("font-medium", u.subtle)}>Valeva nel</span>
+            <div className="w-24">
+              <Select value={String(thenYear)} onChange={(e) => setThenYear(Number(e.target.value))} aria-label="Anno del confronto">
+                {THEN_YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+              </Select>
             </div>
-          ))}
+          </div>
+          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").map((code) => {
+            const past = worthIn(code, rates[code], thenYear);
+            return (
+              <Fragment key={code}>
+                <span className={cx("font-medium px-2 py-1.5", u.muted)}>{code}</span>
+                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, u.text)}>{fmtNumber(rates[code], 4)}</span>
+                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, past === null ? u.muted : u.text)}>{past === null ? "—" : fmtNumber(past, 2)}</span>
+              </Fragment>
+            );
+          })}
         </div>
       </div>
-      <Notice>Cambia la valuta di partenza o di arrivo: il risultato si aggiorna subito.</Notice>
+      <Notice>
+        Cambia la valuta di partenza o di arrivo: il risultato si aggiorna subito. «Valeva nel» riporta il tasso di oggi con il potere d'acquisto dell'anno scelto, usando l'inflazione di ciascuna valuta (dollaro, yen e lira; dato fermo all'ultimo anno disponibile: 2024 dollaro, 2025 yen, 2001 lira). «—» se per quella valuta non ci sono dati o l'anno è fuori dalla sua serie.
+      </Notice>
     </Stack>
   );
 }
