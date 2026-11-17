@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Field, TextInput, Select, ResultCard, Stat, Notice, Stack } from "../ui/kit";
 import { adjust, yearRange, type InflationCurrency } from "../lib/inflation";
+import { usePersisted } from "../lib/persist";
 
 const CURRENCIES: Array<{ value: InflationCurrency; label: string; symbol: string }> = [
   { value: "EUR", label: "Euro", symbol: "€" },
@@ -29,10 +30,10 @@ const SOURCE: Record<InflationCurrency, string> = {
 const percent = (n: number) => `${n > 0 ? "+" : ""}${new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 }).format(n)}%`;
 
 export default function InflationCalculator() {
-  const [currency, setCurrency] = useState<InflationCurrency>("EUR");
-  const [amount, setAmount] = useState("100");
-  const [from, setFrom] = useState(2000);
-  const [to, setTo] = useState(2025);
+  const [currency, setCurrency] = usePersisted<InflationCurrency>("inflation:currency", "EUR");
+  const [amount, setAmount] = usePersisted("inflation:amount", "100");
+  const [from, setFrom] = usePersisted("inflation:from", 2000);
+  const [to, setTo] = usePersisted("inflation:to", 2025);
 
   const { first, last } = yearRange(currency);
   // switching currency can leave a year outside the new series: pull it back in

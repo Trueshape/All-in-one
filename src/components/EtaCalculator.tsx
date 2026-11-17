@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { DatePicker, Field, TextInput, Chips, ResultCard, Row, Panel, Notice, Stack } from "../ui/kit";
 import { UNIT_MS, computeEta, formatDuration } from "../lib/eta";
+import { usePersisted } from "../lib/persist";
 import type { TimeUnit } from "../lib/eta";
 
 const UNITS: Array<{ value: TimeUnit; label: string }> = [
@@ -36,10 +37,10 @@ const num = (v: string) => Number(v.replace(",", "."));
 
 export default function EtaCalculator() {
   const [now] = useState(() => new Date());
-  const [total, setTotal] = useState("500");
-  const [done, setDone] = useState("5");
-  const [span, setSpan] = useState("3");
-  const [unit, setUnit] = useState<TimeUnit>("minutes");
+  const [total, setTotal] = usePersisted("eta:total", "500");
+  const [done, setDone] = usePersisted("eta:done", "5");
+  const [span, setSpan] = usePersisted("eta:span", "3");
+  const [unit, setUnit] = usePersisted<TimeUnit>("eta:unit", "minutes");
   const [date, setDate] = useState(dateInput(now));
   const [time, setTime] = useState(timeInput(now));
 

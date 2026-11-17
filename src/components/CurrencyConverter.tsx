@@ -4,6 +4,7 @@ import { Field, TextInput, Select, IconButton, HeaderAction, ResultCard, Row, Pa
 import { useUi } from "../ui/tokens";
 import { CPI, adjust, yearRange, type InflationCurrency } from "../lib/inflation";
 import { historicalRate } from "../lib/fxHistory";
+import { usePersisted } from "../lib/persist";
 
 const CURRENCIES: Record<string, { name: string; symbol: string; fallback: number }> = {
   EUR: { name: "Euro", symbol: "€", fallback: 1 },
@@ -39,10 +40,10 @@ export default function CurrencyConverter() {
   const u = useUi();
   const [rates, setRates] = useState<Record<string, number>>(FALLBACK_RATES);
   const [status, setStatus] = useState<Status>({ kind: "fallback" });
-  const [amount, setAmount] = useState("100");
-  const [from, setFrom] = useState("EUR");
-  const [to, setTo] = useState("USD");
-  const [thenYear, setThenYear] = useState(2000);
+  const [amount, setAmount] = usePersisted("currency:amount", "100");
+  const [from, setFrom] = usePersisted("currency:from", "EUR");
+  const [to, setTo] = usePersisted("currency:to", "USD");
+  const [thenYear, setThenYear] = usePersisted("currency:year", 2000);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     setStatus({ kind: "loading" });

@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { usePersisted } from "../lib/persist";
 import { Gift, Heart, Moon, Wind } from "lucide-react";
 import { DatePicker, Field, TextInput, Panel, ResultCard, Row, Stat, SectionTitle, Notice, Stack, cx, fmtNumber } from "../ui/kit";
 import { useUi } from "../ui/tokens";
@@ -53,7 +54,7 @@ function computeAge(birth: Date, today: Date) {
 
 export default function AgeCalculator() {
   const u = useUi();
-  const [birthdate, setBirthdate] = useState("1995-05-15");
+  const [birthdate, setBirthdate] = usePersisted("age:birthdate", "1995-05-15");
   const today = useMemo(() => new Date(), []);
 
   const age = useMemo(() => {
