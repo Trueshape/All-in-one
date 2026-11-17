@@ -121,10 +121,10 @@ export default function TipCalculator() {
   const [bill, setBill] = useState("100");
   const [discountMode, setDiscountMode] = useState<Mode>("percent");
   const [discountPct, setDiscountPct] = useState(15);
-  const [discountFixed, setDiscountFixed] = useState("10");
+  const [discountFixed, setDiscountFixed] = useState("0");
   const [tipMode, setTipMode] = useState<Mode>("percent");
   const [tipPct, setTipPct] = useState(10);
-  const [tipFixed, setTipFixed] = useState("5");
+  const [tipFixed, setTipFixed] = useState("0");
   const [people, setPeople] = useState(2);
 
   const billValue = num(bill);
