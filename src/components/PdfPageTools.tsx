@@ -4,7 +4,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, R
 import { PDFDocument, degrees } from "pdf-lib";
 import { Button, Field, IconButton, Notice, Row, Segmented, Stack, TextInput, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import { PageThumb, PdfDrop, PdfFileBar, SinglePdf, baseName, editPdf, isPdf, pdfError, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
+import { PageThumb, PdfDrop, PdfFileBar, SinglePdf, ZoomPan, baseName, editPdf, isPdf, pdfError, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { PdfFile } from "../ui/PdfKit";
 import { formatBytes } from "../lib/imageOps";
 import { chunkPages, groupLabel, marginsForRotation, mmToPt, moveItem, parsePageList, parseRangeGroups, ptToMm } from "../lib/pdfPages";
@@ -437,8 +437,9 @@ export function PdfCrop() {
               <span className={cx("text-xs font-mono", u.muted)}>Pagina {page + 1} di {pdf.pages}</span>
               <IconButton disabled={page === pdf.pages - 1} onClick={() => setPage(page + 1)} title="Pagina successiva"><ChevronRight /></IconButton>
             </div>
+            <ZoomPan resetKey={page}>
             <div className="relative">
-              <PageThumb doc={pdf.doc} index={page} width={PREVIEW} className="shadow" />
+              <PageThumb doc={pdf.doc} index={page} width={PREVIEW} />
               {size && !tooBig && (
                 <div
                   className="absolute border-2 pointer-events-none"
@@ -453,6 +454,7 @@ export function PdfCrop() {
                 />
               )}
             </div>
+            </ZoomPan>
           </div>
         </div>
       )}

@@ -1,17 +1,59 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { chunkPages, groupLabel, groupText, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines } from "./pdfPages";
+import { MAX_ZOOM, chunkPages, clampView, groupLabel, groupText, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines, zoomAt } from "./pdfPages";
+
+test("zooming keeps the point under the cursor in place", () => {
+  const at = (v: { scale: number; x: number; y: number }, px: number, py: number) => [(px - v.x) / v.scale, (py - v.y) / v.scale];
+  const start = { scale: 1, x: 0, y: 0 };
+  const zoomed = zoomAt(start, 2, 300, 200, 600, 800);
+  assert.equal(zoomed.scale, 2);
+  assert.deepEqual(at(zoomed, 300, 200), at(start, 300, 200));
+  const again = zoomAt(zoomed, 1.5, 120, 500, 600, 800);
+  assert.ok(Math.abs(at(again, 120, 500)[0] - at(zoomed, 120, 500)[0]) < 1e-9);
+});
+
+test("the zoomed page always covers the frame, and zoom has limits", () => {
+  const v = zoomAt({ scale: 1, x: 0, y: 0 }, 2, 0, 0, 600, 800);
+  assert.deepEqual(v, { scale: 2, x: 0, y: 0 });
+  assert.deepEqual(clampView({ scale: 2, x: 100, y: -5000 }, 600, 800), { scale: 2, x: 0, y: -800 });
+  assert.equal(zoomAt(v, 0.1, 10, 10, 600, 800).scale, 1);
+  assert.deepEqual(zoomAt({ scale: 1, x: 0, y: 0 }, 0.5, 300, 400, 600, 800), { scale: 1, x: 0, y: 0 });
+  assert.equal(zoomAt({ scale: MAX_ZOOM, x: 0, y: 0 }, 3, 10, 10, 600, 800).scale, MAX_ZOOM);
+});
+
+test("fields a little apart stay separate boxes, words a normal space apart join", () => {
+  const size = 10;
+  const row = (gap: number) => groupText([
+    { str: "Nome", x: 20, y: 50, width: 24, size },
+    { str: "Rossi", x: 44 + gap, y: 50, width: 26, size },
+  ]).map((b) => b.text);
+  assert.deepEqual(row(3), ["Nome Rossi"]);
+  assert.deepEqual(row(6), ["Nome", "Rossi"]);
+  assert.deepEqual(row(12), ["Nome", "Rossi"]);
+});
+
+test("blank pieces as wide as the gap do not glue separate fields together", () => {
+  const boxes = groupText([
+    { str: "Nome:", x: 60, y: 142, width: 35, size: 12 },
+    { str: " ", x: 95, y: 142, width: 35, size: 12 },
+    { str: "Mario", x: 130, y: 142, width: 30, size: 12 },
+    { str: "Totale", x: 60, y: 202, width: 33, size: 12 },
+    { str: " ", x: 93, y: 202, width: 3.4, size: 12 },
+    { str: "netto", x: 96.4, y: 202, width: 28, size: 12 },
+  ]);
+  assert.deepEqual(boxes.map((b) => b.text), ["Nome:", "Mario", "Totale netto"]);
+});
 
 test("text pieces on one baseline join, wide gaps and other lines split", () => {
   const boxes = groupText([
     { str: "Ciao", x: 10, y: 100, width: 24, size: 12 },
-    { str: "mondo", x: 40, y: 100.4, width: 30, size: 12 },
+    { str: "mondo", x: 37.5, y: 100.4, width: 30, size: 12 },
     { str: "Colonna due", x: 300, y: 100, width: 66, size: 12 },
     { str: "Sotto", x: 10, y: 120, width: 28, size: 12 },
     { str: " ", x: 50, y: 120, width: 3, size: 12 },
   ]);
   assert.deepEqual(boxes.map((b) => b.text), ["Ciao mondo", "Colonna due", "Sotto"]);
-  assert.equal(boxes[0].width, 60);
+  assert.equal(boxes[0].width, 57.5);
   assert.equal(boxes[2].y, 120);
 });
 

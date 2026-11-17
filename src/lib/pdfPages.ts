@@ -141,9 +141,13 @@ export interface TextBox {
   family?: string;
 }
 
-/** Pieces on the same baseline are one box while the gap between them is small; a wide gap starts a new box (another column or cell). */
+/** Gap, in font sizes, up to which two pieces on one baseline are the same box: a word space is about 0.3, justified text stretches it. Anything wider is another field. */
+export const JOIN_GAP = 0.4;
+
+/** Pieces on the same baseline are one box while the gap between them is small; a wider gap starts a new box (another column, cell or form field). Better two boxes for one line than one box for two fields. */
 export function groupText(pieces: RawText[]): TextBox[] {
-  const sorted = pieces.filter((p) => p.str !== "").sort((a, b) => a.y - b.y || a.x - b.x);
+  // pdf.js puts a blank piece as wide as the gap between two separate texts: it would glue them together, so only real text counts
+  const sorted = pieces.filter((p) => p.str.trim() !== "").sort((a, b) => a.y - b.y || a.x - b.x);
   const rows: RawText[][] = [];
   for (const piece of sorted) {
     const row = rows[rows.length - 1];
@@ -155,7 +159,7 @@ export function groupText(pieces: RawText[]): TextBox[] {
     row.sort((a, b) => a.x - b.x);
     let box: TextBox | null = null;
     for (const p of row) {
-      if (box && p.x - (box.x + box.width) < p.size * 0.8) {
+      if (box && p.x - (box.x + box.width) < p.size * JOIN_GAP) {
         const gap = p.x - (box.x + box.width);
         const spaced = /\s$/.test(box.text) || /^\s/.test(p.str) || gap < p.size * 0.15 ? "" : " ";
         box.text += spaced + p.str;
@@ -169,6 +173,29 @@ export function groupText(pieces: RawText[]): TextBox[] {
     if (box) boxes.push(box);
   }
   return boxes.filter((b) => b.text.trim());
+}
+
+export interface View {
+  /** Zoom: 1 shows the whole page. */
+  scale: number;
+  /** Where the page's top-left corner sits in the frame, in px (zero or negative once zoomed in). */
+  x: number;
+  y: number;
+}
+
+export const MAX_ZOOM = 8;
+
+/** Keeps the zoomed page covering the frame, so no empty border shows. */
+export function clampView(view: View, width: number, height: number): View {
+  const scale = Math.min(MAX_ZOOM, Math.max(1, view.scale));
+  return { scale, x: Math.min(0, Math.max(width - width * scale, view.x)), y: Math.min(0, Math.max(height - height * scale, view.y)) };
+}
+
+/** Zooms by `factor` keeping the point under the cursor (px from the frame's top-left corner) where it is. */
+export function zoomAt(view: View, factor: number, px: number, py: number, width: number, height: number): View {
+  const scale = Math.min(MAX_ZOOM, Math.max(1, view.scale * factor));
+  const ratio = scale / view.scale;
+  return clampView({ scale, x: px - (px - view.x) * ratio, y: py - (py - view.y) * ratio }, width, height);
 }
 
 /** Millimeters to PDF points (1 pt = 1/72 inch). */

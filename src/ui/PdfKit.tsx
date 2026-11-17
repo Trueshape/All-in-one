@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, DragEvent, ReactNode } from "react";
 import { ChevronLeft, ChevronRight, FileText, Trash2 } from "lucide-react";
 import * as pdfjs from "pdfjs-dist";
@@ -9,6 +9,8 @@ import { Button, IconButton, Notice, Row, Stack, cx } from "./kit";
 import { useUi } from "./tokens";
 import { download, formatBytes, toBlob } from "../lib/imageOps";
 import { hexToRgb } from "../lib/color";
+import { clampView, zoomAt } from "../lib/pdfPages";
+import type { View } from "../lib/pdfPages";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 export { pdfjs };
@@ -79,6 +81,107 @@ export function startDrag(e: React.PointerEvent, stage: HTMLElement | null, from
   window.addEventListener("pointerup", up);
 }
 
+/** Largest side, in px, a page may be drawn with when zoomed in. */
+const MAX_CANVAS = 4096;
+/** How many times sharper than the screen the pages inside a ZoomPan are drawn (it follows the zoom, once it settles). */
+const ZoomQuality = createContext(1);
+
+/**
+ * A frame that zooms with the mouse wheel around the cursor and moves with the left button held down; a double click goes back to the whole page.
+ * Things inside keep working: a click that was really a move is not delivered, and items that handle their own drag are left alone.
+ */
+export function ZoomPan({ children, resetKey }: { children: ReactNode; resetKey?: unknown }) {
+  const u = useUi();
+  const frame = useRef<HTMLDivElement>(null);
+  const [view, setView] = useState<View>({ scale: 1, x: 0, y: 0 });
+  const [quality, setQuality] = useState(1);
+  const [panning, setPanning] = useState(false);
+  const live = useRef(view);
+  live.current = view;
+  const moved = useRef(false);
+
+  useEffect(() => setView({ scale: 1, x: 0, y: 0 }), [resetKey]);
+
+  // Sharper pixels once the zoom has stopped changing
+  useEffect(() => {
+    const timer = setTimeout(() => setQuality(Math.max(1, Math.ceil(view.scale))), 250);
+    return () => clearTimeout(timer);
+  }, [view.scale]);
+
+  // React registers wheel listeners as passive, which cannot stop the modal from scrolling: this one is added by hand.
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const r = el.getBoundingClientRect();
+      // the frame itself is never scaled: its size is the page's size at zoom 1
+      setView((v) => zoomAt(v, Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top, el.offsetWidth, el.offsetHeight));
+    };
+    el.addEventListener("wheel", wheel, { passive: false });
+    return () => el.removeEventListener("wheel", wheel);
+  }, []);
+
+  const down = (e: React.PointerEvent) => {
+    const el = frame.current;
+    if (!el || e.button !== 0 || live.current.scale <= 1) return;
+    if ((e.target as HTMLElement).closest("input, textarea, button, select")) return;
+    const start = { x: e.clientX, y: e.clientY, view: live.current };
+    moved.current = false;
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - start.x;
+      const dy = ev.clientY - start.y;
+      if (!moved.current && Math.hypot(dx, dy) < 4) return;
+      moved.current = true;
+      setPanning(true);
+      setView(clampView({ ...start.view, x: start.view.x + dx, y: start.view.y + dy }, el.offsetWidth, el.offsetHeight));
+    };
+    const up = () => {
+      setPanning(false);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-1.5 min-w-0">
+      <div
+        ref={frame}
+        className="relative overflow-hidden shadow max-w-full"
+        style={{ cursor: panning ? "grabbing" : view.scale > 1 ? "grab" : undefined, touchAction: view.scale > 1 ? "none" : undefined }}
+        onPointerDown={down}
+        onClickCapture={(e) => {
+          // the mouse button went up after a drag: that was a move, not a click on the page
+          if (moved.current) {
+            e.stopPropagation();
+            moved.current = false;
+          }
+        }}
+        onDoubleClick={() => setView({ scale: 1, x: 0, y: 0 })}
+      >
+        <div style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`, transformOrigin: "0 0" }}>
+          <ZoomQuality.Provider value={quality}>{children}</ZoomQuality.Provider>
+        </div>
+        {view.scale > 1 && (
+          <button
+            type="button"
+            onClick={() => setView({ scale: 1, x: 0, y: 0 })}
+            title="Torna alla pagina intera"
+            className={cx("absolute top-1.5 right-1.5 px-2 py-0.5 text-[11px] font-mono rounded cursor-pointer", u.btnSecondary)}
+          >
+            {Math.round(view.scale * 100)}% ✕
+          </button>
+        )}
+      </div>
+      <span className={cx("text-[11px]", u.muted)}>Rotella: zoom · tieni premuto e trascina: sposta · doppio clic: pagina intera</span>
+    </div>
+  );
+}
+
 /** A page with page arrows above it and a layer for things placed on it. A click on the page itself calls `onPick` with the point as fractions. */
 export function PageStage({ pdf, page, onPage, width, onPick, stageRef, children }: {
   pdf: PdfFile;
@@ -97,19 +200,21 @@ export function PageStage({ pdf, page, onPage, width, onPick, stageRef, children
         <span className={cx("text-xs font-mono", u.muted)}>Pagina {page + 1} di {pdf.pages}</span>
         <IconButton disabled={page === pdf.pages - 1} onClick={() => onPage(page + 1)} title="Pagina successiva"><ChevronRight /></IconButton>
       </div>
-      <div
-        ref={stageRef}
-        className={cx("relative overflow-hidden shadow select-none", onPick && "cursor-crosshair")}
-        onClick={(e) => {
-          if (onPick && (e.target === e.currentTarget || (e.target as HTMLElement).tagName === "CANVAS")) {
-            const { fx, fy } = fractionAt(e, e.currentTarget);
-            onPick(fx, fy);
-          }
-        }}
-      >
-        <PageThumb doc={pdf.doc} index={page} width={width} />
-        {children}
-      </div>
+      <ZoomPan resetKey={page}>
+        <div
+          ref={stageRef}
+          className={cx("relative overflow-hidden select-none", onPick && "cursor-crosshair")}
+          onClick={(e) => {
+            if (onPick && (e.target === e.currentTarget || (e.target as HTMLElement).tagName === "CANVAS")) {
+              const { fx, fy } = fractionAt(e, e.currentTarget);
+              onPick(fx, fy);
+            }
+          }}
+        >
+          <PageThumb doc={pdf.doc} index={page} width={width} />
+          {children}
+        </div>
+      </ZoomPan>
     </div>
   );
 }
@@ -320,6 +425,7 @@ export function PdfFileBar({ pdf, onClear, children }: { pdf: PdfFile; onClear: 
 /** Renders one page (0-based `index`) `width` px wide, turned by `rotation` degrees on top of the page's own rotation. */
 export function PageThumb({ doc, index, width, rotation = 0, className }: { doc: PDFDocumentProxy; index: number; width: number; rotation?: number; className?: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const quality = useContext(ZoomQuality);
   const [height, setHeight] = useState(Math.round(width * 1.414));
 
   useEffect(() => {
@@ -332,13 +438,19 @@ export function PageThumb({ doc, index, width, rotation = 0, className }: { doc:
         if (cancelled || !el) return;
         const turn = (((page.rotate + rotation) % 360) + 360) % 360;
         const base = page.getViewport({ scale: 1, rotation: turn });
-        const ratio = window.devicePixelRatio || 1;
+        // zoomed in, the page is drawn with more pixels (up to a safe size) so it stays sharp
+        const ratio = Math.min((window.devicePixelRatio || 1) * quality, MAX_CANVAS / width);
         const viewport = page.getViewport({ scale: (width / base.width) * ratio, rotation: turn });
-        el.width = Math.round(viewport.width);
-        el.height = Math.round(viewport.height);
-        setHeight(Math.round(viewport.height / ratio));
-        task = page.render({ canvas: el, viewport });
+        setHeight(Math.round((width * base.height) / base.width));
+        const off = document.createElement("canvas");
+        off.width = Math.round(viewport.width);
+        off.height = Math.round(viewport.height);
+        task = page.render({ canvas: off, viewport });
         await task.promise;
+        if (cancelled) return;
+        el.width = off.width;
+        el.height = off.height;
+        el.getContext("2d")?.drawImage(off, 0, 0);
       } catch {
         // cancelled because the page changed or the tool closed
       }
@@ -347,7 +459,7 @@ export function PageThumb({ doc, index, width, rotation = 0, className }: { doc:
       cancelled = true;
       task?.cancel();
     };
-  }, [doc, index, width, rotation]);
+  }, [doc, index, width, rotation, quality]);
 
   return <canvas ref={canvas} className={cx("block bg-white", className)} style={{ width, height }} aria-label={`Pagina ${index + 1}`} />;
 }
