@@ -2,14 +2,14 @@ export type InflationCurrency = "EUR" | "USD" | "JPY" | "ITL";
 
 /**
  * Annual average consumer price index, one series per currency (each has its own base year: only ratios are used).
- * EUR: Eurostat HICP, euro area (prc_hicp_aind, 2015 = 100), from 1996, the first year Eurostat computes it.
+ * EUR: Eurostat HICP, euro area (prc_hicp_aind, 2015 = 100), shown from 1998 (Eurostat computes it from 1996).
  * USD: US CPI-U (FRED, 1913-1989) joined at 1990 to the World Bank series FP.CPI.TOTL (1990-2024); 1900-1912 from the Jorda-Schularick-Taylor Macrohistory Database.
  * JPY: World Bank FP.CPI.TOTL for Japan (1990-2025); 1900-1989 from the Jorda-Schularick-Taylor Macrohistory Database, scaled to join at 1990.
  * ITL: ISTAT, prices for families of workers and employees (1913 = 1), from 1861 to 2001, the last year of the lira.
  */
 export const CPI: Record<InflationCurrency, Record<number, number>> = {
   EUR: {
-    1996: 71.74, 1997: 72.87, 1998: 73.67, 1999: 74.48, 2000: 76.05, 2001: 77.83, 2002: 79.58, 2003: 81.24, 2004: 82.98, 2005: 84.79,
+    1998: 73.67, 1999: 74.48, 2000: 76.05, 2001: 77.83, 2002: 79.58, 2003: 81.24, 2004: 82.98, 2005: 84.79,
     2006: 86.64, 2007: 88.49, 2008: 91.38, 2009: 91.65, 2010: 93.14, 2011: 95.66, 2012: 98.05, 2013: 99.38, 2014: 99.81, 2015: 100,
     2016: 100.23, 2017: 101.78, 2018: 103.56, 2019: 104.8, 2020: 105.06, 2021: 107.78, 2022: 116.82, 2023: 123.15, 2024: 126.07, 2025: 128.75,
   },
