@@ -360,14 +360,14 @@ export default function Landing({
                 {
                   id: "produttivita",
                   name: t("nav_produttivita"),
-                  description: "Pomodoro, timer, orologi mondiali, tornei, segnapunti e liste.",
+                  description: "Pomodoro, cronometro, orologi mondiali, tornei e segnapunti.",
                   icon: Timer,
                   count: TOOLS.filter(t => t.category === "produttivita").length,
                 },
                 {
                   id: "creative",
                   name: t("nav_creative"),
-                  description: "Decisioni casuali, QR e codici a barre, piano, grafici e prefissi.",
+                  description: "Password, QR e codici a barre, righello, IBAN, decisioni casuali, piano e grafici.",
                   icon: Palette,
                   count: TOOLS.filter(t => t.category === "creative").length,
                 },

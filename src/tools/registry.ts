@@ -190,7 +190,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-purple-900/30 hover:border-purple-500/50",
     glowClass: "shadow-purple-950/20 hover:shadow-purple-500/5",
     iconColor: "text-purple-400 bg-purple-500/10",
-    category: "produttivita",
+    category: "creative",
     component: PasswordGenerator,
   },
   {
@@ -377,7 +377,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-amber-900/30 hover:border-amber-500/50",
     glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
     iconColor: "text-amber-400 bg-amber-500/10",
-    category: "calcolo",
+    category: "creative",
     component: ScreenRuler,
   },
   {
@@ -476,7 +476,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-amber-900/30 hover:border-amber-500/50",
     glowClass: "shadow-amber-950/20 hover:shadow-amber-500/5",
     iconColor: "text-amber-400 bg-amber-500/10",
-    category: "calcolo",
+    category: "creative",
     component: CryptoAndNasdaqTracker,
   },
   {
