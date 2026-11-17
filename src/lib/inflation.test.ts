@@ -27,7 +27,7 @@ test("going back in time is the inverse", () => {
 
 test("a year without data gives null and the ranges match the series", () => {
   assert.equal(adjust("EUR", 1, 1990, 2000), null);
-  assert.deepEqual(yearRange("EUR"), { first: 1998, last: 2025 });
+  assert.deepEqual(yearRange("EUR"), { first: 1999, last: 2025 });
   assert.deepEqual(yearRange("USD"), { first: 1900, last: 2024 });
   assert.deepEqual(yearRange("JPY"), { first: 1900, last: 2025 });
   assert.deepEqual(yearRange("ITL"), { first: 1861, last: 2001 });

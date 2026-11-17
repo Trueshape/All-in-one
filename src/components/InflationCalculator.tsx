@@ -10,7 +10,7 @@ const CURRENCIES: Array<{ value: InflationCurrency; label: string; symbol: strin
 ];
 
 const SOURCE: Record<InflationCurrency, string> = {
-  EUR: "Eurostat (indice HICP dell'area euro, dal 1998)",
+  EUR: "Eurostat (indice HICP dell'area euro, dal 1999)",
   USD: "FRED e Banca Mondiale (prezzi al consumo degli Stati Uniti), prima del 1913 Macrohistory Database",
   JPY: "Banca Mondiale (prezzi al consumo del Giappone) dal 1990, prima Macrohistory Database",
   ITL: "ISTAT (prezzi al consumo delle famiglie di operai e impiegati), fino al 2001, ultimo anno della lira",
