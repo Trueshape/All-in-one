@@ -225,7 +225,7 @@ export default function ToolModal({
             </div>
 
             {/* Scrollable Modal Content Workspace */}
-            <div className={tc.modalBody} data-tool-body>
+            <div className={`${tc.modalBody} grow`} data-tool-body>
               <UiContext.Provider value={UI_TOKENS[activeTheme]}>
                <InfoContext.Provider value={showInfo}>
                 <HeaderActionsContext.Provider value={{ el: actionsEl, buttonClass: `${tc.borderClass} ${tc.btnClassic}` }}>
