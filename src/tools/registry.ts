@@ -290,7 +290,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "bmi",
-    name: "Calcolo Indice BMI",
+    name: "Indice BMI",
     description: "Misura l'indice di massa corporea, il peso ideale e stima il grasso corporeo in pochi secondi.",
     icon: Scale,
     colorClass: "border-teal-900/30 hover:border-teal-500/50",
@@ -356,7 +356,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "circle_calc",
-    name: "Calcolo circonferenza",
+    name: "Circonferenza",
     description: "Calcola in tempo reale area, circonferenza, diametro e raggio di un cerchio partendo da una qualsiasi misura.",
     icon: Circle,
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
@@ -477,7 +477,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "codice_fiscale_calc",
-    name: "Calcolo Codice Fiscale",
+    name: "Codice fiscale",
     description: "Genera il codice fiscale italiano ufficiale inserendo dati anagrafici e comune di nascita.",
     icon: Fingerprint,
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
