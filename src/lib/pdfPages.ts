@@ -42,31 +42,6 @@ export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
   return next;
 }
 
-export interface Margins {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
-/**
- * Margins seen on screen → margins on the page's own edges. A page with /Rotate 90 is shown turned clockwise,
- * so what looks like its top is its left edge, and so on.
- */
-export function marginsForRotation(seen: Margins, rotation: number): Margins {
-  const { top, right, bottom, left } = seen;
-  switch (((rotation % 360) + 360) % 360) {
-    case 90:
-      return { left: top, top: right, right: bottom, bottom: left };
-    case 180:
-      return { bottom: top, left: right, top: bottom, right: left };
-    case 270:
-      return { right: top, bottom: right, left: bottom, top: left };
-    default:
-      return seen;
-  }
-}
-
 export interface TextPiece {
   str: string;
   x: number;
@@ -304,4 +279,3 @@ export function inkBounds(rgba: Uint8ClampedArray, width: number, height: number
 
 /** Millimeters to PDF points (1 pt = 1/72 inch). */
 export const mmToPt = (mm: number) => (mm * 72) / 25.4;
-export const ptToMm = (pt: number) => (pt * 25.4) / 72;

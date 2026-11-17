@@ -121,8 +121,6 @@ export const getToolModalSize = (toolId: string): string => {
     case "pdf_merge":
     case "pdf_split":
       return "max-w-3xl";
-    case "pdf_crop":
-      return "max-w-5xl";
     case "pdf_remove_pages":
     case "pdf_edit_text":
     case "audio_tags":

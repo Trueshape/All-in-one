@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MAX_ZOOM, inkBounds, inkColour, ringBackground, chunkPages, clampView, groupLabel, groupText, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines, zoomAt } from "./pdfPages";
+import { MAX_ZOOM, inkBounds, inkColour, ringBackground, chunkPages, clampView, groupLabel, groupText, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines, zoomAt } from "./pdfPages";
 
 test("zooming keeps the point under the cursor in place", () => {
   const at = (v: { scale: number; x: number; y: number }, px: number, py: number) => [(px - v.x) / v.scale, (py - v.y) / v.scale];
@@ -97,15 +97,6 @@ test("chunks keep the order and a shorter last group", () => {
 test("moveItem moves one item and keeps the others in order", () => {
   assert.deepEqual(moveItem(["a", "b", "c", "d"], 0, 2), ["b", "c", "a", "d"]);
   assert.deepEqual(moveItem(["a", "b", "c", "d"], 3, 0), ["d", "a", "b", "c"]);
-});
-
-test("margins follow the page rotation", () => {
-  const seen = { top: 1, right: 2, bottom: 3, left: 4 };
-  assert.deepEqual(marginsForRotation(seen, 0), seen);
-  assert.deepEqual(marginsForRotation(seen, 90), { left: 1, top: 2, right: 3, bottom: 4 });
-  assert.deepEqual(marginsForRotation(seen, 180), { bottom: 1, left: 2, top: 3, right: 4 });
-  assert.deepEqual(marginsForRotation(seen, 270), { right: 1, bottom: 2, left: 3, top: 4 });
-  assert.deepEqual(marginsForRotation(seen, -90), marginsForRotation(seen, 270));
 });
 
 test("text pieces become lines from top to bottom", () => {

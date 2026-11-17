@@ -78,7 +78,6 @@ import {
   FileMinus,
   RotateCw,
   ListOrdered,
-  Crop,
   Stamp,
   FileCog,
   TextCursorInput,
@@ -146,7 +145,6 @@ const PdfSplit = lazy(() => import("../components/PdfPageTools").then((m) => ({ 
 const PdfRemovePages = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfRemovePages })));
 const PdfRotate = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfRotate })));
 const PdfReorder = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfReorder })));
-const PdfCrop = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfCrop })));
 const PdfWatermark = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfWatermark })));
 const PdfProperties = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfProperties })));
 const PdfAddText = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfAddText })));
@@ -787,17 +785,6 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-rose-400 bg-rose-500/10",
     category: "pdf",
     component: PdfReorder,
-  },
-  {
-    id: "pdf_crop",
-    name: "Ritaglia",
-    description: "Togli i margini da una pagina o da tutte, in millimetri.",
-    icon: Crop,
-    colorClass: "border-rose-900/30 hover:border-rose-500/50",
-    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
-    iconColor: "text-rose-400 bg-rose-500/10",
-    category: "pdf",
-    component: PdfCrop,
   },
   {
     id: "pdf_watermark",

@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, RotateCcw, RotateCw, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, RotateCw, Trash2, X } from "lucide-react";
 import { PDFDocument, degrees } from "pdf-lib";
-import { Button, Field, IconButton, Notice, Row, Segmented, Stack, TextInput, cx } from "../ui/kit";
+import { Button, Field, IconButton, Notice, Segmented, Stack, TextInput, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { useUnsaved } from "../ui/unsaved";
-import { PageThumb, PdfDrop, PdfFileBar, SAMPLE_PAGES, SAMPLE_SIZE, SampleSheet, SinglePdf, ZoomPan, baseName, editPdf, isPdf, pdfError, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
+import { PageThumb, PdfDrop, PdfFileBar, SAMPLE_PAGES, SampleSheet, SinglePdf, baseName, editPdf, isPdf, pdfError, savePdf, usePdf, useSaver } from "../ui/PdfKit";
 import type { PdfFile } from "../ui/PdfKit";
 import { formatBytes } from "../lib/imageOps";
-import { chunkPages, groupLabel, marginsForRotation, mmToPt, moveItem, parsePageList, parseRangeGroups, ptToMm } from "../lib/pdfPages";
+import { chunkPages, groupLabel, moveItem, parsePageList, parseRangeGroups } from "../lib/pdfPages";
 
 const THUMB = 132;
 /** Long PDFs scroll inside this box, so the window keeps its size. */
@@ -484,132 +484,6 @@ export function PdfReorder() {
           </PdfFileBar>
           {body(pdf)}
         </>
-      )}
-    </SinglePdf>
-  );
-}
-
-/* ---------------- Ritaglia ---------------- */
-
-const SIDES = [
-  { key: "top", label: "Sopra" },
-  { key: "right", label: "Destra" },
-  { key: "bottom", label: "Sotto" },
-  { key: "left", label: "Sinistra" },
-] as const;
-
-export function PdfCrop() {
-  const u = useUi();
-  const state = usePdf();
-  const [page, setPage] = useState(0);
-  const [scope, setScope] = useState<"all" | "one">("all");
-  const [mm, setMm] = useState({ top: "10", right: "10", bottom: "10", left: "10" });
-  const saver = useSaver();
-  // without a PDF the margins are measured on a made-up A4 page
-  const size = usePageSize(state.pdf?.doc, page) ?? (state.pdf ? null : SAMPLE_SIZE);
-
-  const margins = { top: Number(mm.top) || 0, right: Number(mm.right) || 0, bottom: Number(mm.bottom) || 0, left: Number(mm.left) || 0 };
-  const wMm = size ? ptToMm(size.width) : 0;
-  const hMm = size ? ptToMm(size.height) : 0;
-  const tooBig = !!size && (margins.left + margins.right >= wMm || margins.top + margins.bottom >= hMm);
-  const negative = Object.values(margins).some((v) => v < 0);
-  // keeps the preview column about as tall as the margins column
-  const PREVIEW = 300;
-
-  const save = (pdf: PdfFile) =>
-    saver.run(async () => {
-      const doc = await editPdf(pdf.bytes);
-      const pages = doc.getPages();
-      for (const [i, p] of pages.entries()) {
-        if (scope === "one" && i !== page) continue;
-        const m = marginsForRotation(margins, p.getRotation().angle);
-        const box = p.getCropBox();
-        const width = box.width - mmToPt(m.left + m.right);
-        const height = box.height - mmToPt(m.top + m.bottom);
-        if (width <= 0 || height <= 0) throw new Error(`I margini sono più grandi della pagina ${i + 1}.`);
-        p.setMediaBox(box.x + mmToPt(m.left), box.y + mmToPt(m.bottom), width, height);
-        p.setCropBox(box.x + mmToPt(m.left), box.y + mmToPt(m.bottom), width, height);
-      }
-      savePdf(await doc.save(), `${pdf.name}_ritagliato.pdf`);
-    });
-
-  const controls = (
-    <>
-      <Segmented fill value={scope} onChange={setScope} options={[{ value: "all", label: "Tutte le pagine" }, { value: "one", label: "Solo questa pagina" }]} />
-      <div className="grid grid-cols-2 gap-3">
-        {SIDES.map((s) => (
-          <Field key={s.key} label={s.label}>
-            <TextInput type="number" inputMode="decimal" min={0} step="any" value={mm[s.key]} onChange={(e) => setMm({ ...mm, [s.key]: e.target.value })} suffixText="mm" />
-          </Field>
-        ))}
-      </div>
-      {size && (
-        <div className="space-y-1">
-          <Row label="Pagina" value={`${wMm.toFixed(0)} × ${hMm.toFixed(0)} mm`} />
-          <Row label="Dopo il ritaglio" value={tooBig ? "—" : `${(wMm - margins.left - margins.right).toFixed(0)} × ${(hMm - margins.top - margins.bottom).toFixed(0)} mm`} />
-        </div>
-      )}
-      {(tooBig || negative) && <Notice tone="warn">{negative ? "I margini non possono essere negativi." : "I margini sono più grandi della pagina."}</Notice>}
-      {saver.error && <Notice tone="error">{saver.error}</Notice>}
-    </>
-  );
-
-  /** The page (real or made-up) with the part that stays shown bright and the rest dimmed. */
-  const frame = size && !tooBig && (
-    <div
-      className="absolute border-2 pointer-events-none"
-      style={{
-        borderColor: u.accentHex,
-        boxShadow: "0 0 0 9999px rgba(0,0,0,0.45)",
-        left: `${(margins.left / wMm) * 100}%`,
-        right: `${(margins.right / wMm) * 100}%`,
-        top: `${(margins.top / hMm) * 100}%`,
-        bottom: `${(margins.bottom / hMm) * 100}%`,
-      }}
-    />
-  );
-
-  return (
-    <SinglePdf
-      state={{ ...state, clear: () => { state.clear(); setPage(0); } }}
-      info="I margini si misurano dal bordo della pagina come la vedi. Il ritaglio nasconde il contenuto fuori dal riquadro, ma non lo cancella dal file."
-      empty={(drop) => (
-        <>
-          {drop}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4 min-w-0 md:order-last">{controls}</div>
-            <div className="space-y-3 min-w-0 flex flex-col items-center">
-              <span className={cx("text-xs font-mono", u.muted)}>Pagina d'esempio</span>
-              <ZoomPan resetKey="sample">
-                <SampleSheet width={PREVIEW}>{frame}</SampleSheet>
-              </ZoomPan>
-            </div>
-          </div>
-        </>
-      )}
-    >
-      {(pdf) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4 min-w-0 md:order-last">
-            <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }}>
-              <Button variant="primary" disabled={tooBig || negative || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
-            </PdfFileBar>
-            {controls}
-          </div>
-          <div className="space-y-3 min-w-0 flex flex-col items-center">
-            <div className="flex items-center gap-3">
-              <IconButton disabled={page === 0} onClick={() => setPage(page - 1)} title="Pagina precedente"><ChevronLeft /></IconButton>
-              <span className={cx("text-xs font-mono", u.muted)}>Pagina {page + 1} di {pdf.pages}</span>
-              <IconButton disabled={page === pdf.pages - 1} onClick={() => setPage(page + 1)} title="Pagina successiva"><ChevronRight /></IconButton>
-            </div>
-            <ZoomPan resetKey={page}>
-              <div className="relative">
-                <PageThumb doc={pdf.doc} index={page} width={PREVIEW} />
-                {frame}
-              </div>
-            </ZoomPan>
-          </div>
-        </div>
       )}
     </SinglePdf>
   );
