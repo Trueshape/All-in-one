@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Percent, Users } from "lucide-react";
+import { Euro, Percent, Users } from "lucide-react";
 import { Field, TextInput, Chips, Tabs, ResultCard, Row, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
@@ -154,7 +154,7 @@ export default function TipCalculator() {
       </Field>
 
       <AmountControl
-        icon={<Percent className="w-3.5 h-3.5" />}
+        icon={discountMode === "percent" ? <Percent className="w-3.5 h-3.5" /> : <Euro className="w-3.5 h-3.5" />}
         label="Sconto"
         color={COLORS.discount}
         max={100}
@@ -168,7 +168,7 @@ export default function TipCalculator() {
         tabs
       />
       <AmountControl
-        icon={<Percent className="w-3.5 h-3.5" />}
+        icon={tipMode === "percent" ? <Percent className="w-3.5 h-3.5" /> : <Euro className="w-3.5 h-3.5" />}
         label="Mancia"
         color={COLORS.tip}
         max={50}
