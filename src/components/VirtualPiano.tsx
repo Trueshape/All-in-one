@@ -20,6 +20,10 @@ export default function VirtualPiano() {
   const voices = useRef(new Map<number, { osc: OscillatorNode; gain: GainNode }>());
   const settings = useRef({ wave, volume });
   settings.current = { wave, volume };
+  // What each held computer key and each pointer started: a release always stops what its own press started,
+  // whatever the modifiers, the octave or the layout are by then.
+  const heldKeys = useRef(new Map<string, number>());
+  const heldPointers = useRef(new Map<number, number>());
 
   const start = (midi: number) => {
     if (voices.current.has(midi)) return;
@@ -51,6 +55,12 @@ export default function VirtualPiano() {
     setActive((s) => { const next = new Set(s); next.delete(midi); return next; });
   };
 
+  const stopAll = () => {
+    heldKeys.current.clear();
+    heldPointers.current.clear();
+    [...voices.current.keys()].forEach(stop);
+  };
+
   // Computer keyboard: the first keys of the piano, starting from its lowest C.
   useEffect(() => {
     const midiFor = (e: KeyboardEvent) => {
@@ -60,11 +70,43 @@ export default function VirtualPiano() {
       const i = KEYBOARD.indexOf(e.key.toLowerCase());
       return i < 0 ? null : keys[0].midi + i;
     };
-    const down = (e: KeyboardEvent) => { const m = midiFor(e); if (m !== null && !e.repeat) start(m); };
-    const up = (e: KeyboardEvent) => { const m = midiFor(e); if (m !== null) stop(m); };
+    const down = (e: KeyboardEvent) => {
+      const m = midiFor(e);
+      if (m === null || e.repeat) return;
+      heldKeys.current.set(e.code, m);
+      start(m);
+    };
+    // Looked up by the physical key: Shift, Ctrl or a focus change in between must not leave the note on.
+    const up = (e: KeyboardEvent) => {
+      const m = heldKeys.current.get(e.code);
+      if (m === undefined) return;
+      heldKeys.current.delete(e.code);
+      stop(m);
+    };
+    // The page never sees the key or the button go up when the window loses focus or the pointer is released elsewhere.
+    const pointerUp = (e: PointerEvent) => {
+      const m = heldPointers.current.get(e.pointerId);
+      if (m === undefined) return;
+      heldPointers.current.delete(e.pointerId);
+      stop(m);
+    };
+    const hidden = () => { if (document.hidden) stopAll(); };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
-    return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); };
+    window.addEventListener("pointerup", pointerUp);
+    window.addEventListener("pointercancel", pointerUp);
+    window.addEventListener("blur", stopAll);
+    document.addEventListener("visibilitychange", hidden);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("pointerup", pointerUp);
+      window.removeEventListener("pointercancel", pointerUp);
+      window.removeEventListener("blur", stopAll);
+      document.removeEventListener("visibilitychange", hidden);
+      // another octave means other notes: what is held now would never be released
+      stopAll();
+    };
   }, [keys]);
 
   useEffect(() => () => {
@@ -77,9 +119,16 @@ export default function VirtualPiano() {
     const i = midi - keys[0].midi;
     return i < KEYBOARD.length ? KEYBOARD[i].toUpperCase() : "";
   };
-  const press = (midi: number) => (e: React.PointerEvent) => { e.preventDefault(); start(midi); };
-  const release = (midi: number) => () => stop(midi);
-  const enter = (midi: number) => (e: React.PointerEvent) => { if (e.buttons === 1) start(midi); };
+  const press = (midi: number) => (e: React.PointerEvent) => { e.preventDefault(); heldPointers.current.set(e.pointerId, midi); start(midi); };
+  const release = (midi: number) => (e: React.PointerEvent) => {
+    if (heldPointers.current.get(e.pointerId) === midi) heldPointers.current.delete(e.pointerId);
+    stop(midi);
+  };
+  const enter = (midi: number) => (e: React.PointerEvent) => {
+    if (e.buttons !== 1) return;
+    heldPointers.current.set(e.pointerId, midi);
+    start(midi);
+  };
 
   const blackWidth = 0.62 / whiteCount;
   const keyHandlers = (midi: number) => ({ onPointerDown: press(midi), onPointerUp: release(midi), onPointerLeave: release(midi), onPointerCancel: release(midi), onPointerEnter: enter(midi) });
