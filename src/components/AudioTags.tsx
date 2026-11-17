@@ -3,6 +3,7 @@ import { Music } from "lucide-react";
 import { Button, Field, TextArea, TextInput, Notice, Stack } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { useUnsavedFlag } from "../ui/unsaved";
+import { ALLOW, keepAllowed } from "../lib/inputGuards";
 import { PdfDrop } from "../ui/PdfKit";
 import { EMPTY_TAGS, detectFormat, readTags, writeTags } from "../lib/audioTags";
 import type { Tags, TagFormat } from "../lib/audioTags";
@@ -148,7 +149,7 @@ export default function AudioTags() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {COLUMNS.map((c) => (
               <Field key={c.key} label={c.label}>
-                <TextInput value={single.tags[c.key]} onChange={(e) => patch(single.id, { [c.key]: e.target.value })} inputMode={c.key === "year" || c.key === "track" ? "numeric" : undefined} maxLength={c.key === "year" ? 4 : undefined} />
+                <TextInput value={single.tags[c.key]} allow={c.key === "year" ? ALLOW.digits : c.key === "track" ? ALLOW.trackNumber : undefined} maxLength={c.key === "year" ? 4 : c.key === "track" ? 7 : 200} onChange={(e) => patch(single.id, { [c.key]: e.target.value })} inputMode={c.key === "year" || c.key === "track" ? "numeric" : undefined} />
               </Field>
             ))}
             <div className="sm:col-span-2">
@@ -180,7 +181,7 @@ export default function AudioTags() {
                           <input
                             value={it.tags[c.key]}
                             onFocus={() => setActive(it.id)}
-                            onChange={(e) => patch(it.id, { [c.key]: e.target.value })}
+                            onChange={(e) => patch(it.id, { [c.key]: c.key === "year" ? keepAllowed(e.target.value, ALLOW.digits, 4) : c.key === "track" ? keepAllowed(e.target.value, ALLOW.trackNumber, 7) : e.target.value })}
                             className={`${c.width} bg-transparent px-1.5 py-1 outline-none rounded focus:bg-white/10`}
                             aria-label={`${c.label} di ${it.name}`}
                           />
@@ -198,7 +199,7 @@ export default function AudioTags() {
                 <div className="grid grid-cols-2 gap-3">
                   {BULK.map((b) => (
                     <Field key={b.key} label={b.label}>
-                      <TextInput value={bulk[b.key] ?? ""} onChange={(e) => setBulk((s) => ({ ...s, [b.key]: e.target.value }))} disabled={bulkCount === 0} />
+                      <TextInput value={bulk[b.key] ?? ""} allow={b.key === "year" ? ALLOW.digits : undefined} maxLength={b.key === "year" ? 4 : 200} onChange={(e) => setBulk((s) => ({ ...s, [b.key]: e.target.value }))} disabled={bulkCount === 0} />
                     </Field>
                   ))}
                 </div>

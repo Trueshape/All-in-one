@@ -59,7 +59,7 @@ export function LookupTable<T>({
 
   return (
     <>
-      <TextInput className="h-11" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder} aria-label="Cerca" />
+      <TextInput className="h-11" maxLength={60} value={query} onChange={(e) => setQuery(e.target.value)} placeholder={placeholder} aria-label="Cerca" />
       <div className={cx("overflow-auto max-h-[52vh] border", u.divider)}>
         <table className="w-full text-sm">
           <thead>

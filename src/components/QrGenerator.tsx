@@ -112,7 +112,7 @@ export default function QrGenerator() {
           ) : (
             <>
               <Field label="Nome rete (SSID)">
-                <TextInput value={ssid} onChange={(e) => setSsid(e.target.value)} placeholder="Nome della rete" />
+                <TextInput value={ssid} maxLength={32} onChange={(e) => setSsid(e.target.value)} placeholder="Nome della rete" />
               </Field>
               <Field label="Protezione">
                 <Select value={security} onChange={(e) => setSecurity(e.target.value)}>
@@ -123,7 +123,7 @@ export default function QrGenerator() {
               </Field>
               {security !== "nopass" && (
                 <Field label="Password">
-                  <TextInput type="password" autoComplete="off" value={wifiPassword} onChange={(e) => setWifiPassword(e.target.value)} placeholder="Password di rete" />
+                  <TextInput type="password" autoComplete="off" maxLength={63} value={wifiPassword} onChange={(e) => setWifiPassword(e.target.value)} placeholder="Password di rete" />
                 </Field>
               )}
             </>

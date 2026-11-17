@@ -57,7 +57,7 @@ export default function InflationCalculator() {
             </Select>
           </Field>
           <Field label="Importo">
-            <TextInput type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} prefixText={CURRENCIES.find((c) => c.value === currency)!.symbol} />
+            <TextInput type="number" min="0" max="1000000000000" decimals={2} value={amount} onChange={(e) => setAmount(e.target.value)} prefixText={CURRENCIES.find((c) => c.value === currency)!.symbol} />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Dall'anno">

@@ -6,6 +6,7 @@ import { useUi } from "../ui/tokens";
 import { COMUNI, encode } from "../lib/codiceFiscale";
 import type { EncodeParts } from "../lib/codiceFiscale";
 import CodiceFiscaleInverse from "./CodiceFiscaleInverse";
+import { ALLOW } from "../lib/inputGuards";
 
 export default function CodiceFiscaleCalculator() {
   const u = useUi();
@@ -46,8 +47,8 @@ export default function CodiceFiscaleCalculator() {
         <>
           <form onSubmit={submit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Cognome"><TextInput value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="es. Rossi" autoComplete="off" /></Field>
-              <Field label="Nome"><TextInput value={name} onChange={(e) => setName(e.target.value)} placeholder="es. Mario" autoComplete="off" /></Field>
+              <Field label="Cognome"><TextInput value={surname} allow={ALLOW.personName} maxLength={40} onChange={(e) => setSurname(e.target.value)} placeholder="es. Rossi" autoComplete="off" /></Field>
+              <Field label="Nome"><TextInput value={name} allow={ALLOW.personName} maxLength={40} onChange={(e) => setName(e.target.value)} placeholder="es. Mario" autoComplete="off" /></Field>
               <Field label="Data di nascita"><DatePicker value={birthDate} onChange={setBirthDate} /></Field>
               <Field label="Sesso">
                 <Segmented fill value={sex} onChange={setSex} options={[{ value: "M", label: "Maschio" }, { value: "F", label: "Femmina" }]} />
@@ -65,7 +66,7 @@ export default function CodiceFiscaleCalculator() {
                 </Select>
               ) : (
                 <Field label="Codice Belfiore" hint="Codice catastale di 4 caratteri del comune (es. D612 per Firenze) o dello Stato estero (inizia con Z).">
-                  <TextInput value={customCode} onChange={(e) => setCustomCode(e.target.value.toUpperCase())} maxLength={4} placeholder="es. H501" className="uppercase tracking-widest" />
+                  <TextInput value={customCode} allow={ALLOW.lettersDigits} onChange={(e) => setCustomCode(e.target.value.toUpperCase())} maxLength={4} placeholder="es. H501" className="uppercase tracking-widest" />
                 </Field>
               )}
             </Panel>

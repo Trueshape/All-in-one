@@ -111,7 +111,7 @@ function AmountControl({
       {mode === "percent" ? (
         <input type="range" min={0} max={max} value={percent} onChange={(e) => onPercent(Number(e.target.value))} className="w-full cursor-pointer" style={{ accentColor: color }} />
       ) : (
-        <TextInput type="number" inputMode="decimal" min="0" step="0.01" value={fixed} onChange={(e) => onFixed(e.target.value)} prefixText="€" placeholder="0,00" />
+        <TextInput type="number" inputMode="decimal" min="0" max="1000000000" decimals={2} step="0.01" value={fixed} onChange={(e) => onFixed(e.target.value)} prefixText="€" placeholder="0,00" />
       )}
     </div>
   );
@@ -146,7 +146,7 @@ export default function TipCalculator() {
   return (
     <Stack>
       <Field label="Importo del conto">
-        <TextInput type="number" inputMode="decimal" min="0" step="0.01" value={bill} onChange={(e) => setBill(e.target.value)} prefixText="€" placeholder="0,00" />
+        <TextInput type="number" inputMode="decimal" min="0" max="1000000000" decimals={2} step="0.01" value={bill} onChange={(e) => setBill(e.target.value)} prefixText="€" placeholder="0,00" />
       </Field>
 
       <AmountControl

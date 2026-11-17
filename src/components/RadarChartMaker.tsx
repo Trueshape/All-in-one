@@ -74,7 +74,7 @@ export default function RadarChartMaker() {
                   <tr key={i} className={cx("border-t", u.divider)}>
                     <td className="px-2 py-1 min-w-28"><TextInput className="h-8 px-2 text-xs" value={axis} aria-label={`Nome asse ${i + 1}`} onChange={(e) => setAxis(i, e.target.value)} /></td>
                     {data.series.map((s, k) => (
-                      <td key={k} className="px-1 py-1"><TextInput className="h-8 px-2 text-xs" type="number" inputMode="decimal" min={0} step="any" value={s.values[i]} aria-label={`${axis} · ${s.name}`} onChange={(e) => setValue(k, i, e.target.value)} /></td>
+                      <td key={k} className="px-1 py-1"><TextInput className="h-8 px-2 text-xs" type="number" inputMode="decimal" min={0} max={1000000} decimals={2} step="any" value={s.values[i]} aria-label={`${axis} · ${s.name}`} onChange={(e) => setValue(k, i, e.target.value)} /></td>
                     ))}
                     <td className="px-1 py-1">{data.axes.length > MIN_AXES && <IconButton onClick={() => removeAxis(i)} title="Rimuovi asse"><X className="w-3 h-3" /></IconButton>}</td>
                   </tr>
@@ -87,7 +87,7 @@ export default function RadarChartMaker() {
             <Button size="sm" disabled={data.series.length >= MAX_SERIES} icon={<Plus className="w-3.5 h-3.5" />} onClick={addSeries}>Serie</Button>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Valore massimo"><TextInput type="number" inputMode="decimal" min={1} step="any" value={max} onChange={(e) => setMax(e.target.value)} /></Field>
+            <Field label="Valore massimo"><TextInput type="number" inputMode="decimal" min={1} max={1000000} decimals={2} step="any" value={max} onChange={(e) => setMax(e.target.value)} /></Field>
             <Field label="Cerchi"><Chips value={rings} onChange={setRings} options={[3, 4, 5, 6, 8].map((n) => ({ value: n, label: String(n) }))} /></Field>
           </div>
         </div>

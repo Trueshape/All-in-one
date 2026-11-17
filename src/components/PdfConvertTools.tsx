@@ -8,6 +8,7 @@ import { ImageDrop } from "../ui/ImageDrop";
 import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, SAMPLE_SIZE, SampleStage, SinglePdf, editPdf, embedImage, pdfColor, pdfPoint, pdfjs, readImage, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { download, toBlob } from "../lib/imageOps";
+import { ALLOW } from "../lib/inputGuards";
 import { groupText, inkBounds, inkColour, mmToPt, moveItem, parsePageList, piecesToLines, ringBackground } from "../lib/pdfPages";
 import type { RawText, TextBox } from "../lib/pdfPages";
 
@@ -160,7 +161,7 @@ export function PdfConvert() {
 
   const pageField = (
     <Field label="Pagine" hint="Lascia vuoto per tutte, oppure scrivi per esempio 1-3, 5.">
-      <TextInput value={pages} placeholder="Tutte" onChange={(e) => setPages(e.target.value)} />
+      <TextInput value={pages} allow={ALLOW.pages} maxLength={80} placeholder="Tutte" onChange={(e) => setPages(e.target.value)} />
     </Field>
   );
 

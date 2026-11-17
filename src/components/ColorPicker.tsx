@@ -5,6 +5,7 @@ import { ColorWheel, HARMONY_NAMES } from "../ui/ColorWheel";
 import { useUi } from "../ui/tokens";
 import { contrastRatio, harmonies, hexToRgb, hslToHex, rgbToHex, rgbToHsl } from "../lib/color";
 import type { Rgb } from "../lib/color";
+import { ALLOW } from "../lib/inputGuards";
 
 /** The colour is kept as hex and as HSL together: dragging the wheel keeps the exact hue even where it is lost in hex (black, white, grey). */
 interface Color {
@@ -84,7 +85,7 @@ export default function ColorPicker() {
         <div className="space-y-2">
           <div className={cx("h-12 border", u.divider, u.id === "sophisticated" ? "rounded-2xl" : u.id === "artistic" ? "rounded" : "")} style={{ backgroundColor: hex }} />
           <Field label="Codice HEX">
-            <TextInput value={draft} onChange={(e) => onDraft(e.target.value)} maxLength={7} spellCheck={false} />
+            <TextInput value={draft} allow={ALLOW.hexColor} onChange={(e) => onDraft(e.target.value)} maxLength={7} spellCheck={false} />
           </Field>
           {formats.map((f) => (
             <Panel key={f.label} className="flex items-center justify-between py-2">

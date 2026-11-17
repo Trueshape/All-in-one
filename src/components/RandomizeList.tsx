@@ -32,7 +32,7 @@ export default function RandomizeList() {
       </div>
       <div className="flex flex-wrap items-end gap-4">
         <Field label="Prendi solo i primi">
-          <TextInput className="w-28" type="number" inputMode="numeric" min={1} max={count || undefined} value={take} onChange={(e) => setTake(e.target.value)} placeholder="Tutti" />
+          <TextInput className="w-28" type="number" inputMode="numeric" integer min={1} max={count || undefined} value={take} onChange={(e) => setTake(e.target.value)} placeholder="Tutti" />
         </Field>
         <Toggle checked={numbered} onChange={setNumbered} label="Numera" />
         <Button variant="primary" disabled={count === 0} icon={<Shuffle className="w-4 h-4" />} onClick={run}>Mescola</Button>

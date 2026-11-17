@@ -59,15 +59,15 @@ export default function EtaCalculator() {
       <div className="space-y-6">
         <div className="space-y-4">
           <Field label="Totale">
-            <TextInput type="number" inputMode="decimal" value={total} onChange={(e) => setTotal(e.target.value)} />
+            <TextInput type="number" inputMode="decimal" min="0" max="1000000000" decimals={3} value={total} onChange={(e) => setTotal(e.target.value)} />
           </Field>
           <Field label="Ritmo">
             <div className="grid grid-cols-2 items-start gap-3">
               <div className="space-y-2">
-                <TextInput type="number" inputMode="decimal" value={done} onChange={(e) => setDone(e.target.value)} />
+                <TextInput type="number" inputMode="decimal" min="0" max="1000000000" decimals={3} value={done} onChange={(e) => setDone(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <TextInput type="number" inputMode="decimal" value={span} onChange={(e) => setSpan(e.target.value)} prefixText="ogni" />
+                <TextInput type="number" inputMode="decimal" min="0" max="1000000000" decimals={3} value={span} onChange={(e) => setSpan(e.target.value)} prefixText="ogni" />
                 <Chips value={unit} onChange={setUnit} options={UNITS} />
               </div>
             </div>

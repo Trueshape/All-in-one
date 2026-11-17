@@ -140,8 +140,8 @@ export default function ImageConverter({ image }: { image: ImageSourceState }) {
         <div className="space-y-4">
           <SectionTitle>Opzioni</SectionTitle>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Larghezza (px)"><TextInput type="number" min="1" max={MAX_SIDE} disabled={!source} value={width} onChange={(e) => onWidth(e.target.value)} /></Field>
-            <Field label="Altezza (px)"><TextInput type="number" min="1" max={MAX_SIDE} disabled={!source} value={height} onChange={(e) => onHeight(e.target.value)} /></Field>
+            <Field label="Larghezza (px)"><TextInput type="number" integer min="1" max={MAX_SIDE} disabled={!source} value={width} onChange={(e) => onWidth(e.target.value)} /></Field>
+            <Field label="Altezza (px)"><TextInput type="number" integer min="1" max={MAX_SIDE} disabled={!source} value={height} onChange={(e) => onHeight(e.target.value)} /></Field>
           </div>
           <Toggle checked={lock} onChange={setLock} label="Mantieni proporzioni" />
           <Field label="Formato">

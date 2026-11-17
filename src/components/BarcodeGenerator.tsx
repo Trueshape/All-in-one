@@ -5,6 +5,7 @@ import { useUi } from "../ui/tokens";
 import { encodeBarcode } from "../lib/barcode";
 import type { BarcodeType } from "../lib/barcode";
 import { download, toBlob } from "../lib/imageOps";
+import { ALLOW } from "../lib/inputGuards";
 
 const QUIET = 10;
 const TEXT_HEIGHT = 14;
@@ -65,7 +66,7 @@ export default function BarcodeGenerator() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <Field label={type === "ean13" ? "Cifre (12, oppure 13 con controllo)" : "Testo"} hint={type === "ean13" ? "La cifra di controllo viene calcolata da sola." : "Lettere, numeri e simboli ASCII."}>
-            <TextInput value={text} onChange={(e) => setText(e.target.value)} inputMode={type === "ean13" ? "numeric" : "text"} spellCheck={false} />
+            <TextInput value={text} allow={type === "ean13" ? ALLOW.digits : ALLOW.asciiPrintable} maxLength={type === "ean13" ? 13 : 100} onChange={(e) => setText(e.target.value)} inputMode={type === "ean13" ? "numeric" : "text"} spellCheck={false} />
           </Field>
           <Slider label="Altezza barre" value={height} min={30} max={120} onChange={setHeight} display={`${height}`} />
           <Toggle checked={showText} onChange={setShowText} label="Mostra il testo sotto le barre" />

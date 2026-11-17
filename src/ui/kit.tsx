@@ -3,6 +3,8 @@ import type { ReactNode, InputHTMLAttributes, TextareaHTMLAttributes, ButtonHTML
 import { createPortal } from "react-dom";
 import { Calendar, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Info, X } from "lucide-react";
 import { useUi } from "./tokens";
+import { blockedNumberKey, keepAllowed, limitNumber, settleNumber } from "../lib/inputGuards";
+import type { NumberRules } from "../lib/inputGuards";
 
 const cx = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(" ");
 
@@ -48,25 +50,82 @@ export function Field({ label, hint, actions, children, className }: { label?: R
   );
 }
 
-type InputProps = InputHTMLAttributes<HTMLInputElement> & { prefixText?: string; suffixText?: string };
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+  prefixText?: string;
+  suffixText?: string;
+  /** Characters the field accepts: a regular expression without the g flag, tested on one character. The others are dropped, pasted text too. */
+  allow?: RegExp;
+  /** Number fields: whole numbers only. */
+  integer?: boolean;
+  /** Number fields: most digits after the decimal point. */
+  decimals?: number;
+};
 
-export function TextInput({ prefixText, suffixText, className, ...rest }: InputProps) {
+/** Writes a value into a field the way typing would, so the field's onChange runs with it. */
+function writeValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
+  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+  Object.getOwnPropertyDescriptor(proto, "value")!.set!.call(el, value);
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+/**
+ * A field that holds only values it can really have. Number fields (type="number") refuse "e", "+", a minus below zero (min), and
+ * decimals when `integer`; they cap at `max` while typing, at `decimals` digits, and raise a value below `min` when left.
+ * Other fields keep only the characters of `allow`. Typing and pasting go through the same rules.
+ */
+export function TextInput({ prefixText, suffixText, className, allow, integer, decimals, ...rest }: InputProps) {
   const u = useUi();
   const labelledBy = useContext(FieldLabel);
-  if (!prefixText && !suffixText) return <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} className={cx(u.input, className)} />;
+  const numeric = rest.type === "number";
+  const rules: NumberRules = { min: rest.min === undefined ? undefined : Number(rest.min), max: rest.max === undefined ? undefined : Number(rest.max), integer, decimals };
+  const guard = {
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      const el = e.currentTarget;
+      const clean = numeric ? limitNumber(el.value, rules) : allow ? keepAllowed(el.value, allow, rest.maxLength) : el.value;
+      if (clean !== el.value) {
+        writeValue(el, clean);
+        return;
+      }
+      rest.onChange?.(e);
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+      if (numeric) {
+        const el = e.currentTarget;
+        const fixed = settleNumber(el.value, rules);
+        if (fixed !== el.value) writeValue(el, fixed);
+      }
+      rest.onBlur?.(e);
+    },
+    onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (numeric && !e.ctrlKey && !e.metaKey && !e.altKey && blockedNumberKey(e.key, rules)) e.preventDefault();
+      rest.onKeyDown?.(e);
+    },
+  };
+  if (!prefixText && !suffixText) return <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} {...guard} className={cx(u.input, className)} />;
   return (
     <div className="relative">
       {prefixText && <span className={cx("absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none", u.muted)}>{prefixText}</span>}
-      <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} style={prefixText ? { paddingLeft: `calc(0.75rem + ${prefixText.length}ch + 0.5rem)` } : undefined} className={cx(u.input, suffixText && "pr-10", className)} />
+      <input aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} {...guard} style={prefixText ? { paddingLeft: `calc(0.75rem + ${prefixText.length}ch + 0.5rem)` } : undefined} className={cx(u.input, suffixText && "pr-10", className)} />
       {suffixText && <span className={cx("absolute right-3 top-1/2 -translate-y-1/2 text-xs pointer-events-none", u.muted)}>{suffixText}</span>}
     </div>
   );
 }
 
-export function TextArea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextArea({ className, allow, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement> & { allow?: RegExp }) {
   const u = useUi();
   const labelledBy = useContext(FieldLabel);
-  return <textarea aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} className={cx(u.input, "resize-y", className)} />;
+  const onChange = allow
+    ? (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const el = e.currentTarget;
+        const clean = keepAllowed(el.value, allow, rest.maxLength);
+        if (clean !== el.value) {
+          writeValue(el, clean);
+          return;
+        }
+        rest.onChange?.(e);
+      }
+    : rest.onChange;
+  return <textarea aria-labelledby={rest["aria-label"] ? undefined : labelledBy} {...rest} onChange={onChange} className={cx(u.input, "resize-y", className)} />;
 }
 
 type SelectProps = {

@@ -189,7 +189,7 @@ export default function AudioEditor() {
               <Slider label="Fine" value={end} min={0} max={duration} step={0.1} onChange={changeEnd} display={formatTime(end)} />
             </div>
           ) : (
-            <Field label="Parti da (secondi)"><TextInput className="w-32" type="number" inputMode="decimal" min={1} value={every} onChange={(e) => setEvery(e.target.value)} /></Field>
+            <Field label="Parti da (secondi)"><TextInput className="w-32" type="number" inputMode="decimal" min={1} max={36000} decimals={1} value={every} onChange={(e) => setEvery(e.target.value)} /></Field>
           )}
           {file && <Button size="sm" variant="danger" icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => { stop(); setFile(null); setStart(0); setEnd(0); }}>Cambia file</Button>}
         </div>
@@ -202,8 +202,8 @@ export default function AudioEditor() {
           )}
           <Toggle checked={normalize} onChange={setNormalize} label="Normalizza al massimo" />
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Dissolvenza in entrata (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeIn} onChange={(e) => setFadeIn(e.target.value)} /></Field>
-            <Field label="Dissolvenza in uscita (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeOut} onChange={(e) => setFadeOut(e.target.value)} /></Field>
+            <Field label="Dissolvenza in entrata (s)"><TextInput type="number" inputMode="decimal" min={0} max={600} decimals={2} step="any" value={fadeIn} onChange={(e) => setFadeIn(e.target.value)} /></Field>
+            <Field label="Dissolvenza in uscita (s)"><TextInput type="number" inputMode="decimal" min={0} max={600} decimals={2} step="any" value={fadeOut} onChange={(e) => setFadeOut(e.target.value)} /></Field>
           </div>
           <Field label="Formato"><Chips value={format} onChange={setFormat} options={AUDIO_FORMATS.map((f) => ({ value: f.value, label: f.label }))} /></Field>
           {format === "mp3" && (

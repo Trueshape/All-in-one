@@ -24,7 +24,7 @@ export default function DataSizeConverter() {
     <Stack>
       <div className="grid grid-cols-[1fr_auto] items-end gap-3">
         <Field label="Valore">
-          <TextInput type="number" inputMode="decimal" min={0} step="any" value={amount} onChange={(e) => setAmount(e.target.value)} suffixText={fromLabel} />
+          <TextInput type="number" inputMode="decimal" min={0} max={1e15} decimals={6} step="any" value={amount} onChange={(e) => setAmount(e.target.value)} suffixText={fromLabel} />
         </Field>
         <Field label="Sistema">
           <Segmented value={system} onChange={setSystem} options={[{ value: "decimal", label: "1000" }, { value: "binary", label: "1024" }]} />

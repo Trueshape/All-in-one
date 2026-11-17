@@ -8,6 +8,7 @@ import { useUnsaved } from "../ui/unsaved";
 import { PageThumb, PdfDrop, PdfFileBar, SAMPLE_PAGES, SampleSheet, SinglePdf, baseName, editPdf, isPdf, pdfError, savePdf, usePdf, useSaver } from "../ui/PdfKit";
 import type { PdfFile } from "../ui/PdfKit";
 import { formatBytes } from "../lib/imageOps";
+import { ALLOW } from "../lib/inputGuards";
 import { chunkPages, groupLabel, moveItem, parsePageList, parseRangeGroups } from "../lib/pdfPages";
 
 const THUMB = 132;
@@ -199,11 +200,11 @@ export function PdfSplit() {
     <>
       <Segmented fill value={mode} onChange={setMode} options={[{ value: "each", label: "Ogni pagina" }, { value: "every", label: "Ogni N pagine" }, { value: "ranges", label: "Intervalli" }]} />
       {mode === "every" && (
-        <Field label="Pagine per parte"><TextInput className="w-32" type="number" inputMode="numeric" min={1} value={every} onChange={(e) => setEvery(e.target.value)} /></Field>
+        <Field label="Pagine per parte"><TextInput className="w-32" type="number" inputMode="numeric" integer min={1} max={9999} value={every} onChange={(e) => setEvery(e.target.value)} /></Field>
       )}
       {mode === "ranges" && (
         <Field label="Intervalli" hint="Una parte per ogni gruppo separato da virgola: 1-3, 4, 5-9.">
-          <TextInput value={ranges} onChange={(e) => setRanges(e.target.value)} />
+          <TextInput value={ranges} allow={ALLOW.pages} maxLength={80} onChange={(e) => setRanges(e.target.value)} />
         </Field>
       )}
       {typeof groups === "string" && <Notice tone="warn">{groups}</Notice>}
@@ -287,7 +288,7 @@ export function PdfRemovePages() {
       <>
         <div className="flex flex-wrap items-end gap-3">
           <Field label="Pagine da togliere" className="w-72">
-            <TextInput value={typed} placeholder="es. 2, 5-7" onChange={(e) => setTyped(e.target.value)} />
+            <TextInput value={typed} allow={ALLOW.pages} maxLength={80} placeholder="es. 2, 5-7" onChange={(e) => setTyped(e.target.value)} />
           </Field>
           <Button
             disabled={!typed.trim()}

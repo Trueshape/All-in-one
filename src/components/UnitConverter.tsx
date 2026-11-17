@@ -139,6 +139,8 @@ function UnitCategory({ category, value, setValue }: { category: string; value: 
   const valid = Number.isFinite(number);
   const result = valid ? convert(category, number, from, to) : 0;
   const fromSymbol = cat.units[from].symbol;
+  // only a temperature can be below zero, and never below absolute zero
+  const lowest = category === "temperatura" ? (from === "C" ? -273.15 : from === "F" ? -459.67 : 0) : 0;
   const toSymbol = cat.units[to].symbol;
 
   const swap = () => {
@@ -151,7 +153,7 @@ function UnitCategory({ category, value, setValue }: { category: string; value: 
   return (
     <Stack>
       <Field label="Valore">
-        <TextInput type="number" inputMode="decimal" step="any" value={value} onChange={(e) => setValue(e.target.value)} suffixText={fromSymbol} />
+        <TextInput type="number" inputMode="decimal" step="any" min={lowest} max={1e12} decimals={6} value={value} onChange={(e) => setValue(e.target.value)} suffixText={fromSymbol} />
       </Field>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">

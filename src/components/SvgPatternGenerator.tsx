@@ -94,8 +94,8 @@ export default function SvgPatternGenerator() {
               <div className="flex items-center gap-2"><input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore sfondo" /><span className={`font-mono text-[10px] ${u.subtle}`}>{bg.toUpperCase()}</span></div>
             </Field>
           </div>
-          <Field label="Larghezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={width} onChange={(e) => setWidth(e.target.value)} /></Field>
-          <Field label="Altezza (px)"><TextInput type="number" min="16" max={MAX_SIDE} value={height} onChange={(e) => setHeight(e.target.value)} /></Field>
+          <Field label="Larghezza (px)"><TextInput type="number" integer min="16" max={MAX_SIDE} value={width} onChange={(e) => setWidth(e.target.value)} /></Field>
+          <Field label="Altezza (px)"><TextInput type="number" integer min="16" max={MAX_SIDE} value={height} onChange={(e) => setHeight(e.target.value)} /></Field>
         </div>
         <Toggle checked={fit} onChange={setFit} label="Adatta il modulo: nessun modulo tagliato ai bordi" />
         <p className={cx("text-xs font-mono", u.muted)}>

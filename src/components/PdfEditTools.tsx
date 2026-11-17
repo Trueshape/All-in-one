@@ -7,6 +7,7 @@ import { useUi } from "../ui/tokens";
 import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, ResultPreview, SAMPLE_SIZE, SampleSheet, SampleStage, SinglePdf, drawError, editPdf, embedImage, pdfColor, pdfPoint, readImage, savePdf, startDrag, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { markAnchors, parsePageList } from "../lib/pdfPages";
+import { ALLOW } from "../lib/inputGuards";
 
 const STAGE = 360;
 /** Page on the left, options on the right: the same minimum height for every tool built like that, so they open the same size. */
@@ -164,7 +165,7 @@ export function PdfWatermark() {
       <Slider label="Angolo" value={angle} min={-90} max={90} step={5} onChange={setAngle} display={`${angle}°`} />
       <div className="grid grid-cols-2 gap-3 items-end">
         <Field label="Posizione"><Segmented fill value={layout} onChange={setLayout} options={[{ value: "center", label: "Al centro" }, { value: "tile", label: "Ripetuta" }]} /></Field>
-        <Field label="Pagine"><TextInput value={pages} placeholder="Tutte (es. 1-3, 5)" onChange={(e) => setPages(e.target.value)} /></Field>
+        <Field label="Pagine"><TextInput value={pages} allow={ALLOW.pages} maxLength={80} placeholder="Tutte (es. 1-3, 5)" onChange={(e) => setPages(e.target.value)} /></Field>
       </div>
     </>
   );
@@ -734,7 +735,7 @@ export function PdfForms() {
           {added.map((n) => (
             <div key={n.id} className="flex items-center gap-2 px-3 py-1.5">
               <span className={cx("text-[11px] font-mono w-28 shrink-0", u.muted)}>{n.kind === "text" ? "Testo" : "Casella"} · pag. {n.page + 1}</span>
-              <TextInput value={n.name} aria-label="Nome del campo" onChange={(e) => setAdded(added.map((i) => (i.id === n.id ? { ...i, name: e.target.value } : i)))} />
+              <TextInput value={n.name} allow={ALLOW.fieldName} maxLength={80} aria-label="Nome del campo" onChange={(e) => setAdded(added.map((i) => (i.id === n.id ? { ...i, name: e.target.value } : i)))} />
               <IconButton onClick={() => setAdded(added.filter((i) => i.id !== n.id))} title="Elimina campo"><Trash2 /></IconButton>
             </div>
           ))}

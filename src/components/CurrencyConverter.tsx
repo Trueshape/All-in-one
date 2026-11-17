@@ -80,7 +80,7 @@ export default function CurrencyConverter() {
       {status.kind === "error" && <Notice tone="warn">Impossibile contattare il servizio di cambio: i risultati usano valori indicativi fissi.</Notice>}
 
       <Field label="Importo">
-        <TextInput type="number" inputMode="decimal" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} prefixText={CURRENCIES[from].symbol} />
+        <TextInput type="number" inputMode="decimal" step="any" min="0" max="1000000000000" decimals={2} value={amount} onChange={(e) => setAmount(e.target.value)} prefixText={CURRENCIES[from].symbol} />
       </Field>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">

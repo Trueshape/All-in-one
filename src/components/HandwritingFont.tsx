@@ -8,6 +8,7 @@ import type { Source } from "../ui/ImageDrop";
 import { download, toBlob } from "../lib/imageOps";
 import { BASELINE, CELL, CHARS, COLS, FRAME, GROUPS, MARGIN, PAD, ROWS, UNITS, ASCENT, DESCENT, cellArea, cyclingGsub, glyphFromMask, inkBox, otsu, sheetSize } from "../lib/handwriting";
 import type { Glyph, Stroke } from "../lib/handwriting";
+import { ALLOW } from "../lib/inputGuards";
 
 const MAX_SIDE = 3200;
 const SAMPLE = "Nel mezzo del cammin di nostra vita 0123456789";
@@ -485,7 +486,7 @@ export default function HandwritingFont() {
           )}
           <SectionTitle>{mode === "draw" ? "2" : "3"} · Il font</SectionTitle>
           <Field label="Nome del font">
-            <TextInput value={family} onChange={(e) => setFamily(e.target.value)} />
+            <TextInput value={family} allow={ALLOW.fontName} maxLength={40} onChange={(e) => setFamily(e.target.value)} />
           </Field>
           <Field label="Prova di scrittura">
             <TextArea rows={2} value={text} onChange={(e) => setText(e.target.value)} />

@@ -50,7 +50,7 @@ export default function CircleCalculator() {
           <p className={`text-[11px] ${u.muted}`}>Inserisci un parametro: gli altri si aggiornano.</p>
           {FIELDS.map((f) => (
             <Fragment key={f.key}><Field label={f.label}>
-              <TextInput type="number" inputMode="decimal" step="any" min="0" value={values[f.key]} placeholder={f.placeholder} onChange={(e) => onChange(f.key, e.target.value)} />
+              <TextInput type="number" inputMode="decimal" step="any" min="0" max="1000000000" decimals={6} value={values[f.key]} placeholder={f.placeholder} onChange={(e) => onChange(f.key, e.target.value)} />
             </Field></Fragment>
           ))}
         </div>

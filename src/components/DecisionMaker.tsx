@@ -146,7 +146,7 @@ export default function DecisionMaker() {
   const optionEditor = (
     <>
       <form onSubmit={addOption} className="flex gap-2">
-        <TextInput value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Aggiungi un'opzione (es. Cinema)" />
+        <TextInput value={draft} maxLength={80} onChange={(e) => setDraft(e.target.value)} placeholder="Aggiungi un'opzione (es. Cinema)" />
         <Button type="submit" variant="primary" className="!h-11 !w-11 !p-0 shrink-0" aria-label="Aggiungi opzione"><Plus className="w-4 h-4" /></Button>
       </form>
 

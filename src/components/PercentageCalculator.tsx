@@ -30,9 +30,9 @@ export default function PercentageCalculator() {
   return (
     <Stack>
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
-        <Field label="Numero A"><TextInput type="number" inputMode="decimal" value={a} onChange={(e) => setA(e.target.value)} /></Field>
+        <Field label="Numero A"><TextInput type="number" inputMode="decimal" min="-1000000000000" max="1000000000000" decimals={6} value={a} onChange={(e) => setA(e.target.value)} /></Field>
         <IconButton onClick={() => { setA(b); setB(a); }} title="Inverti A e B" className="mb-0.5"><ArrowLeftRight className="w-4 h-4" /></IconButton>
-        <Field label="Numero B"><TextInput type="number" inputMode="decimal" value={b} onChange={(e) => setB(e.target.value)} /></Field>
+        <Field label="Numero B"><TextInput type="number" inputMode="decimal" min="-1000000000000" max="1000000000000" decimals={6} value={b} onChange={(e) => setB(e.target.value)} /></Field>
       </div>
       <div className="space-y-3">
         {cards.map((c) => <ResultCard key={c.label} label={c.label} value={c.value} copyText={c.copy ?? c.value} />)}

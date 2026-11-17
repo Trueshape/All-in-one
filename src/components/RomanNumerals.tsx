@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ALLOW } from "../lib/inputGuards";
 import { Field, TextInput, CopyButton, Notice, Stack } from "../ui/kit";
 import { MAX_ROMAN, fromRoman, toRoman } from "../lib/roman";
 
@@ -36,13 +37,13 @@ export default function RomanNumerals() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Numero">
           <div className="flex gap-2 items-center">
-            <TextInput type="number" inputMode="numeric" min={1} max={MAX_ROMAN} value={arabic} onChange={(e) => changeArabic(e.target.value)} />
+            <TextInput type="number" inputMode="numeric" integer min={1} max={MAX_ROMAN} value={arabic} onChange={(e) => changeArabic(e.target.value)} />
             <CopyButton text={arabic} />
           </div>
         </Field>
         <Field label="Numero romano">
           <div className="flex gap-2 items-center">
-            <TextInput className="font-mono uppercase" value={roman} onChange={(e) => changeRoman(e.target.value)} />
+            <TextInput className="font-mono uppercase" allow={ALLOW.roman} maxLength={15} value={roman} onChange={(e) => changeRoman(e.target.value)} />
             <CopyButton text={roman} />
           </div>
         </Field>

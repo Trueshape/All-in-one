@@ -70,7 +70,7 @@ export default function AspectRatioCalculator() {
     <Stack>
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
         <Field label="Larghezza (px)">
-          <TextInput type="number" min="0" step={locked ? ratio.w : 1} value={width} onChange={(e) => onWidth(e.target.value)} />
+          <TextInput type="number" integer min="1" max="99999" step={locked ? ratio.w : 1} value={width} onChange={(e) => onWidth(e.target.value)} />
         </Field>
         <button
           type="button"
@@ -84,7 +84,7 @@ export default function AspectRatioCalculator() {
           {locked ? <Lock className="h-4 w-4" /> : <LockOpen className="h-4 w-4" />}
         </button>
         <Field label="Altezza (px)">
-          <TextInput type="number" min="0" step={locked ? ratio.h : 1} value={height} onChange={(e) => onHeight(e.target.value)} />
+          <TextInput type="number" integer min="1" max="99999" step={locked ? ratio.h : 1} value={height} onChange={(e) => onHeight(e.target.value)} />
         </Field>
       </div>
 

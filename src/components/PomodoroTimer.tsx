@@ -3,6 +3,7 @@ import { ListPlus, Pause, Play, RotateCcw } from "lucide-react";
 import { Notice, Chips, Button, IconButton, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { parseTime } from "../lib/timeInput";
+import { ALLOW, keepAllowed } from "../lib/inputGuards";
 
 type Phase = "work" | "short" | "long";
 
@@ -114,7 +115,7 @@ function Pomodoro() {
           <input
             autoFocus
             value={editing}
-            onChange={(e) => setEditing(e.target.value)}
+            onChange={(e) => setEditing(keepAllowed(e.target.value, ALLOW.clock, 6))}
             onFocus={(e) => e.target.select()}
             onBlur={commitEditing}
             onKeyDown={(e) => {

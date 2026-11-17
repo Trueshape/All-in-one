@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Field, TextArea, Button, CopyButton, Notice, Stack } from "../ui/kit";
 import { morseToText, textToMorse } from "../lib/morse";
+import { ALLOW } from "../lib/inputGuards";
 
 /** Two linked boxes: whichever one you type in, the other shows the conversion. */
 export default function MorseCode() {
@@ -29,7 +30,7 @@ export default function MorseCode() {
           <TextArea rows={8} value={text} onChange={(e) => changeText(e.target.value)} placeholder="Scrivi o incolla il testo..." />
         </Field>
         <Field label="Codice Morse" actions={<CopyButton text={code} />}>
-          <TextArea rows={8} value={code} onChange={(e) => changeCode(e.target.value)} className="font-mono" placeholder="Oppure incolla il Morse da decodificare..." />
+          <TextArea rows={8} allow={ALLOW.morse} value={code} onChange={(e) => changeCode(e.target.value)} className="font-mono" placeholder="Oppure incolla il Morse da decodificare..." />
         </Field>
       </div>
       {note && <Notice tone="warn">{note}</Notice>}

@@ -32,7 +32,7 @@ export default function GeometryCalculator() {
           <p className={`text-[11px] ${u.muted}`}>Inserisci le misure: il risultato si aggiorna mentre scrivi.</p>
           {shape.fields.map((f) => (
             <Field key={f.key} label={f.label}>
-              <TextInput type="number" inputMode="decimal" step="any" min="0" value={values[f.key] ?? ""} placeholder={f.placeholder} onChange={(e) => setValues((prev) => ({ ...prev, [f.key]: e.target.value }))} />
+              <TextInput type="number" inputMode="decimal" step="any" min="0" max="1000000000" decimals={4} value={values[f.key] ?? ""} placeholder={f.placeholder} onChange={(e) => setValues((prev) => ({ ...prev, [f.key]: e.target.value }))} />
             </Field>
           ))}
         </div>

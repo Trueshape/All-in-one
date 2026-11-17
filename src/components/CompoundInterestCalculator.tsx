@@ -58,17 +58,17 @@ export default function CompoundInterestCalculator() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <Field label="Capitale iniziale">
-            <TextInput type="number" min="0" value={principal} onChange={(e) => setPrincipal(e.target.value)} prefixText="€" />
+            <TextInput type="number" min="0" max="1000000000" decimals={2} value={principal} onChange={(e) => setPrincipal(e.target.value)} prefixText="€" />
           </Field>
           <Field label="Deposito mensile">
-            <TextInput type="number" min="0" value={monthly} onChange={(e) => setMonthly(e.target.value)} prefixText="€" />
+            <TextInput type="number" min="0" max="1000000000" decimals={2} value={monthly} onChange={(e) => setMonthly(e.target.value)} prefixText="€" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Tasso annuo">
-              <TextInput type="number" min="0" step="0.1" value={rate} onChange={(e) => setRate(e.target.value)} suffixText="%" />
+              <TextInput type="number" min="0" max="100" step="0.1" decimals={2} value={rate} onChange={(e) => setRate(e.target.value)} suffixText="%" />
             </Field>
             <Field label="Durata">
-              <TextInput type="number" min="0" max="100" value={years} onChange={(e) => setYears(e.target.value)} suffixText="anni" />
+              <TextInput type="number" min="0" max="100" decimals={2} value={years} onChange={(e) => setYears(e.target.value)} suffixText="anni" />
             </Field>
           </div>
           <Field label="Capitalizzazione">

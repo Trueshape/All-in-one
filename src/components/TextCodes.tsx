@@ -4,6 +4,9 @@ import { Field, TextArea, Button, CopyButton, Segmented, Notice, Stack } from ".
 import { BASES, codesToText, textToCodes } from "../lib/textCodes";
 import type { Base } from "../lib/textCodes";
 
+/** What a code in each base can contain: its digits, and the separators the decoder accepts. */
+const CODE_CHARS: Record<Base, RegExp> = { 2: /[01\s,;]/, 8: /[0-7\s,;]/, 10: /[0-9\s,;]/, 16: /[0-9a-fA-FxX\s,;]/ };
+
 const ORDER: Base[] = [2, 16, 10, 8];
 const SEPARATORS = [{ value: " ", label: "Spazio" }, { value: ",", label: "Virgola" }, { value: "\n", label: "A capo" }, { value: "", label: "Nessuno" }];
 
@@ -54,7 +57,7 @@ export default function TextCodes() {
           <TextArea rows={8} value={text} onChange={(e) => changeText(e.target.value)} placeholder="Scrivi o incolla il testo..." />
         </Field>
         <Field label={BASES[base].label} actions={<CopyButton text={codes} />}>
-          <TextArea rows={8} value={codes} onChange={(e) => changeCodes(e.target.value)} className="font-mono" placeholder="Oppure incolla i codici da decodificare..." />
+          <TextArea rows={8} allow={CODE_CHARS[base]} value={codes} onChange={(e) => changeCodes(e.target.value)} className="font-mono" placeholder="Oppure incolla i codici da decodificare..." />
         </Field>
       </div>
 
