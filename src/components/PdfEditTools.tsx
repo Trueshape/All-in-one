@@ -62,6 +62,40 @@ function pagesOf(text: string, count: number): number[] {
 
 /* ---------------- Filigrana ---------------- */
 
+/** An A4-like sample page (300 px wide) with grey placeholder lines, used while no PDF is loaded. */
+function SampleSheet({ children }: { children?: ReactNode }) {
+  const u = useUi();
+  const line = (top: number, right: number, h = 5) => <div key={top} className={cx("absolute rounded", u.id === "sophisticated" ? "bg-slate-300" : "bg-zinc-300")} style={{ left: "14%", right: `${right}%`, top: `${top}%`, height: h }} />;
+  return (
+    <div className="relative bg-white overflow-hidden shadow border border-zinc-300" style={{ width: STAGE - 60, aspectRatio: "1 / 1.414" }}>
+      {line(10, 14, 8)}
+      {[20, 26, 32, 38, 44].map((t, i) => line(t, [30, 18, 24, 14, 36][i]))}
+      <div className="absolute border border-zinc-300 rounded" style={{ left: "14%", right: "14%", top: "54%", height: "22%" }} />
+      {line(82, 40)}
+      {children}
+    </div>
+  );
+}
+
+const SAMPLE_FONTS: Record<FontKey, string> = { helvetica: "Helvetica, Arial, sans-serif", times: "'Times New Roman', Times, serif", courier: "'Courier New', Courier, monospace" };
+
+/** The watermark as it would look on the sample page, from the same settings as the real one. */
+function SampleMark({ kind, text, font, size, color, imageUrl, scale, opacity, angle, layout }: { kind: "text" | "image"; text: string; font: FontKey; size: number; color: string; imageUrl: string | null; scale: number; opacity: number; angle: number; layout: "center" | "tile" }) {
+  const pageWidth = STAGE - 60;
+  // the sample page is 300 px for a 595 pt wide A4: sizes in points are scaled the same way
+  const px = (size * pageWidth) / 595;
+  const mark = (key: string, style: React.CSSProperties) =>
+    kind === "text" ? (
+      <span key={key} className="absolute whitespace-nowrap font-bold" style={{ ...style, fontFamily: SAMPLE_FONTS[font], fontSize: px, color, opacity: opacity / 100, transform: `translate(-50%, -50%) rotate(${-angle}deg)` }}>{text}</span>
+    ) : imageUrl ? (
+      <img key={key} src={imageUrl} alt="" className="absolute" style={{ ...style, width: `${scale}%`, opacity: opacity / 100, transform: `translate(-50%, -50%) rotate(${-angle}deg)` }} />
+    ) : (
+      <div key={key} className="absolute border-2 border-dashed border-zinc-400 text-zinc-500 text-[11px] flex items-center justify-center" style={{ ...style, width: `${scale}%`, aspectRatio: "3 / 2", opacity: opacity / 100, transform: `translate(-50%, -50%) rotate(${-angle}deg)` }}>Immagine</div>
+    );
+  if (layout === "center") return mark("c", { left: "50%", top: "50%" });
+  return <>{[0, 1, 2, 3].flatMap((r) => [0, 1].map((c) => mark(`${r}-${c}`, { left: `${25 + c * 50 + (r % 2 ? 12 : -12)}%`, top: `${12 + r * 25}%` })))}</>;
+}
+
 export function PdfWatermark() {
   const state = usePdf();
   const [kind, setKind] = useState<"text" | "image">("text");
@@ -116,37 +150,62 @@ export function PdfWatermark() {
   }, [pdf, kind, text, font, size, color, image, scale, opacity, angle, layout, pages]);
 
   const ready = kind === "text" ? !!text.trim() : !!image;
+
+  // the options are the same with or without a PDF: they are shown from the start, on a sample page
+  const options = (
+    <>
+      <Segmented fill value={kind} onChange={setKind} options={[{ value: "text", label: "Testo" }, { value: "image", label: "Immagine" }]} />
+      {kind === "text" ? (
+        <>
+          <Field label="Testo"><TextInput value={text} onChange={(e) => setText(e.target.value)} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Font"><Chips value={font} onChange={setFont} options={FONT_OPTIONS} /></Field>
+            <ColorField label="Colore" value={color} onChange={setColor} />
+          </div>
+          <Slider label="Dimensione" value={size} min={12} max={200} onChange={setSize} display={`${size} pt`} />
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-3">
+            <ImageButton onImage={setImage}>{image ? "Cambia immagine" : "Scegli immagine"}</ImageButton>
+            {image && <img src={image.url} alt="" className="h-10 max-w-24 object-contain" />}
+          </div>
+          <Slider label="Larghezza" value={scale} min={5} max={100} onChange={setScale} display={`${scale}% della pagina`} />
+        </>
+      )}
+      <Slider label="Opacità" value={opacity} min={5} max={100} onChange={setOpacity} display={`${opacity}%`} />
+      <Slider label="Angolo" value={angle} min={-90} max={90} step={5} onChange={setAngle} display={`${angle}°`} />
+      <div className="grid grid-cols-2 gap-3 items-end">
+        <Field label="Posizione"><Segmented fill value={layout} onChange={setLayout} options={[{ value: "center", label: "Al centro" }, { value: "tile", label: "Ripetuta" }]} /></Field>
+        <Field label="Pagine"><TextInput value={pages} placeholder="Tutte (es. 1-3, 5)" onChange={(e) => setPages(e.target.value)} /></Field>
+      </div>
+    </>
+  );
+
   return (
-    <SinglePdf state={{ ...state, clear: () => { state.clear(); setPage(0); } }} info="L'anteprima è il risultato vero. L'angolo si misura come vedi la pagina. Senza pagine indicate, la filigrana va su tutte.">
+    <SinglePdf
+      state={{ ...state, clear: () => { state.clear(); setPage(0); } }}
+      info="L'anteprima è il risultato vero. L'angolo si misura come vedi la pagina. Senza pagine indicate, la filigrana va su tutte."
+      empty={(drop) => (
+        <div className="space-y-4">
+          {drop}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 min-w-0">{options}</div>
+            <div className="flex flex-col items-center gap-3 min-w-0">
+              <span className="text-xs font-mono opacity-60">Pagina d'esempio</span>
+              <SampleSheet>
+                <SampleMark kind={kind} text={text || " "} font={font} size={size} color={color} imageUrl={image?.url ?? null} scale={scale} opacity={opacity} angle={angle} layout={layout} />
+              </SampleSheet>
+            </div>
+          </div>
+        </div>
+      )}
+    >
       {(pdf) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4 min-w-0">
             <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }} />
-            <Segmented fill value={kind} onChange={setKind} options={[{ value: "text", label: "Testo" }, { value: "image", label: "Immagine" }]} />
-            {kind === "text" ? (
-              <>
-                <Field label="Testo"><TextInput value={text} onChange={(e) => setText(e.target.value)} /></Field>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Font"><Chips value={font} onChange={setFont} options={FONT_OPTIONS} /></Field>
-                  <ColorField label="Colore" value={color} onChange={setColor} />
-                </div>
-                <Slider label="Dimensione" value={size} min={12} max={200} onChange={setSize} display={`${size} pt`} />
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-3">
-                  <ImageButton onImage={setImage}>{image ? "Cambia immagine" : "Scegli immagine"}</ImageButton>
-                  {image && <img src={image.url} alt="" className="h-10 max-w-24 object-contain" />}
-                </div>
-                <Slider label="Larghezza" value={scale} min={5} max={100} onChange={setScale} display={`${scale}% della pagina`} />
-              </>
-            )}
-            <Slider label="Opacità" value={opacity} min={5} max={100} onChange={setOpacity} display={`${opacity}%`} />
-            <Slider label="Angolo" value={angle} min={-90} max={90} step={5} onChange={setAngle} display={`${angle}°`} />
-            <div className="grid grid-cols-2 gap-3 items-end">
-              <Field label="Posizione"><Segmented fill value={layout} onChange={setLayout} options={[{ value: "center", label: "Al centro" }, { value: "tile", label: "Ripetuta" }]} /></Field>
-              <Field label="Pagine"><TextInput value={pages} placeholder="Tutte (es. 1-3, 5)" onChange={(e) => setPages(e.target.value)} /></Field>
-            </div>
+            {options}
             {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
             <Button variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>Salva</Button>
           </div>

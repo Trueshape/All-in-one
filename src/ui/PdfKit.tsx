@@ -337,7 +337,7 @@ export function usePdf() {
   return { pdf, error, setError, busy, load, clear };
 }
 
-export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.pdf", label, hint = "PDF", className = "aspect-video max-w-xl mx-auto", icon }: {
+export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.pdf", label, hint = "PDF", strip = false, className = strip ? "" : "aspect-video max-w-xl mx-auto", icon }: {
   onFiles: (files: File[]) => void;
   multiple?: boolean;
   accept?: string;
@@ -346,6 +346,8 @@ export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.
   className?: string;
   /** The icon above the text; the PDF sheet by default. */
   icon?: ReactNode;
+  /** A low strip (icon beside the text) instead of the big box: for tools that show their options before a file is chosen. */
+  strip?: boolean;
 }) {
   const u = useUi();
   const input = useRef<HTMLInputElement>(null);
@@ -372,11 +374,20 @@ export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
-        className={cx("w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed cursor-pointer transition-colors", className, u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
+        className={cx("w-full flex items-center border-2 border-dashed cursor-pointer transition-colors", strip ? "flex-row gap-3 px-4 py-3 text-left" : "flex-col justify-center gap-2", className, u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
       >
-        {icon ?? <FileText className="w-7 h-7" />}
-        <span className={cx("text-xs font-semibold whitespace-pre-line text-center", u.text)}>{label ?? (multiple ? "Seleziona o trascina uno o più PDF" : "Seleziona o trascina un PDF")}</span>
-        <span className="text-[11px]">{hint}</span>
+        {icon ?? <FileText className={strip ? "w-6 h-6 shrink-0" : "w-7 h-7"} />}
+        {strip ? (
+          <span className="flex flex-col min-w-0">
+            <span className={cx("text-xs font-semibold", u.text)}>{label ?? "Seleziona o trascina un PDF"}</span>
+            <span className="text-[11px]">{hint}</span>
+          </span>
+        ) : (
+          <>
+            <span className={cx("text-xs font-semibold whitespace-pre-line text-center", u.text)}>{label ?? (multiple ? "Seleziona o trascina uno o più PDF" : "Seleziona o trascina un PDF")}</span>
+            <span className="text-[11px]">{hint}</span>
+          </>
+        )}
       </button>
     </>
   );
@@ -400,11 +411,14 @@ export function useSaver() {
 }
 
 /** The drop area until a PDF is loaded, then the tool, with the tool's explanation under it. */
-export function SinglePdf({ state, info, children }: { state: ReturnType<typeof usePdf>; info: ReactNode; children: (pdf: PdfFile) => ReactNode }) {
+export function SinglePdf({ state, info, children, empty }: { state: ReturnType<typeof usePdf>; info: ReactNode; children: (pdf: PdfFile) => ReactNode; empty?: (drop: ReactNode) => ReactNode }) {
   useUnsaved(!!state.pdf);
+  const strip = (
+    <PdfDrop strip onFiles={(files) => void state.load(files[0])} label="Trascina qui un PDF per usare il tuo file" hint={state.busy ? "Lettura del PDF…" : "Intanto prova le opzioni sulla pagina d'esempio"} />
+  );
   return (
     <Stack>
-      {state.pdf ? children(state.pdf) : <PdfDrop onFiles={(files) => void state.load(files[0])} hint={state.busy ? "Lettura del PDF…" : "PDF"} />}
+      {state.pdf ? children(state.pdf) : empty ? empty(strip) : <PdfDrop onFiles={(files) => void state.load(files[0])} hint={state.busy ? "Lettura del PDF…" : "PDF"} />}
       {state.error && <Notice tone="error">{state.error}</Notice>}
       <Notice>{info}</Notice>
     </Stack>
