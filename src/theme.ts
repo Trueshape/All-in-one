@@ -103,6 +103,13 @@ export const getThemeClasses = (theme: Theme) => {
 
 export const getToolModalSize = (toolId: string): string => {
   switch (toolId) {
+    case "pdf_watermark":
+    case "pdf_add_text":
+    case "pdf_add_image":
+    case "pdf_forms":
+      return "max-w-5xl";
+    case "pdf_properties":
+      return "max-w-3xl";
     case "pdf_merge":
     case "pdf_split":
       return "max-w-3xl";

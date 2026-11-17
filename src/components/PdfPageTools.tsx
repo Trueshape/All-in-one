@@ -4,7 +4,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, R
 import { PDFDocument, degrees } from "pdf-lib";
 import { Button, Field, IconButton, Notice, Row, Segmented, Stack, TextInput, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import { PageThumb, PdfDrop, PdfFileBar, baseName, editPdf, isPdf, pdfError, savePdf, usePageSize, usePdf } from "../ui/PdfKit";
+import { PageThumb, PdfDrop, PdfFileBar, SinglePdf, baseName, editPdf, isPdf, pdfError, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { PdfFile } from "../ui/PdfKit";
 import { formatBytes } from "../lib/imageOps";
 import { chunkPages, groupLabel, marginsForRotation, mmToPt, moveItem, parsePageList, parseRangeGroups, ptToMm } from "../lib/pdfPages";
@@ -19,34 +19,6 @@ async function pickPages(source: PDFDocument, indices: number[]): Promise<Uint8A
   const out = await PDFDocument.create();
   for (const page of await out.copyPages(source, indices)) out.addPage(page);
   return out.save();
-}
-
-/** Runs a save action, keeping its error for the page and a busy flag for the buttons. */
-function useSaver() {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const run = async (action: () => Promise<void>) => {
-    setBusy(true);
-    setError(null);
-    try {
-      await action();
-    } catch (e) {
-      setError(e instanceof Error && e.message ? e.message : "Salvataggio non riuscito.");
-    }
-    setBusy(false);
-  };
-  return { busy, error, run };
-}
-
-/** The drop area until a PDF is loaded, then the tool. */
-function SinglePdf({ state, info, children }: { state: ReturnType<typeof usePdf>; info: ReactNode; children: (pdf: PdfFile) => ReactNode }) {
-  return (
-    <Stack>
-      {state.pdf ? children(state.pdf) : <PdfDrop onFiles={(files) => void state.load(files[0])} hint={state.busy ? "Lettura del PDF…" : "PDF"} />}
-      {state.error && <Notice tone="error">{state.error}</Notice>}
-      <Notice>{info}</Notice>
-    </Stack>
-  );
 }
 
 /** One page in a grid: thumbnail, number, and the page's own buttons. */

@@ -78,6 +78,11 @@ import {
   RotateCw,
   ListOrdered,
   Crop,
+  Stamp,
+  FileCog,
+  TextCursorInput,
+  ImagePlus,
+  FormInput,
 } from "lucide-react";
 
 // Import Components
@@ -136,6 +141,11 @@ const PdfRemovePages = lazy(() => import("../components/PdfPageTools").then((m) 
 const PdfRotate = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfRotate })));
 const PdfReorder = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfReorder })));
 const PdfCrop = lazy(() => import("../components/PdfPageTools").then((m) => ({ default: m.PdfCrop })));
+const PdfWatermark = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfWatermark })));
+const PdfProperties = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfProperties })));
+const PdfAddText = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfAddText })));
+const PdfAddImage = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfAddImage })));
+const PdfForms = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfForms })));
 
 export interface ToolItem {
   id: string;
@@ -754,5 +764,60 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-rose-400 bg-rose-500/10",
     category: "pdf",
     component: PdfCrop,
+  },
+  {
+    id: "pdf_watermark",
+    name: "Filigrana PDF",
+    description: "Aggiungi una scritta o un logo trasparente su tutte le pagine o solo su alcune.",
+    icon: Stamp,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfWatermark,
+  },
+  {
+    id: "pdf_properties",
+    name: "Proprietà PDF",
+    description: "Cambia titolo, autore, oggetto, parole chiave e date di un PDF.",
+    icon: FileCog,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfProperties,
+  },
+  {
+    id: "pdf_add_text",
+    name: "Aggiungi testo al PDF",
+    description: "Scrivi dove vuoi sulle pagine: clicca, scrivi e trascina.",
+    icon: TextCursorInput,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfAddText,
+  },
+  {
+    id: "pdf_add_image",
+    name: "Aggiungi immagini al PDF",
+    description: "Inserisci immagini, firme o loghi sulle pagine e posizionali trascinandoli.",
+    icon: ImagePlus,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfAddImage,
+  },
+  {
+    id: "pdf_forms",
+    name: "Editor moduli PDF",
+    description: "Compila i campi di un modulo PDF o aggiungine di nuovi, testo e caselle.",
+    icon: FormInput,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfForms,
   },
 ];

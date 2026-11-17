@@ -1,6 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { chunkPages, groupLabel, marginsForRotation, moveItem, parsePageList, parseRangeGroups, piecesToLines } from "./pdfPages";
+import { chunkPages, groupLabel, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines } from "./pdfPages";
+
+test("a centred mark has its middle at the page centre, also when turned", () => {
+  const box = { x: 0, y: 0, width: 600, height: 800 };
+  assert.deepEqual(markAnchors(box, 200, 40, 0, "center"), [{ x: 200, y: 380 }]);
+  const [turned] = markAnchors(box, 200, 40, 90, "center");
+  assert.ok(Math.abs(turned.x - 320) < 1e-9 && Math.abs(turned.y - 300) < 1e-9);
+});
+
+test("a tiled mark covers the page with several copies, but not too many", () => {
+  const box = { x: 0, y: 0, width: 600, height: 800 };
+  const marks = markAnchors(box, 120, 20, 45, "tile");
+  assert.ok(marks.length > 6 && marks.length <= 400);
+  assert.ok(markAnchors(box, 1, 1, 0, "tile").length <= 400);
+});
 
 test("page ranges become 0-based groups", () => {
   assert.deepEqual(parseRangeGroups("1-3, 5", 10), [[0, 1, 2], [4]]);

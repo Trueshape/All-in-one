@@ -94,6 +94,33 @@ export function piecesToLines(pieces: TextPiece[]): string[] {
   );
 }
 
+export interface PageBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Where to draw a mark `w` × `h` turned by `angle` degrees (counterclockwise): its bottom-left corner, so that the mark's
+ * centre lands at the centre of the page, or on a staggered grid that covers the whole page ("tile").
+ */
+export function markAnchors(box: PageBox, w: number, h: number, angle: number, layout: "center" | "tile"): Array<{ x: number; y: number }> {
+  const a = (angle * Math.PI) / 180;
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  const anchor = (cx: number, cy: number) => ({ x: cx - (cos * w - sin * h) / 2, y: cy - (sin * w + cos * h) / 2 });
+  if (layout === "center") return [anchor(box.x + box.width / 2, box.y + box.height / 2)];
+  const gap = Math.max(36, h * 1.5);
+  const stepX = Math.abs(w * cos) + Math.abs(h * sin) + gap;
+  const stepY = Math.abs(w * sin) + Math.abs(h * cos) + gap;
+  const out: Array<{ x: number; y: number }> = [];
+  for (let row = 0, cy = box.y + stepY / 2; cy < box.y + box.height + stepY / 2 && out.length < 400; row++, cy += stepY) {
+    for (let cx = box.x + (row % 2 ? stepX : stepX / 2); cx < box.x + box.width + stepX / 2 && out.length < 400; cx += stepX) out.push(anchor(cx, cy));
+  }
+  return out;
+}
+
 /** Millimeters to PDF points (1 pt = 1/72 inch). */
 export const mmToPt = (mm: number) => (mm * 72) / 25.4;
 export const ptToMm = (pt: number) => (pt * 25.4) / 72;
