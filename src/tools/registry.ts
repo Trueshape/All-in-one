@@ -412,12 +412,12 @@ export const TOOLS: ToolItem[] = [
   {
     id: "inflation_calc",
     name: "Calcolatore inflazione",
-    description: "Quanto vale oggi una somma di anni fa, in euro, dollari o yen, con i dati ufficiali sui prezzi al consumo.",
+    description: "Quanto vale oggi una somma di anni fa, in euro, dollari, yen o lire, con i dati ufficiali sui prezzi al consumo.",
     icon: TrendingUp,
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
     glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
     iconColor: "text-emerald-400 bg-emerald-500/10",
-    category: "calcolo",
+    category: "convertitori",
     component: InflationCalculator,
   },
   {

@@ -12,6 +12,8 @@ const CURRENCIES: Record<string, { name: string; symbol: string; fallback: numbe
   AUD: { name: "Dollaro australiano", symbol: "A$", fallback: 1.63 },
   CHF: { name: "Franco svizzero", symbol: "CHF", fallback: 0.98 },
   CNY: { name: "Renminbi cinese", symbol: "¥", fallback: 7.82 },
+  // out of use since 2002: fixed conversion rate, never read from the service
+  ITL: { name: "Lira italiana", symbol: "₤", fallback: 1936.27 },
 };
 
 const FALLBACK_RATES = Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, c.fallback]));
@@ -33,7 +35,7 @@ export default function CurrencyConverter() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data?.rates) throw new Error("Risposta non valida");
-      setRates(Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, Number(data.rates[code]) || c.fallback])));
+      setRates(Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, code === "ITL" ? c.fallback : Number(data.rates[code]) || c.fallback])));
       const at = new Date(data.time_last_update_utc);
       setStatus({ kind: "live", at: Number.isNaN(at.getTime()) ? "ora" : at.toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" }) });
     } catch (err) {

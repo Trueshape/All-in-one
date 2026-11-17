@@ -6,12 +6,14 @@ const CURRENCIES: Array<{ value: InflationCurrency; label: string; symbol: strin
   { value: "EUR", label: "Euro", symbol: "€" },
   { value: "USD", label: "Dollaro", symbol: "$" },
   { value: "JPY", label: "Yen", symbol: "¥" },
+  { value: "ITL", label: "Lira", symbol: "₤" },
 ];
 
 const SOURCE: Record<InflationCurrency, string> = {
-  EUR: "Eurostat (indice HICP dell'area euro)",
-  USD: "Banca Mondiale (indice dei prezzi al consumo degli Stati Uniti)",
-  JPY: "Banca Mondiale (indice dei prezzi al consumo del Giappone)",
+  EUR: "Eurostat (indice HICP dell'area euro, disponibile dal 1996)",
+  USD: "FRED e Banca Mondiale (prezzi al consumo degli Stati Uniti), prima del 1913 Macrohistory Database",
+  JPY: "Banca Mondiale (prezzi al consumo del Giappone) dal 1990, prima Macrohistory Database",
+  ITL: "ISTAT (prezzi al consumo delle famiglie di operai e impiegati), fino al 2001, ultimo anno della lira",
 };
 
 const percent = (n: number) => `${n > 0 ? "+" : ""}${new Intl.NumberFormat("it-IT", { maximumFractionDigits: 1 }).format(n)}%`;
@@ -28,7 +30,7 @@ export default function InflationCalculator() {
   const end = Math.min(Math.max(to, first), last);
   const years = useMemo(() => Array.from({ length: last - first + 1 }, (_, i) => last - i), [first, last]);
 
-  const money = (n: number) => new Intl.NumberFormat("it-IT", { style: "currency", currency, maximumFractionDigits: currency === "JPY" ? 0 : 2 }).format(n);
+  const money = (n: number) => new Intl.NumberFormat("it-IT", { style: "currency", currency, maximumFractionDigits: currency === "JPY" || currency === "ITL" ? 0 : 2 }).format(n);
   const value = Math.max(parseFloat(amount) || 0, 0);
   const result = adjust(currency, value, start, end);
 
