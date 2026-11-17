@@ -9,6 +9,8 @@ import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { markAnchors, parsePageList } from "../lib/pdfPages";
 
 const STAGE = 360;
+/** Page on the left, options on the right: the same minimum height for every tool built like that, so they open the same size. */
+const EDITOR_GRID = "grid grid-cols-1 md:grid-cols-2 gap-6 md:min-h-[560px]";
 
 /** Colour square with its hex code, like the other tools. */
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -66,7 +68,7 @@ const SAMPLE_FONTS: Record<FontKey, string> = { helvetica: "Helvetica, Arial, sa
 
 /** The watermark as it would look on the sample page, from the same settings as the real one. */
 function SampleMark({ kind, text, font, size, color, imageUrl, scale, opacity, angle, layout }: { kind: "text" | "image"; text: string; font: FontKey; size: number; color: string; imageUrl: string | null; scale: number; opacity: number; angle: number; layout: "center" | "tile" }) {
-  const pageWidth = STAGE - 60;
+  const pageWidth = STAGE;
   // the sample page is 300 px for a 595 pt wide A4: sizes in points are scaled the same way
   const px = (size * pageWidth) / 595;
   const mark = (key: string, style: React.CSSProperties) =>
@@ -174,11 +176,11 @@ export function PdfWatermark() {
       empty={(drop) => (
         <div className="space-y-4">
           {drop}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className={EDITOR_GRID}>
             <div className="space-y-4 min-w-0 md:order-last">{options}</div>
             <div className="flex flex-col items-center gap-3 min-w-0">
               <span className="text-xs font-mono opacity-60">Pagina d'esempio</span>
-              <SampleSheet>
+              <SampleSheet width={STAGE}>
                 <SampleMark kind={kind} text={text || " "} font={font} size={size} color={color} imageUrl={image?.url ?? null} scale={scale} opacity={opacity} angle={angle} layout={layout} />
               </SampleSheet>
             </div>
@@ -187,7 +189,7 @@ export function PdfWatermark() {
       )}
     >
       {(pdf) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={EDITOR_GRID}>
           <div className="space-y-4 min-w-0 md:order-last">
             <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }}>
               <Button variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>Salva</Button>
@@ -195,10 +197,10 @@ export function PdfWatermark() {
             {options}
             {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
           </div>
-          <PageStage pdf={pdf} page={page} onPage={setPage} width={300}>
+          <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE}>
             {preview && (
               <div className="absolute inset-0">
-                <ResultPreview bytes={preview} page={page} width={300} />
+                <ResultPreview bytes={preview} page={page} width={STAGE} />
               </div>
             )}
           </PageStage>
@@ -438,7 +440,7 @@ export function PdfAddText() {
       empty={(drop) => (
         <>
           {drop}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className={EDITOR_GRID}>
             <SampleStage width={STAGE} stageRef={stage} onPick={add}>{placed}</SampleStage>
             {panel(null)}
           </div>
@@ -446,7 +448,7 @@ export function PdfAddText() {
       )}
     >
       {(pdf) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={EDITOR_GRID}>
           <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE} onPick={add} stageRef={stage}>
             {placed}
           </PageStage>
@@ -568,16 +570,16 @@ export function PdfAddImage() {
       empty={(drop) => (
         <>
           {drop}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SampleStage width={320} stageRef={stage}>{placed}</SampleStage>
+          <div className={EDITOR_GRID}>
+            <SampleStage width={STAGE} stageRef={stage}>{placed}</SampleStage>
             {panel(null)}
           </div>
         </>
       )}
     >
       {(pdf) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <PageStage pdf={pdf} page={page} onPage={setPage} width={320} stageRef={stage}>
+        <div className={EDITOR_GRID}>
+          <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE} stageRef={stage}>
             {placed}
           </PageStage>
           {panel(pdf)}
