@@ -367,7 +367,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "aspect_ratio_calc",
-    name: "Aspect ratio calculator",
+    name: "Aspect ratio",
     description: "Calcola rapporti d'aspetto, ridimensiona risoluzioni e simula anteprime di schermo in tempo reale.",
     icon: Maximize,
     colorClass: "border-blue-900/30 hover:border-blue-500/50",

@@ -98,7 +98,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     worldclock: { name: "World clock & time zones", description: "See the time around the world and simulate a future time to plan video calls." },
     age: { name: "Age", description: "Find your exact age, the weekday you were born and fun stats about your heartbeats." },
     scientific_calc: { name: "Scientific calculator", description: "Run complex calculations with trigonometric and logarithmic functions and built-in memory." },
-    aspect_ratio_calc: { name: "Aspect ratio calculator", description: "Calculate aspect ratios, resize resolutions and preview screens in real time." },
+    aspect_ratio_calc: { name: "Aspect ratio", description: "Calculate aspect ratios, resize resolutions and preview screens in real time." },
     screen_ruler: { name: "On-screen ruler", description: "Life-size ruler in centimeters or inches: calibrate it with a credit card and measure objects held against the screen." },
     pdf_convert: { name: "Convert", description: "Turn a PDF into images or text, or images into a PDF." },
     pdf_extract_images: { name: "Extract images", description: "Find the images embedded in a PDF and save them one by one." },
