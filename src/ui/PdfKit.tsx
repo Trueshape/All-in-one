@@ -363,6 +363,8 @@ export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.
 
   return (
     <>
+      {/* before the box: the stack puts its spacing after every element except the last, and this one is hidden */}
+      <input ref={input} type="file" accept={accept} multiple={multiple} onChange={onChange} className="hidden" />
       <button
         type="button"
         onClick={() => input.current?.click()}
@@ -375,7 +377,6 @@ export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.
         <span className={cx("text-xs font-semibold whitespace-pre-line text-center", u.text)}>{label ?? (multiple ? "Seleziona o trascina uno o più PDF" : "Seleziona o trascina un PDF")}</span>
         <span className="text-[11px]">{hint}</span>
       </button>
-      <input ref={input} type="file" accept={accept} multiple={multiple} onChange={onChange} className="hidden" />
     </>
   );
 }

@@ -225,13 +225,16 @@ export default function ToolModal({
             </div>
 
             {/* Scrollable Modal Content Workspace */}
-            <div className={`${tc.modalBody} grow`} data-tool-body>
+            <div className={`${tc.modalBody} grow${activeTool.category === "pdf" ? " flex flex-col" : ""}`} data-tool-body>
               <UiContext.Provider value={UI_TOKENS[activeTheme]}>
                <InfoContext.Provider value={showInfo}>
                 <HeaderActionsContext.Provider value={{ el: actionsEl, buttonClass: `${tc.borderClass} ${tc.btnClassic}` }}>
-                  <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
-                    <activeTool.component showSettings={showSettings} />
-                  </Suspense>
+                  {/* PDF tools have a minimum height: their content sits in the middle of it, not glued to the top */}
+                  <div className={activeTool.category === "pdf" ? "my-auto" : undefined}>
+                    <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
+                      <activeTool.component showSettings={showSettings} />
+                    </Suspense>
+                  </div>
                 </HeaderActionsContext.Provider>
                </InfoContext.Provider>
               </UiContext.Provider>

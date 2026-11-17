@@ -114,11 +114,13 @@ export function PdfMerge() {
           ))}
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-3">
-        {items.length > 0 && <Button variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>Salva</Button>}
-        <span className={cx("text-xs", u.muted)}>{items.length < 2 ? "Servono almeno due PDF." : `${items.length} file, ${total} pagine in tutto`}</span>
-        {items.length > 0 && <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setItems([])}>Svuota</Button>}
-      </div>
+      {items.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>Salva</Button>
+          <span className={cx("text-xs", u.muted)}>{items.length < 2 ? "Servono almeno due PDF." : `${items.length} file, ${total} pagine in tutto`}</span>
+          <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setItems([])}>Svuota</Button>
+        </div>
+      )}
       {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
       <Notice>I PDF si uniscono nell'ordine dell'elenco, con tutte le loro pagine. Tutto avviene nel browser: i file non vengono inviati.</Notice>
     </Stack>

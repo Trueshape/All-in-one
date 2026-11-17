@@ -102,7 +102,7 @@ export const getThemeClasses = (theme: Theme) => {
 };
 
 /** All the PDF tools share one window size, so the empty drop state looks the same from tool to tool. */
-const PDF_MODAL = "max-w-6xl min-h-[min(640px,90vh)]";
+const PDF_MODAL = "max-w-6xl min-h-[min(588px,90vh)]";
 
 export const getToolModalSize = (toolId: string): string => {
   if (toolId.startsWith("pdf_")) return PDF_MODAL;
