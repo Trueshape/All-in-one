@@ -117,6 +117,7 @@ const AspectRatioCalculator = lazy(() => import("../components/AspectRatioCalcul
 const ScreenRuler = lazy(() => import("../components/ScreenRuler"));
 const CaseConverter = lazy(() => import("../components/CaseConverter"));
 const CompoundInterestCalculator = lazy(() => import("../components/CompoundInterestCalculator"));
+const InflationCalculator = lazy(() => import("../components/InflationCalculator"));
 const TextDiff = lazy(() => import("../components/TextDiff"));
 const DiscordTimestamp = lazy(() => import("../components/DiscordTimestamp"));
 const CodiceFiscaleCalculator = lazy(() => import("../components/CodiceFiscaleCalculator"));
@@ -407,6 +408,17 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-emerald-400 bg-emerald-500/10",
     category: "calcolo",
     component: CompoundInterestCalculator,
+  },
+  {
+    id: "inflation_calc",
+    name: "Calcolatore inflazione",
+    description: "Quanto vale oggi una somma di anni fa, in euro, dollari o yen, con i dati ufficiali sui prezzi al consumo.",
+    icon: TrendingUp,
+    colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
+    glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
+    iconColor: "text-emerald-400 bg-emerald-500/10",
+    category: "calcolo",
+    component: InflationCalculator,
   },
   {
     id: "text_diff",

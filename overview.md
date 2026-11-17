@@ -30,6 +30,7 @@
 - `src/components/RadarChartMaker.tsx` — Grafico Radar: assi e valori in tabella, anteprima, SVG/PNG (`src/lib/radar.ts`).
 - `src/components/VirtualPiano.tsx` — Piano Virtuale: tre ottave, tastiera del computer, onde Web Audio (`src/lib/piano.ts`).
 - `src/components/PercentageCalculator.tsx` — Calcolatore Percentuali: le quattro domande più comuni (`src/lib/percent.ts`).
+- `src/components/InflationCalculator.tsx` — Calcolatore inflazione: potere d'acquisto di una somma tra due anni, in euro, dollari e yen (`src/lib/inflation.ts`, dati inclusi nel sito).
 - `src/components/EtaCalculator.tsx` — Calcolatore ETA: durata e ora di fine di un'attività dalla velocità (`src/lib/eta.ts`).
 - `src/components/AsciiArt.tsx` — Testo in ASCII Art con font 5×7 incluso (`src/lib/asciiArt.ts`).
 - `src/components/ItalyCodes.tsx` — Province Italiane: sigla, regione, prefisso e CAP del capoluogo (`src/lib/italyCodes.ts`).
