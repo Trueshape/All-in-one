@@ -83,6 +83,9 @@ import {
   TextCursorInput,
   ImagePlus,
   FormInput,
+  FileOutput,
+  Images,
+  FilePen,
 } from "lucide-react";
 
 // Import Components
@@ -146,6 +149,9 @@ const PdfProperties = lazy(() => import("../components/PdfEditTools").then((m) =
 const PdfAddText = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfAddText })));
 const PdfAddImage = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfAddImage })));
 const PdfForms = lazy(() => import("../components/PdfEditTools").then((m) => ({ default: m.PdfForms })));
+const PdfConvert = lazy(() => import("../components/PdfConvertTools").then((m) => ({ default: m.PdfConvert })));
+const PdfExtractImages = lazy(() => import("../components/PdfConvertTools").then((m) => ({ default: m.PdfExtractImages })));
+const PdfEditText = lazy(() => import("../components/PdfConvertTools").then((m) => ({ default: m.PdfEditText })));
 
 export interface ToolItem {
   id: string;
@@ -819,5 +825,38 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-rose-400 bg-rose-500/10",
     category: "pdf",
     component: PdfForms,
+  },
+  {
+    id: "pdf_convert",
+    name: "Converti PDF",
+    description: "Trasforma un PDF in immagini o in testo, oppure delle immagini in un PDF.",
+    icon: FileOutput,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfConvert,
+  },
+  {
+    id: "pdf_extract_images",
+    name: "Estrai immagini da PDF",
+    description: "Trova le immagini incorporate in un PDF e salvale una per una.",
+    icon: Images,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfExtractImages,
+  },
+  {
+    id: "pdf_edit_text",
+    name: "Modifica testo PDF",
+    description: "Correggi il testo già presente in un PDF direttamente sulla pagina.",
+    icon: FilePen,
+    colorClass: "border-rose-900/30 hover:border-rose-500/50",
+    glowClass: "shadow-rose-950/20 hover:shadow-rose-500/5",
+    iconColor: "text-rose-400 bg-rose-500/10",
+    category: "pdf",
+    component: PdfEditText,
   },
 ];

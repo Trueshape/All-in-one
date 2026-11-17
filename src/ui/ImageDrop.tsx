@@ -69,7 +69,8 @@ export function useImageSource() {
 
 export type ImageSourceState = ReturnType<typeof useImageSource>;
 
-export function ImageDrop({ onFile, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF, HEIC" }: { onFile: (file: File | undefined) => void; hint?: string }) {
+/** One image, or with `onFiles` any number of them at once. */
+export function ImageDrop({ onFile, onFiles, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF, HEIC" }: { onFile?: (file: File | undefined) => void; onFiles?: (files: File[]) => void; hint?: string }) {
   const u = useUi();
   const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -77,10 +78,12 @@ export function ImageDrop({ onFile, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF, HEIC
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    onFile(e.dataTransfer.files?.[0]);
+    if (onFiles) onFiles([...(e.dataTransfer.files ?? [])]);
+    else onFile?.(e.dataTransfer.files?.[0]);
   };
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onFile(e.target.files?.[0]);
+    if (onFiles) onFiles([...(e.target.files ?? [])]);
+    else onFile?.(e.target.files?.[0]);
     e.target.value = "";
   };
 
@@ -95,10 +98,10 @@ export function ImageDrop({ onFile, hint = "PNG, JPG, WEBP, GIF, BMP, AVIF, HEIC
         className={cx("w-full h-56 flex flex-col items-center justify-center gap-2 border-2 border-dashed cursor-pointer transition-colors", u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
       >
         <ImagePlus className="w-7 h-7" />
-        <span className={cx("text-xs font-semibold", u.text)}>Seleziona o trascina un'immagine</span>
+        <span className={cx("text-xs font-semibold", u.text)}>{onFiles ? "Seleziona o trascina una o più immagini" : "Seleziona o trascina un'immagine"}</span>
         <span className="text-[11px]">{hint}</span>
       </button>
-      <input ref={input} type="file" accept="image/*,.heic,.heif" onChange={onChange} className="hidden" />
+      <input ref={input} type="file" accept="image/*,.heic,.heif" multiple={!!onFiles} onChange={onChange} className="hidden" />
     </>
   );
 }

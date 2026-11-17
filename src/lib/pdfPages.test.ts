@@ -1,6 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { chunkPages, groupLabel, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines } from "./pdfPages";
+import { chunkPages, groupLabel, groupText, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines } from "./pdfPages";
+
+test("text pieces on one baseline join, wide gaps and other lines split", () => {
+  const boxes = groupText([
+    { str: "Ciao", x: 10, y: 100, width: 24, size: 12 },
+    { str: "mondo", x: 40, y: 100.4, width: 30, size: 12 },
+    { str: "Colonna due", x: 300, y: 100, width: 66, size: 12 },
+    { str: "Sotto", x: 10, y: 120, width: 28, size: 12 },
+    { str: " ", x: 50, y: 120, width: 3, size: 12 },
+  ]);
+  assert.deepEqual(boxes.map((b) => b.text), ["Ciao mondo", "Colonna due", "Sotto"]);
+  assert.equal(boxes[0].width, 60);
+  assert.equal(boxes[2].y, 120);
+});
 
 test("a centred mark has its middle at the page centre, also when turned", () => {
   const box = { x: 0, y: 0, width: 600, height: 800 };

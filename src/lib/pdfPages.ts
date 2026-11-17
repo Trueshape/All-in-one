@@ -121,6 +121,56 @@ export function markAnchors(box: PageBox, w: number, h: number, angle: number, l
   return out;
 }
 
+/** A piece of text as pdf.js reports it, in the page as shown (x to the right, y downward, y at the baseline), in points. */
+export interface RawText {
+  str: string;
+  x: number;
+  y: number;
+  width: number;
+  size: number;
+  family?: string;
+}
+
+/** A run of text that is edited as one unit: one line of one column. */
+export interface TextBox {
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  size: number;
+  family?: string;
+}
+
+/** Pieces on the same baseline are one box while the gap between them is small; a wide gap starts a new box (another column or cell). */
+export function groupText(pieces: RawText[]): TextBox[] {
+  const sorted = pieces.filter((p) => p.str !== "").sort((a, b) => a.y - b.y || a.x - b.x);
+  const rows: RawText[][] = [];
+  for (const piece of sorted) {
+    const row = rows[rows.length - 1];
+    if (row && Math.abs(row[0].y - piece.y) < Math.max(1.5, piece.size * 0.4)) row.push(piece);
+    else rows.push([piece]);
+  }
+  const boxes: TextBox[] = [];
+  for (const row of rows) {
+    row.sort((a, b) => a.x - b.x);
+    let box: TextBox | null = null;
+    for (const p of row) {
+      if (box && p.x - (box.x + box.width) < p.size * 0.8) {
+        const gap = p.x - (box.x + box.width);
+        const spaced = /\s$/.test(box.text) || /^\s/.test(p.str) || gap < p.size * 0.15 ? "" : " ";
+        box.text += spaced + p.str;
+        box.width = p.x + p.width - box.x;
+        box.size = Math.max(box.size, p.size);
+      } else {
+        if (box) boxes.push(box);
+        box = { text: p.str, x: p.x, y: p.y, width: p.width, size: p.size, family: p.family };
+      }
+    }
+    if (box) boxes.push(box);
+  }
+  return boxes.filter((b) => b.text.trim());
+}
+
 /** Millimeters to PDF points (1 pt = 1/72 inch). */
 export const mmToPt = (mm: number) => (mm * 72) / 25.4;
 export const ptToMm = (pt: number) => (pt * 25.4) / 72;

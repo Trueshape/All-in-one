@@ -38,8 +38,9 @@
 - `src/components/HandwritingFont.tsx` — Scrittura a mano in font: foglio PNG da stampare, lettura della foto e download del .ttf, anche con varianti delle lettere che si alternano (usa `opentype.js`; logica in `src/lib/handwriting.ts`).
 - `src/components/PdfPageTools.tsx` — strumenti PDF sulle pagine: Unisci, Separa, Rimuovi pagine, Ruota, Riordina, Ritaglia (`pdf-lib` per salvare).
 - `src/components/PdfEditTools.tsx` — strumenti PDF che aggiungono o cambiano contenuti: Filigrana, Proprietà, Aggiungi testo, Aggiungi immagini, Editor moduli.
+- `src/components/PdfConvertTools.tsx` — Converti PDF (in immagini, in testo, immagini in PDF), Estrai immagini da PDF, Modifica testo PDF (righe corrette sul posto: copre il vecchio testo e riscrive con un font standard).
 - `src/ui/PdfKit.tsx` — base comune degli strumenti PDF: caricamento (`usePdf`, `PdfDrop`), anteprime delle pagine con `pdfjs-dist`, salvataggio e messaggi di errore.
-- `src/ui/ImageDrop.tsx` — caricamento di un'immagine (trascina o scegli) e hook `useImageSource`, usati dagli strumenti per immagini.
+- `src/ui/ImageDrop.tsx` — caricamento di un'immagine, o di più immagini con `onFiles` (trascina o scegli) e hook `useImageSource`, usati dagli strumenti per immagini.
 - `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `marketData.ts`, `color.ts` (conversioni e armonie), `palette.ts` (colori dominanti), `imageOps.ts` (ricampionamento, nitidezza, filtri), `imageEncoders.ts` (BMP, TIFF, ICO), `barcode.ts` (Code 128, EAN-13), `pattern.ts` (pattern SVG), `handwriting.ts` (foglio e contorni dei glifi per il font a mano), `bracket.ts` (tabellone a eliminazione), `pdfPages.ts` (intervalli di pagine, margini e righe di testo dei PDF), `timeInput.ts` (tempo scritto a mano nel timer), `passwordModes.ts` e `wordlist.ts` (frasi, pronunciabili, PIN, token). Ogni modulo con logica ha il suo `*.test.ts` (`npm test`).
 - `src/index.css`, `src/main.tsx`, `src/vite-env.d.ts` — stili globali, entry React, tipi Vite.
 - `vite.config.ts` — config Vite; `base` cambia con `VITE_PUBLIC=1` (sottocartella `/All-in-one/` per Pages).

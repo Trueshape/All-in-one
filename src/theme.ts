@@ -103,6 +103,10 @@ export const getThemeClasses = (theme: Theme) => {
 
 export const getToolModalSize = (toolId: string): string => {
   switch (toolId) {
+    case "pdf_convert":
+      return "max-w-4xl";
+    case "pdf_extract_images":
+      return "max-w-5xl";
     case "pdf_watermark":
     case "pdf_add_text":
     case "pdf_add_image":
@@ -116,6 +120,7 @@ export const getToolModalSize = (toolId: string): string => {
     case "pdf_crop":
       return "max-w-5xl";
     case "pdf_remove_pages":
+    case "pdf_edit_text":
     case "pdf_rotate":
     case "pdf_reorder":
       return "max-w-6xl";
