@@ -38,6 +38,7 @@ export default function CryptoAndNasdaqTracker() {
   const [tab, setTab] = useState<Tab>("crypto");
   const [currency, setCurrency] = useState<"usd" | "eur">("usd");
   const [eurRate, setEurRate] = useState(0.92);
+  const [eurRateLive, setEurRateLive] = useState(false);
   const [coins, setCoins] = useState<CryptoCoin[]>(FALLBACK_CRYPTO);
   const [source, setSource] = useState<Source>("reference");
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
@@ -67,7 +68,7 @@ export default function CryptoAndNasdaqTracker() {
     load(controller.signal);
     fetch("https://open.er-api.com/v6/latest/USD", { signal: controller.signal })
       .then((r) => r.json())
-      .then((d) => { if (d?.rates?.EUR) setEurRate(d.rates.EUR); })
+      .then((d) => { if (d?.rates?.EUR) { setEurRate(d.rates.EUR); setEurRateLive(true); } })
       .catch(() => {});
     return () => controller.abort();
   }, [load]);
@@ -130,6 +131,7 @@ export default function CryptoAndNasdaqTracker() {
       {tab === "crypto" ? (
         <div className="space-y-4">
           <p className={cx("text-xs", source === "error" ? "text-amber-400" : u.muted)}>{statusText}</p>
+          {currency === "eur" && !eurRateLive && <Notice tone="warn">Cambio euro non disponibile: i prezzi in € usano un cambio fisso di riferimento (0,92), non quello di oggi.</Notice>}
           {source === "error" && <Notice tone="warn">L'API pubblica di CoinGecko ha un limite di richieste: riprova tra qualche minuto.</Notice>}
 
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center">

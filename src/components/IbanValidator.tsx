@@ -6,18 +6,18 @@ import { ALLOW } from "../lib/inputGuards";
 
 /** Total IBAN length per country (ISO 13616 registry). */
 const COUNTRIES: Record<string, { name: string; length: number }> = {
-  AT: { name: "Austria", length: 20 }, BE: { name: "Belgio", length: 16 }, BG: { name: "Bulgaria", length: 22 },
+  AD: { name: "Andorra", length: 24 }, AT: { name: "Austria", length: 20 }, BE: { name: "Belgio", length: 16 }, BG: { name: "Bulgaria", length: 22 },
   CH: { name: "Svizzera", length: 21 }, CY: { name: "Cipro", length: 28 }, CZ: { name: "Cechia", length: 24 },
   DE: { name: "Germania", length: 22 }, DK: { name: "Danimarca", length: 18 }, EE: { name: "Estonia", length: 20 },
   ES: { name: "Spagna", length: 24 }, FI: { name: "Finlandia", length: 18 }, FR: { name: "Francia", length: 27 },
-  GB: { name: "Regno Unito", length: 22 }, GR: { name: "Grecia", length: 27 }, HR: { name: "Croazia", length: 21 },
+  GB: { name: "Regno Unito", length: 22 }, GI: { name: "Gibilterra", length: 23 }, GR: { name: "Grecia", length: 27 }, HR: { name: "Croazia", length: 21 },
   HU: { name: "Ungheria", length: 28 }, IE: { name: "Irlanda", length: 22 }, IS: { name: "Islanda", length: 26 },
   IT: { name: "Italia", length: 27 }, LI: { name: "Liechtenstein", length: 21 }, LT: { name: "Lituania", length: 20 },
   LU: { name: "Lussemburgo", length: 20 }, LV: { name: "Lettonia", length: 21 }, MC: { name: "Monaco", length: 27 },
   MT: { name: "Malta", length: 31 }, NL: { name: "Paesi Bassi", length: 18 }, NO: { name: "Norvegia", length: 15 },
   PL: { name: "Polonia", length: 28 }, PT: { name: "Portogallo", length: 25 }, RO: { name: "Romania", length: 24 },
   SE: { name: "Svezia", length: 24 }, SI: { name: "Slovenia", length: 19 }, SK: { name: "Slovacchia", length: 24 },
-  SM: { name: "San Marino", length: 27 },
+  SM: { name: "San Marino", length: 27 }, VA: { name: "Città del Vaticano", length: 22 },
 };
 
 /** A few well-known Italian ABI codes (indicative only). */
