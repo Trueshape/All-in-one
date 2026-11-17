@@ -3,6 +3,7 @@ import type { ChangeEvent, DragEvent } from "react";
 import { ImagePlus } from "lucide-react";
 import { cx } from "./kit";
 import { useUi } from "./tokens";
+import { useUnsaved } from "./unsaved";
 
 export interface Source {
   url: string;
@@ -25,8 +26,9 @@ async function heicToPng(file: File): Promise<File> {
 }
 
 /** Loads one image file and keeps its object URL alive only while it is in use. */
-export function useImageSource() {
+export function useImageSource(warnOnLeave = true) {
   const [source, setSource] = useState<Source | null>(null);
+  useUnsaved(warnOnLeave && source !== null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => () => { if (source) URL.revokeObjectURL(source.url); }, [source]);

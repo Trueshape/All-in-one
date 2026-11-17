@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Download, Trash2 } from "lucide-react";
 import { PDFDocument, degrees } from "pdf-lib";
+import { useUnsaved } from "../ui/unsaved";
 import { Button, Chips, CopyButton, Field, IconButton, Notice, Segmented, Slider, Stack, TextArea, TextInput, Toggle, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { ImageDrop } from "../ui/ImageDrop";
@@ -70,6 +71,7 @@ export function PdfConvert() {
   const [problem, setProblem] = useState<string | null>(null);
   const saver = useSaver();
   const pdf = state.pdf;
+  useUnsaved(mode === "pdf" && images.length > 0);
 
   useEffect(() => {
     setText("");

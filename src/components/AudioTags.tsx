@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Music } from "lucide-react";
 import { Button, Field, TextArea, TextInput, Notice, Stack } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { useUnsavedFlag } from "../ui/unsaved";
 import { PdfDrop } from "../ui/PdfKit";
 import { EMPTY_TAGS, detectFormat, readTags, writeTags } from "../lib/audioTags";
 import type { Tags, TagFormat } from "../lib/audioTags";
@@ -49,6 +50,7 @@ export default function AudioTags() {
   const single = items.length === 1 ? items[0] : null;
   const current = items.find((it) => it.id === active) ?? single;
   const dirtyCount = items.filter((it) => it.dirty).length;
+  useUnsavedFlag(dirtyCount > 0);
 
   const addFiles = async (picked: File[] | FileList | null | undefined) => {
     if (!picked || picked.length === 0) return;

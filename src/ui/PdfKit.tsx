@@ -7,6 +7,7 @@ import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { Button, IconButton, Notice, Row, Stack, cx } from "./kit";
 import { useUi } from "./tokens";
+import { useUnsaved } from "./unsaved";
 import { download, formatBytes, toBlob } from "../lib/imageOps";
 import { hexToRgb } from "../lib/color";
 import { clampView, zoomAt } from "../lib/pdfPages";
@@ -400,6 +401,7 @@ export function useSaver() {
 
 /** The drop area until a PDF is loaded, then the tool, with the tool's explanation under it. */
 export function SinglePdf({ state, info, children }: { state: ReturnType<typeof usePdf>; info: ReactNode; children: (pdf: PdfFile) => ReactNode }) {
+  useUnsaved(!!state.pdf);
   return (
     <Stack>
       {state.pdf ? children(state.pdf) : <PdfDrop onFiles={(files) => void state.load(files[0])} hint={state.busy ? "Lettura del PDF…" : "PDF"} />}

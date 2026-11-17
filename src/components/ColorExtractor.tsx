@@ -18,7 +18,7 @@ const textOn = (hex: string) => {
 
 export default function ColorExtractor() {
   const u = useUi();
-  const { source, error, load, clear } = useImageSource();
+  const { source, error, load, clear } = useImageSource(false);
   const [count, setCount] = useState(6);
   const [picked, setPicked] = useState<{ hex: string; rgb: Rgb } | null>(null);
   const sample = useRef<ImageData | null>(null);

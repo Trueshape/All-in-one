@@ -276,7 +276,7 @@ type Mode = "draw" | "sheet";
 
 export default function HandwritingFont() {
   const u = useUi();
-  const { source, error, load, clear } = useImageSource();
+  const { source, error, load, clear } = useImageSource(false);
   const [saved] = useState(readSaved);
   const [mode, setMode] = useState<Mode>("draw");
   const [family, setFamily] = useState("LaMiaScrittura");

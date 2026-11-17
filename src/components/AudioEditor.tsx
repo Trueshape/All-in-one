@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Music, Pause, Play, Trash2 } from "lucide-react";
+import { useUnsaved } from "../ui/unsaved";
 import { Field, TextInput, Toggle, Chips, Segmented, Select, Slider, Button, Notice, Stack, Row, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { AUDIO_FORMATS, DEFAULT_AUDIO_OPTIONS, MP3_BITRATES, encodeAudio } from "../lib/audioEncoders";
@@ -24,6 +25,7 @@ const BINS = 480;
 export default function AudioEditor() {
   const u = useUi();
   const [file, setFile] = useState<Loaded | null>(null);
+  useUnsaved(!!file);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("trim");

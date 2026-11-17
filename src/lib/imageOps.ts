@@ -100,6 +100,7 @@ export function download(blob: Blob, name: string) {
   a.download = name;
   a.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  window.dispatchEvent(new Event("tool-saved"));
 }
 
 export const formatBytes = (bytes: number) => {

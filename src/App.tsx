@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { CATEGORY_ORDER, TOOLS } from "./tools/registry";
 import { getThemeClasses, type Theme } from "./theme";
 import Landing from "./Landing";
 import ToolModal from "./ToolModal";
 import { I18nContext, LOCALES, makeI18n, type Lang } from "./i18n";
+import { UnsavedContext } from "./ui/unsaved";
 
 const THEMES: Theme[] = ["artistic", "immersive", "sophisticated"];
 
@@ -25,6 +26,28 @@ const writeStorage = (key: string, value: string) => {
 
 export default function App() {
   const [activeToolId, setActiveToolId] = useState<string | null>(null);
+
+  // Tools with work in progress (a file being edited) register here; leaving the page then asks first.
+  const dirtyKeys = useRef(new Set<string>());
+  const mark = useCallback((key: string, dirty: boolean) => {
+    if (dirty) dirtyKeys.current.add(key);
+    else dirtyKeys.current.delete(key);
+  }, []);
+  const unsaved = useMemo(() => ({ mark }), [mark]);
+  const [pending, setPending] = useState<(() => void) | null>(null);
+  const guard = (action: () => void) => {
+    if (dirtyKeys.current.size > 0) setPending(() => action);
+    else action();
+  };
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => {
+      if (dirtyKeys.current.size === 0) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, []);
 
   // Theme Switching State
   const [activeTheme, setActiveTheme] = useState<Theme>(() => {
@@ -112,14 +135,15 @@ export default function App() {
     if (!activeToolId) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setActiveToolId(null);
+        if (pending) setPending(null);
+        else guard(() => setActiveToolId(null));
         return;
       }
       const el = e.target as HTMLElement | null;
       if (el?.closest("[data-tool-body]")) return;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
-      if (e.key === "ArrowRight") handleNextTool();
-      else if (e.key === "ArrowLeft") handlePrevTool();
+      if (e.key === "ArrowRight") guard(handleNextTool);
+      else if (e.key === "ArrowLeft") guard(handlePrevTool);
       else return;
       e.preventDefault();
     };
@@ -131,6 +155,7 @@ export default function App() {
 
   return (
     <I18nContext.Provider value={i18n}>
+    <UnsavedContext.Provider value={unsaved}>
     <div className={`min-h-screen ${tc.bg} flex flex-col relative overflow-x-clip transition-colors duration-500`}>
 
       {/* Background decoration elements */}
@@ -163,13 +188,27 @@ export default function App() {
         setTempToolName={setTempToolName}
         customToolNames={customToolNames}
         setCustomToolNames={setCustomToolNames}
-        onClose={() => setActiveToolId(null)}
-        onNext={handleNextTool}
-        onPrev={handlePrevTool}
+        onClose={() => guard(() => setActiveToolId(null))}
+        onNext={() => guard(handleNextTool)}
+        onPrev={() => guard(handlePrevTool)}
         showInfo={showInfo}
         onToggleInfo={() => setShowInfo((v) => !v)}
       />
+
+      {pending && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70" role="alertdialog" aria-modal="true" aria-labelledby="unsaved-title">
+          <div className={`w-full max-w-md p-6 space-y-4 border ${tc.borderClass} bg-zinc-950 text-zinc-200 rounded-lg shadow-2xl`}>
+            <h2 id="unsaved-title" className="text-base font-semibold">Modifiche non salvate</h2>
+            <p className="text-sm text-zinc-400">Se cambi pagina ora puoi perdere il lavoro fatto su questo file. Vuoi uscire lo stesso?</p>
+            <div className="flex justify-end gap-2">
+              <button type="button" autoFocus onClick={() => setPending(null)} className={`px-4 py-2 text-sm border ${tc.borderClass} ${tc.btnClassic}`}>Resta qui</button>
+              <button type="button" onClick={() => { const go = pending; dirtyKeys.current.clear(); setPending(null); go(); }} className="px-4 py-2 text-sm border border-red-500/50 text-red-300 hover:bg-red-500/10">Cambia pagina</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </UnsavedContext.Provider>
     </I18nContext.Provider>
   );
 }

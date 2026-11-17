@@ -4,6 +4,7 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronLeft, ChevronRight, R
 import { PDFDocument, degrees } from "pdf-lib";
 import { Button, Field, IconButton, Notice, Row, Segmented, Stack, TextInput, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { useUnsaved } from "../ui/unsaved";
 import { PageThumb, PdfDrop, PdfFileBar, SinglePdf, ZoomPan, baseName, editPdf, isPdf, pdfError, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { PdfFile } from "../ui/PdfKit";
 import { formatBytes } from "../lib/imageOps";
@@ -64,6 +65,7 @@ export function PdfMerge() {
   const [items, setItems] = useState<MergeItem[]>([]);
   const [problem, setProblem] = useState<string | null>(null);
   const saver = useSaver();
+  useUnsaved(items.length > 0);
 
   const add = async (files: File[]) => {
     setProblem(null);
