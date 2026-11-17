@@ -28,7 +28,10 @@ function worthIn(code: string, amount: number, year: number): number | null {
   return adjust(c, amount, yearRange(c).last, year)?.value ?? null;
 }
 
-const FALLBACK_RATES = Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, c.fallback]));
+/** The "Da" and "A" lists, in alphabetical order of the currency name. */
+const BY_NAME = Object.entries(CURRENCIES).sort(([, a], [, b]) => a.name.localeCompare(b.name, "it"));
+
+const FALLBACK_RATES =Object.fromEntries(Object.entries(CURRENCIES).map(([code, c]) => [code, c.fallback]));
 
 type Status = { kind: "fallback" } | { kind: "loading" } | { kind: "live" } | { kind: "error" };
 
@@ -82,13 +85,13 @@ export default function CurrencyConverter() {
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
         <Field label="Da">
           <Select value={from} onChange={(e) => setFrom(e.target.value)}>
-            {Object.entries(CURRENCIES).map(([code, c]) => <option key={code} value={code}>{code} · {c.name}</option>)}
+            {BY_NAME.map(([code, c]) => <option key={code} value={code}>{code} · {c.name}</option>)}
           </Select>
         </Field>
         <IconButton onClick={() => { setFrom(to); setTo(from); }} title="Inverti valute" className="mb-1"><ArrowLeftRight className="w-4 h-4" /></IconButton>
         <Field label="A">
           <Select value={to} onChange={(e) => setTo(e.target.value)}>
-            {Object.entries(CURRENCIES).map(([code, c]) => <option key={code} value={code}>{code} · {c.name}</option>)}
+            {BY_NAME.map(([code, c]) => <option key={code} value={code}>{code} · {c.name}</option>)}
           </Select>
         </Field>
       </div>
