@@ -707,7 +707,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_merge",
-    name: "Unisci PDF",
+    name: "Unisci",
     description: "Unisci più PDF in un unico file, nell'ordine che scegli.",
     icon: Combine,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -718,7 +718,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_split",
-    name: "Separa PDF",
+    name: "Separa",
     description: "Dividi un PDF in più file: ogni pagina, ogni N pagine o per intervalli.",
     icon: Split,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -729,7 +729,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_remove_pages",
-    name: "Rimuovi pagine PDF",
+    name: "Rimuovi pagine",
     description: "Togli le pagine che non servono, scegliendole dalle anteprime.",
     icon: FileMinus,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -740,7 +740,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_rotate",
-    name: "Ruota pagine PDF",
+    name: "Ruota pagine",
     description: "Ruota una pagina o tutte di 90°, con l'anteprima.",
     icon: RotateCw,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -751,7 +751,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_reorder",
-    name: "Riordina pagine PDF",
+    name: "Riordina pagine",
     description: "Trascina le pagine per cambiarne l'ordine.",
     icon: ListOrdered,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -762,7 +762,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_crop",
-    name: "Ritaglia PDF",
+    name: "Ritaglia",
     description: "Togli i margini da una pagina o da tutte, in millimetri.",
     icon: Crop,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -773,7 +773,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_watermark",
-    name: "Filigrana PDF",
+    name: "Filigrana",
     description: "Aggiungi una scritta o un logo trasparente su tutte le pagine o solo su alcune.",
     icon: Stamp,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -784,7 +784,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_properties",
-    name: "Proprietà PDF",
+    name: "Proprietà",
     description: "Cambia titolo, autore, oggetto, parole chiave e date di un PDF.",
     icon: FileCog,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -795,7 +795,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_add_text",
-    name: "Aggiungi testo al PDF",
+    name: "Aggiungi testo",
     description: "Scrivi dove vuoi sulle pagine: clicca, scrivi e trascina.",
     icon: TextCursorInput,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -806,7 +806,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_add_image",
-    name: "Aggiungi immagini al PDF",
+    name: "Aggiungi immagini",
     description: "Inserisci immagini, firme o loghi sulle pagine e posizionali trascinandoli.",
     icon: ImagePlus,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -817,7 +817,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_forms",
-    name: "Editor moduli PDF",
+    name: "Editor moduli",
     description: "Compila i campi di un modulo PDF o aggiungine di nuovi, testo e caselle.",
     icon: FormInput,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -828,7 +828,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_convert",
-    name: "Converti PDF",
+    name: "Converti",
     description: "Trasforma un PDF in immagini o in testo, oppure delle immagini in un PDF.",
     icon: FileOutput,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -839,7 +839,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_extract_images",
-    name: "Estrai immagini da PDF",
+    name: "Estrai immagini",
     description: "Trova le immagini incorporate in un PDF e salvale una per una.",
     icon: Images,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
@@ -850,7 +850,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "pdf_edit_text",
-    name: "Modifica testo PDF",
+    name: "Modifica testo",
     description: "Correggi il testo già presente in un PDF direttamente sulla pagina.",
     icon: FilePen,
     colorClass: "border-rose-900/30 hover:border-rose-500/50",
