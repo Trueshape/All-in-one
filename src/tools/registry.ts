@@ -487,7 +487,7 @@ export const TOOLS: ToolItem[] = [
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
     glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",
     iconColor: "text-emerald-400 bg-emerald-500/10",
-    category: "calcolo",
+    category: "creative",
     component: IbanValidator,
   },
   {
