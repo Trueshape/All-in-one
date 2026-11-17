@@ -18,11 +18,8 @@ export default function CodiceFiscaleInverse() {
 
   return (
     <Stack>
-      <Field label="Codice fiscale (16 caratteri)" actions={<Button size="sm" variant="danger" disabled={!input} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setInput("")}>Svuota</Button>}>
-        <div className="relative">
-          <TextInput value={input} allow={ALLOW.lettersDigitsSpace} onChange={(e) => setInput(e.target.value.toUpperCase())} maxLength={19} placeholder="es. RSSMRA80A01H501U" spellCheck={false} autoComplete="off" className="uppercase tracking-widest pr-11" />
-          <div className="absolute right-1 top-1/2 -translate-y-1/2"><CopyButton text={cleaned} label="Copia codice" /></div>
-        </div>
+      <Field label="Codice fiscale (16 caratteri)" actions={<><Button size="sm" variant="danger" disabled={!input} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setInput("")}>Svuota</Button><CopyButton text={cleaned} label="Copia codice" /></>}>
+        <TextInput value={input} allow={ALLOW.lettersDigitsSpace} onChange={(e) => setInput(e.target.value.toUpperCase())} maxLength={19} placeholder="es. RSSMRA80A01H501U" spellCheck={false} autoComplete="off" className="uppercase tracking-widest" />
       </Field>
 
       {needsMore && <p className={cx("text-xs", u.muted)}>{cleaned.length}/16 caratteri…</p>}

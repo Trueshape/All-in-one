@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { Eye, FileText, PenLine, Trash2, Check, Copy } from "lucide-react";
-import { Notice, Segmented, Button, TextArea, Panel, SectionTitle, Stack, useCopy, cx } from "../ui/kit";
+import { Eye, FileText, PenLine, Trash2 } from "lucide-react";
+import { Notice, Segmented, Button, TextArea, Panel, SectionTitle, Stack, CopyButton, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import type { Ui } from "../ui/tokens";
 import { parseMarkdown, toHtml } from "../lib/markdown";
@@ -99,7 +99,6 @@ export default function MarkdownPreviewer() {
   const u = useUi();
   const [markdown, setMarkdown] = useState(SAMPLE);
   const [view, setView] = useState<ViewMode>("split");
-  const { copied, copy } = useCopy();
 
   const blocks = useMemo(() => parseMarkdown(markdown), [markdown]);
 
@@ -120,9 +119,7 @@ export default function MarkdownPreviewer() {
           <Button size="sm" variant="danger" disabled={!markdown} icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setMarkdown("")}>
             Svuota
           </Button>
-          <Button size="sm" disabled={!markdown} icon={copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />} onClick={() => copy(toHtml(blocks))}>
-            {copied ? "Copiato" : "Copia HTML"}
-          </Button>
+          <CopyButton text={toHtml(blocks)} label="Copia HTML" />
         </div>
       </div>
 

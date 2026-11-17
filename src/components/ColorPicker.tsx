@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
-import { Notice, Field, TextInput, Slider, Panel, SectionTitle, Stack, useCopy, cx, IconButton } from "../ui/kit";
+import { Notice, Field, TextInput, Slider, Panel, SectionTitle, Stack, useCopy, cx, CopyButton } from "../ui/kit";
 import { ColorWheel, HARMONY_NAMES } from "../ui/ColorWheel";
 import { useUi } from "../ui/tokens";
 import { contrastRatio, harmonies, hexToRgb, hslToHex, rgbToHex, rgbToHsl } from "../lib/color";
@@ -34,8 +33,7 @@ export default function ColorPicker() {
   const u = useUi();
   const [color, setColor] = useState<Color>(() => fromHsl(258, 90, 50));
   const [draft, setDraft] = useState(color.hex);
-  const { copied, copy } = useCopy();
-  const [copiedLabel, setCopiedLabel] = useState("");
+  const { copy } = useCopy();
 
   const { hex } = color;
   const rgb = hexToRgb(hex) ?? [0, 0, 0];
@@ -93,9 +91,7 @@ export default function ColorPicker() {
                 <span className={u.statLabel}>{f.label}</span>
                 <div className={cx("font-mono text-sm", u.text)}>{f.value}</div>
               </div>
-              <IconButton onClick={() => { setCopiedLabel(f.label); copy(f.value); }} title={`Copia ${f.label}`}>
-                {copied && copiedLabel === f.label ? <Check className="text-emerald-400" /> : <Copy />}
-              </IconButton>
+              <CopyButton text={f.value} label={`Copia ${f.label}`} />
             </Panel>
           ))}
           <div className="grid grid-cols-2 gap-2">

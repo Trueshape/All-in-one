@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { DatePicker, Field, TextInput, TextArea, Chips, Panel, SectionTitle, Notice, Stack, Row, CopyButton, useCopy, cx } from "../ui/kit";
+import { DatePicker, Field, TextInput, TextArea, Chips, Panel, SectionTitle, Notice, Stack, Row, CopyButton, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -50,7 +50,6 @@ export default function DiscordTimestamp() {
   const [time, setTime] = useState(initial.time);
   const [markupId, setMarkupId] = useState("bold");
   const [input, setInput] = useState("");
-  const { copied, copy } = useCopy();
   const [copiedTag, setCopiedTag] = useState<string | null>(null);
 
   const when = useMemo(() => {
@@ -114,9 +113,8 @@ export default function DiscordTimestamp() {
           </Field>
           <Chips value={markupId} onChange={setMarkupId} options={MARKUP.map((m) => ({ value: m.id, label: m.label }))} />
           <Panel inset className="relative min-h-[88px]">
-            <span className={u.statLabel}>Risultato</span>
+            <div className="flex items-center justify-between"><span className={u.statLabel}>Risultato</span><CopyButton text={formatted} /></div>
             <pre className={cx("mt-1 pr-8 text-xs font-mono whitespace-pre-wrap break-all select-all", u.text)}>{formatted || "—"}</pre>
-            <div className="absolute top-2 right-2"><CopyButton text={formatted} label={copied ? "Copiato" : "Copia"} /></div>
           </Panel>
         </div>
       </div>

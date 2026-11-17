@@ -65,7 +65,7 @@ export default function BarcodeGenerator() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <Field label={type === "ean13" ? "Cifre (12, oppure 13 con controllo)" : "Testo"} hint={type === "ean13" ? "La cifra di controllo viene calcolata da sola." : "Lettere, numeri e simboli ASCII."}>
+          <Field label={type === "ean13" ? "Cifre (12, oppure 13 con controllo)" : "Testo"} actions={<CopyButton text={ok?.label ?? ""} label="Copia testo codificato" />} hint={type === "ean13" ? "La cifra di controllo viene calcolata da sola." : "Lettere, numeri e simboli ASCII."}>
             <TextInput value={text} allow={type === "ean13" ? ALLOW.digits : ALLOW.asciiPrintable} maxLength={type === "ean13" ? 13 : 100} onChange={(e) => setText(e.target.value)} inputMode={type === "ean13" ? "numeric" : "text"} spellCheck={false} />
           </Field>
           <Slider label="Altezza barre" value={height} min={30} max={120} onChange={setHeight} display={`${height}`} />
@@ -89,7 +89,6 @@ export default function BarcodeGenerator() {
             <Button variant="primary" disabled={!ok} icon={<Download className="w-3.5 h-3.5" />} onClick={() => download(new Blob([svg], { type: "image/svg+xml" }), `barcode_${type}.svg`)}>SVG</Button>
             <Button disabled={!ok} icon={<Download className="w-3.5 h-3.5" />} onClick={downloadPng}>PNG</Button>
           </div>
-          {ok && <CopyButton text={ok.label} label="Copia testo codificato" />}
         </Panel>
       </div>
       <Notice>Il codice è generato nel browser. Per un uso commerciale (EAN/UPC) i numeri vanno assegnati da GS1.</Notice>

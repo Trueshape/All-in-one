@@ -35,17 +35,11 @@ export default function RomanNumerals() {
   return (
     <Stack>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Numero">
-          <div className="flex gap-2 items-center">
-            <TextInput type="number" inputMode="numeric" integer min={1} max={MAX_ROMAN} value={arabic} onChange={(e) => changeArabic(e.target.value)} />
-            <CopyButton text={arabic} />
-          </div>
+        <Field label="Numero" actions={<CopyButton text={arabic} />}>
+          <TextInput type="number" inputMode="numeric" integer min={1} max={MAX_ROMAN} value={arabic} onChange={(e) => changeArabic(e.target.value)} />
         </Field>
-        <Field label="Numero romano">
-          <div className="flex gap-2 items-center">
-            <TextInput className="font-mono uppercase" allow={ALLOW.roman} maxLength={15} value={roman} onChange={(e) => changeRoman(e.target.value)} />
-            <CopyButton text={roman} />
-          </div>
+        <Field label="Numero romano" actions={<CopyButton text={roman} />}>
+          <TextInput className="font-mono uppercase" allow={ALLOW.roman} maxLength={15} value={roman} onChange={(e) => changeRoman(e.target.value)} />
         </Field>
       </div>
       {error && <Notice tone="error">{error}</Notice>}

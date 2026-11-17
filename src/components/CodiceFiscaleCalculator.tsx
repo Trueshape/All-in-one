@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { RefreshCw } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { DatePicker, Field, TextInput, Select, Segmented, Button, Panel, Row, Notice, SectionTitle, ResultCard, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { COMUNI, encode } from "../lib/codiceFiscale";
@@ -73,7 +73,7 @@ export default function CodiceFiscaleCalculator() {
 
             <div className="flex gap-3">
               <Button type="submit" variant="primary" className="flex-1">Calcola codice fiscale</Button>
-              <Button className="!w-10 !px-0" onClick={reset} title="Svuota i campi" aria-label="Svuota i campi"><RefreshCw className="w-4 h-4" /></Button>
+              <Button variant="danger" icon={<Trash2 />} onClick={reset}>Svuota</Button>
             </div>
           </form>
 

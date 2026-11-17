@@ -110,7 +110,7 @@ function Pomodoro() {
           {running ? "Pausa" : left === 0 ? "Ricomincia" : "Avvia"}
         </Button>
         <div className="justify-self-start">
-          <IconButton size="md" onClick={pomodoro.restart} title="Reset" className="border-current"><RotateCcw /></IconButton>
+          <IconButton size="md" onClick={pomodoro.restart} title="Riavvia" className="border-current"><RotateCcw /></IconButton>
         </div>
       </div>
     </div>
@@ -129,7 +129,7 @@ function Stopwatch() {
     <div className="space-y-5 text-center">
       <div className={cx("py-6 text-5xl font-bold font-mono tabular-nums", u.text)} role="timer">{stopwatchText(elapsed)}</div>
       <div className="flex justify-center gap-3">
-        <IconButton size="md" onClick={stopwatch.reset} disabled={elapsed === 0} title="Reset"><RotateCcw /></IconButton>
+        <IconButton size="md" onClick={stopwatch.reset} disabled={elapsed === 0} title="Azzera"><RotateCcw /></IconButton>
         <Button variant="primary" onClick={stopwatch.toggle} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
           {running ? "Ferma" : "Avvia"}
         </Button>

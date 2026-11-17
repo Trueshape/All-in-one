@@ -660,7 +660,7 @@ export function PdfEditText() {
       </div>
       <div className="flex items-center justify-between gap-3">
         <span className={cx("text-xs", u.muted)}>{loading ? "Leggo il testo…" : edited.length === 1 ? "1 riga modificata" : `${edited.length} righe modificate`}</span>
-        {edited.length > 0 && <Button size="sm" onClick={() => setBoxes((list) => list.map((b) => ({ ...b, value: b.text })))}>Annulla tutto</Button>}
+        {edited.length > 0 && <Button size="sm" onClick={() => setBoxes((list) => list.map((b) => ({ ...b, value: b.text })))}>Ripristina</Button>}
       </div>
       {/* The same lines as a list: easier for small print, and it keeps the two columns about as tall */}
       {boxes.some((b) => b.page === page) && (

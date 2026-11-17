@@ -70,12 +70,9 @@ export default function IbanValidator() {
 
   return (
     <Stack>
-      <Field label="Codice IBAN">
-        <div className="relative">
-          <TextInput value={raw} allow={ALLOW.lettersDigitsSpace} maxLength={45} onChange={(e) => setRaw(e.target.value)} placeholder="es. IT35 O030 6901 6000 0000 0012 345" spellCheck={false} autoComplete="off" className="uppercase tracking-wider pr-11"
-            style={result ? { borderColor: result.valid ? "rgb(52 211 153 / 0.7)" : "rgb(248 113 113 / 0.7)" } : undefined} />
-          <div className="absolute right-1 top-1/2 -translate-y-1/2"><CopyButton text={formatted} label="Copia IBAN formattato" /></div>
-        </div>
+      <Field label="Codice IBAN" actions={<CopyButton text={formatted} label="Copia IBAN formattato" />}>
+        <TextInput value={raw} allow={ALLOW.lettersDigitsSpace} maxLength={45} onChange={(e) => setRaw(e.target.value)} placeholder="es. IT35 O030 6901 6000 0000 0012 345" spellCheck={false} autoComplete="off" className="uppercase tracking-wider"
+          style={result ? { borderColor: result.valid ? "rgb(52 211 153 / 0.7)" : "rgb(248 113 113 / 0.7)" } : undefined} />
       </Field>
 
       <div className="space-y-2">
