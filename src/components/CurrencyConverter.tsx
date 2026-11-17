@@ -106,7 +106,7 @@ export default function CurrencyConverter() {
       <div className={cx("p-3 space-y-2 rounded-xl", u.panel)}>
         <div className={cx("flex items-center gap-1.5 px-1 text-xs font-medium", u.subtle)}>
           <TrendingUp className={cx("w-3.5 h-3.5", u.accent)} />
-          <span>Tassi di Cambio Riferimento (1 EUR)</span>
+          <span>{valid ? `${fmtNumber(value, 2)} ${from} in tutte le valute` : "Importo in tutte le valute"}</span>
         </div>
         <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-x-3 gap-y-1.5 text-xs">
           <span />
@@ -119,12 +119,13 @@ export default function CurrencyConverter() {
               </Select>
             </div>
           </div>
-          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").map((code) => {
-            const past = worthIn(code, rates[code], thenYear);
+          {Object.keys(CURRENCIES).filter((c) => c !== from).map((code) => {
+            const now = valid ? (value / rates[from]) * rates[code] : null;
+            const past = now === null ? null : worthIn(code, now, thenYear);
             return (
               <Fragment key={code}>
                 <span className={cx("font-medium px-2 py-1.5", u.muted)}>{code}</span>
-                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, u.text)}>{fmtNumber(rates[code], 2)}</span>
+                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, u.text)}>{now === null ? "—" : fmtNumber(now, 2)}</span>
                 <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, past === null ? u.muted : u.text)}>{past === null ? "—" : fmtNumber(past, 2)}</span>
               </Fragment>
             );
@@ -132,7 +133,7 @@ export default function CurrencyConverter() {
         </div>
       </div>
       <Notice>
-        Cambia la valuta di partenza o di arrivo: il risultato si aggiorna subito. «Valeva nel» riporta il tasso di oggi con il potere d'acquisto dell'anno scelto, usando l'inflazione di ciascuna valuta, ferma all'ultimo anno con dati (2025; 2024 il dollaro USA, 2001 la lira). «—» se l'anno è fuori dalla serie di quella valuta (il renminbi parte dal 1986).
+        Cambia la valuta di partenza o di arrivo: il risultato si aggiorna subito. «Valeva nel» riporta l'importo di oggi con il potere d'acquisto dell'anno scelto, usando l'inflazione di ciascuna valuta, ferma all'ultimo anno con dati (2025; 2024 il dollaro USA, 2001 la lira). «—» se l'anno è fuori dalla serie di quella valuta (il renminbi parte dal 1986).
       </Notice>
     </Stack>
   );
