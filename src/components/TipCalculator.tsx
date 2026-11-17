@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { Percent, Users } from "lucide-react";
-import { Field, TextInput, ResultCard, Row, Notice, Stack, cx } from "../ui/kit";
+import { Field, TextInput, Chips, ResultCard, Row, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const eur = (n: number) => n.toLocaleString("it-IT", { style: "currency", currency: "EUR" });
+const num = (s: string) => Math.max(parseFloat(s) || 0, 0);
 
 // Each control has its own color, as in the original design.
 const COLORS = { discount: "#f59e0b", tip: "#818cf8", people: "#34d399" };
+
+type Mode = "percent" | "fixed";
+const MODES: Array<{ value: Mode; label: string }> = [
+  { value: "percent", label: "Percentuale" },
+  { value: "fixed", label: "Valore fisso" },
+];
 
 function Control({
   icon,
@@ -67,22 +74,73 @@ function Control({
   );
 }
 
+/** A discount or tip that is either a percentage (slider) or a fixed amount in euro (typed). */
+function AmountControl({
+  icon,
+  label,
+  color,
+  max,
+  mode,
+  onMode,
+  percent,
+  onPercent,
+  fixed,
+  onFixed,
+  shown,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  color: string;
+  max: number;
+  mode: Mode;
+  onMode: (m: Mode) => void;
+  percent: number;
+  onPercent: (v: number) => void;
+  fixed: string;
+  onFixed: (v: string) => void;
+  shown: string;
+}) {
+  const u = useUi();
+  return (
+    <div className="space-y-2">
+      <div className="flex items-baseline justify-between">
+        <span className={cx("flex items-center gap-1.5 text-xs", u.subtle)}>{icon} {label}</span>
+        <span className="text-sm font-mono font-semibold" style={{ color }}>{shown}</span>
+      </div>
+      <Chips fill value={mode} onChange={onMode} options={MODES} />
+      {mode === "percent" ? (
+        <input type="range" min={0} max={max} value={percent} onChange={(e) => onPercent(Number(e.target.value))} className="w-full cursor-pointer" style={{ accentColor: color }} />
+      ) : (
+        <TextInput type="number" inputMode="decimal" min="0" step="0.01" value={fixed} onChange={(e) => onFixed(e.target.value)} prefixText="€" placeholder="0,00" />
+      )}
+    </div>
+  );
+}
+
 export default function TipCalculator() {
   const [bill, setBill] = useState("100");
-  const [discount, setDiscount] = useState(15);
-  const [tip, setTip] = useState(10);
+  const [discountMode, setDiscountMode] = useState<Mode>("percent");
+  const [discountPct, setDiscountPct] = useState(15);
+  const [discountFixed, setDiscountFixed] = useState("10");
+  const [tipMode, setTipMode] = useState<Mode>("percent");
+  const [tipPct, setTipPct] = useState(10);
+  const [tipFixed, setTipFixed] = useState("5");
   const [people, setPeople] = useState(2);
 
-  const billValue = Math.max(parseFloat(bill) || 0, 0);
-  const discountAmount = billValue * (discount / 100);
+  const billValue = num(bill);
+  // a fixed discount cannot be bigger than the bill
+  const discountAmount = discountMode === "percent" ? billValue * (discountPct / 100) : Math.min(num(discountFixed), billValue);
   const discounted = billValue - discountAmount;
-  const tipAmount = discounted * (tip / 100);
+  const tipAmount = tipMode === "percent" ? discounted * (tipPct / 100) : num(tipFixed);
   const total = discounted + tipAmount;
   const perPerson = total / people;
 
+  const discountShown = discountMode === "percent" ? `${discountPct}%` : eur(num(discountFixed));
+  const tipShown = tipMode === "percent" ? `${tipPct}%` : eur(num(tipFixed));
+
   const summary =
-    `Conto: ${eur(billValue)} | Sconto: ${discount}% (-${eur(discountAmount)}) | ` +
-    `Mancia: ${tip}% (+${eur(tipAmount)}) | Totale: ${eur(total)} | ` +
+    `Conto: ${eur(billValue)} | Sconto: ${discountShown} (-${eur(discountAmount)}) | ` +
+    `Mancia: ${tipShown} (+${eur(tipAmount)}) | Totale: ${eur(total)} | ` +
     `Dividi: ${people} persone (${eur(perPerson)} a persona)`;
 
   return (
@@ -91,17 +149,41 @@ export default function TipCalculator() {
         <TextInput type="number" inputMode="decimal" min="0" step="0.01" value={bill} onChange={(e) => setBill(e.target.value)} prefixText="€" placeholder="0,00" />
       </Field>
 
-      <Control icon={<Percent className="w-3.5 h-3.5" />} label="Sconto" value={discount} display={`${discount}%`} color={COLORS.discount} min={0} max={100} onChange={setDiscount} presets={[0, 10, 20, 30, 50]} presetLabel={(v) => `${v}%`} />
-      <Control icon={<Percent className="w-3.5 h-3.5" />} label="Mancia" value={tip} display={`${tip}%`} color={COLORS.tip} min={0} max={50} onChange={setTip} presets={[0, 10, 15, 20, 25]} presetLabel={(v) => `${v}%`} />
+      <AmountControl
+        icon={<Percent className="w-3.5 h-3.5" />}
+        label="Sconto"
+        color={COLORS.discount}
+        max={100}
+        mode={discountMode}
+        onMode={setDiscountMode}
+        percent={discountPct}
+        onPercent={setDiscountPct}
+        fixed={discountFixed}
+        onFixed={setDiscountFixed}
+        shown={discountShown}
+      />
+      <AmountControl
+        icon={<Percent className="w-3.5 h-3.5" />}
+        label="Mancia"
+        color={COLORS.tip}
+        max={50}
+        mode={tipMode}
+        onMode={setTipMode}
+        percent={tipPct}
+        onPercent={setTipPct}
+        fixed={tipFixed}
+        onFixed={setTipFixed}
+        shown={tipShown}
+      />
       <Control icon={<Users className="w-3.5 h-3.5" />} label="Dividi tra persone" value={people} display={`${people}`} color={COLORS.people} min={1} max={30} onChange={setPeople} presets={[1, 2, 4, 8]} presetLabel={(v) => (v === 1 ? "Singolo" : `${v} Pers.`)} />
 
       <ResultCard label="Quota a persona" value={eur(perPerson)} copyText={summary}>
         <Row label="Prezzo originale" value={eur(billValue)} />
-        <Row label={`Sconto (${discount}%)`} value={`-${eur(discountAmount)}`} tone="warn" />
-        <Row label={`Mancia (${tip}%)`} value={`+${eur(tipAmount)}`} />
+        <Row label={`Sconto (${discountShown})`} value={`-${eur(discountAmount)}`} tone="warn" />
+        <Row label={`Mancia (${tipShown})`} value={`+${eur(tipAmount)}`} />
         <Row label="Totale finale" value={eur(total)} />
       </ResultCard>
-      <Notice>Lo sconto si calcola sul prezzo originale, la mancia sul prezzo scontato. La quota a persona è il totale diviso per il numero di persone.</Notice>
+      <Notice>Lo sconto in percentuale si calcola sul prezzo originale, la mancia in percentuale sul prezzo scontato. Un valore fisso si sottrae o si aggiunge così com'è. La quota a persona è il totale diviso per il numero di persone.</Notice>
     </Stack>
   );
 }
