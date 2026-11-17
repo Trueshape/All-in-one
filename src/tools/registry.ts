@@ -166,6 +166,9 @@ export interface ToolItem {
   component: React.ComponentType<any>;
 }
 
+/** Order of the categories wherever the tools are listed; inside a category they are sorted by name. */
+export const CATEGORY_ORDER: ToolItem["category"][] = ["calcolo", "convertitori", "immagini", "testo", "pdf", "produttivita", "creative"];
+
 export const TOOLS: ToolItem[] = [
   {
     id: "currency",

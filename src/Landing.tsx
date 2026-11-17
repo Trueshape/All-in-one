@@ -18,7 +18,7 @@ import {
   Type as TypeIcon,
   FileText,
 } from "lucide-react";
-import { TOOLS, type ToolItem } from "./tools/registry";
+import { CATEGORY_ORDER, TOOLS, type ToolItem } from "./tools/registry";
 import { CATEGORY_LABELS, getThemeClasses, type Theme } from "./theme";
 import { LANGS, LOCALES, useI18n } from "./i18n";
 import { LangMenu } from "./ui/kit";
@@ -104,7 +104,7 @@ export default function Landing({
   const { t, lang, setLang, toolText } = useI18n();
   const tc = getThemeClasses(activeTheme);
   const nameOf = (tool: ToolItem) => customToolNames[tool.id] || toolText(tool).name;
-  const byName = (a: ToolItem, b: ToolItem) => nameOf(a).localeCompare(nameOf(b), LOCALES[lang]);
+  const byName = (a: ToolItem, b: ToolItem) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) || nameOf(a).localeCompare(nameOf(b), LOCALES[lang]);
 
   // An empty name, or the default one, removes the custom name instead of freezing the default in the current language.
   const commitCardName = (tool: ToolItem) => {

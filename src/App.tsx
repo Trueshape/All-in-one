@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TOOLS } from "./tools/registry";
+import { CATEGORY_ORDER, TOOLS } from "./tools/registry";
 import { getThemeClasses, type Theme } from "./theme";
 import Landing from "./Landing";
 import ToolModal from "./ToolModal";
@@ -81,6 +81,8 @@ export default function App() {
 
   // Always sort the tools alphabetically by name (taking custom names into account)
   const orderedTools = [...TOOLS].sort((a, b) => {
+    const byCategory = CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category);
+    if (byCategory) return byCategory;
     const nameA = customToolNames[a.id] || i18n.toolText(a).name;
     const nameB = customToolNames[b.id] || i18n.toolText(b).name;
     return nameA.localeCompare(nameB, LOCALES[lang]);
