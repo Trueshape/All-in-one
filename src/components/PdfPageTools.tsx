@@ -115,7 +115,7 @@ export function PdfMerge() {
         </div>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>Salva</Button>
+        {items.length > 0 && <Button variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>Salva</Button>}
         <span className={cx("text-xs", u.muted)}>{items.length < 2 ? "Servono almeno due PDF." : `${items.length} file, ${total} pagine in tutto`}</span>
         {items.length > 0 && <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setItems([])}>Svuota</Button>}
       </div>
