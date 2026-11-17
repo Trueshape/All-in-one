@@ -74,7 +74,7 @@ type ToolText = { name: string; description: string };
 /** Tool names and descriptions for the non-Italian languages (Italian comes from the registry). */
 const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
   en: {
-    currency: { name: "Currency converter", description: "Live exchange rates for the main world currencies." },
+    currency: { name: "Currency", description: "Live exchange rates for the main world currencies." },
     units: { name: "Unit converter", description: "Length, weight, area, volume, speed, energy, temperature and data size (bytes, MB, GB)." },
     color: { name: "Color palette & picker", description: "Pick colors, see HEX/RGB/HSL codes and generate harmonious palettes." },
     color_extractor: { name: "Color extractor", description: "Get the main colors of an image, with percentages, HEX/RGB codes and CSS variables." },
@@ -116,7 +116,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     pdf_crop: { name: "Crop", description: "Trim the margins of one page or all pages, in millimeters." },
     case_converter: { name: "Case converter", description: "Change the text case on the fly (camelCase, snake_case, UPPERCASE, etc.)." },
     compound_interest_calc: { name: "Compound interest", description: "Calculate compound interest over time with periodic deposits and compounding." },
-    inflation_calc: { name: "Inflation calculator", description: "What a sum from past years is worth today, in euros, dollars, yen or lire, using official consumer price data." },
+    inflation_calc: { name: "Inflation", description: "What a sum from past years is worth today, in euros, dollars, yen or lire, using official consumer price data." },
     text_diff: { name: "Text diff", description: "Compare two texts line by line, highlighting added, removed or changed parts." },
     discord_timestamp: { name: "Discord timestamps & formatting", description: "Generate dynamic Unix timestamps and special chat formatting for Discord." },
     codice_fiscale_calc: { name: "Italian tax code (Codice Fiscale)", description: "Generate the official Italian tax code from personal data and birthplace." },
@@ -140,7 +140,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     scoreboard: { name: "Online scoreboard", description: "Keep score for 2-6 teams with undo and full screen, great for games, sports and nights with friends." },
   },
   es: {
-    currency: { name: "Conversor de divisas", description: "Tipos de cambio en vivo de las principales monedas del mundo." },
+    currency: { name: "Divisas", description: "Tipos de cambio en vivo de las principales monedas del mundo." },
     units: { name: "Conversor de unidades", description: "Longitud, peso, área, volumen, velocidad, energía, temperatura y tamaño de datos (bytes, MB, GB)." },
     color: { name: "Paleta y selector de colores", description: "Elige colores, consulta los códigos HEX/RGB/HSL y genera paletas armónicas." },
     color_extractor: { name: "Extractor de colores", description: "Obtén los colores principales de una imagen, con porcentajes, códigos HEX/RGB y variables CSS." },
@@ -182,7 +182,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     pdf_crop: { name: "Recortar", description: "Recorta los márgenes de una página o de todas, en milímetros." },
     case_converter: { name: "Conversor de mayúsculas", description: "Cambia al instante el formato del texto (camelCase, snake_case, MAYÚSCULAS, etc.)." },
     compound_interest_calc: { name: "Interés compuesto", description: "Calcula el interés compuesto con aportaciones periódicas y capitalización." },
-    inflation_calc: { name: "Calculadora de inflación", description: "Cuánto vale hoy una suma de años atrás, en euros, dólares, yenes o liras, con datos oficiales de precios al consumo." },
+    inflation_calc: { name: "Inflación", description: "Cuánto vale hoy una suma de años atrás, en euros, dólares, yenes o liras, con datos oficiales de precios al consumo." },
     text_diff: { name: "Comparar textos", description: "Compara dos textos línea a línea resaltando lo añadido, eliminado o modificado." },
     discord_timestamp: { name: "Marcas de tiempo y formato de Discord", description: "Genera marcas de tiempo Unix y estilos especiales de chat para Discord." },
     codice_fiscale_calc: { name: "Código fiscal italiano", description: "Genera el código fiscal italiano oficial a partir de los datos personales y el lugar de nacimiento." },
@@ -206,7 +206,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     scoreboard: { name: "Marcador online", description: "Lleva los puntos de 2 a 6 equipos con deshacer y pantalla completa, ideal para juegos y deporte." },
   },
   de: {
-    currency: { name: "Währungsrechner", description: "Aktuelle Wechselkurse der wichtigsten Währungen der Welt." },
+    currency: { name: "Währung", description: "Aktuelle Wechselkurse der wichtigsten Währungen der Welt." },
     units: { name: "Einheitenumrechner", description: "Länge, Gewicht, Fläche, Volumen, Tempo, Energie, Temperatur und Datengröße (Byte, MB, GB)." },
     color: { name: "Farbpalette & Farbwähler", description: "Wähle Farben, sieh HEX/RGB/HSL-Codes und erzeuge harmonische Paletten." },
     color_extractor: { name: "Farbextraktor", description: "Ermittle die Hauptfarben eines Bildes mit Anteilen, HEX/RGB-Codes und CSS-Variablen." },
@@ -248,7 +248,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     pdf_crop: { name: "Zuschneiden", description: "Ränder einer oder aller Seiten in Millimetern zuschneiden." },
     case_converter: { name: "Groß-/Kleinschreibung", description: "Ändere die Schreibweise deines Textes (camelCase, snake_case, GROSSBUCHSTABEN usw.)." },
     compound_interest_calc: { name: "Zinseszins", description: "Berechne den Zinseszins mit regelmäßigen Einzahlungen und Verzinsung." },
-    inflation_calc: { name: "Inflationsrechner", description: "Was eine Summe aus früheren Jahren heute wert ist, in Euro, Dollar, Yen oder Lire, mit offiziellen Verbraucherpreisdaten." },
+    inflation_calc: { name: "Inflation", description: "Was eine Summe aus früheren Jahren heute wert ist, in Euro, Dollar, Yen oder Lire, mit offiziellen Verbraucherpreisdaten." },
     text_diff: { name: "Textvergleich", description: "Vergleiche zwei Texte zeilenweise mit Hervorhebung von Änderungen." },
     discord_timestamp: { name: "Discord-Zeitstempel & Formatierung", description: "Erzeuge dynamische Unix-Zeitstempel und Chat-Formatierungen für Discord." },
     codice_fiscale_calc: { name: "Italienische Steuernummer", description: "Erzeuge die offizielle italienische Steuernummer aus Personendaten und Geburtsort." },
@@ -272,7 +272,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     scoreboard: { name: "Online-Anzeigetafel", description: "Zähle Punkte für 2-6 Teams mit Rückgängig und Vollbild, ideal für Spiele und Sport." },
   },
   fr: {
-    currency: { name: "Convertisseur de devises", description: "Taux de change en direct des principales devises du monde." },
+    currency: { name: "Devises", description: "Taux de change en direct des principales devises du monde." },
     units: { name: "Convertisseur d’unités", description: "Longueur, poids, surface, volume, vitesse, énergie, température et taille de données (octets, Mo, Go)." },
     color: { name: "Palette et sélecteur de couleurs", description: "Choisis des couleurs, consulte les codes HEX/RGB/HSL et génère des palettes harmonieuses." },
     color_extractor: { name: "Extracteur de couleurs", description: "Récupère les couleurs principales d’une image, avec pourcentages, codes HEX/RGB et variables CSS." },
@@ -314,7 +314,7 @@ const TOOL_TEXT: Record<Exclude<Lang, "it">, Record<string, ToolText>> = {
     pdf_crop: { name: "Rogner", description: "Rogne les marges d’une page ou de toutes, en millimètres." },
     case_converter: { name: "Convertisseur de casse", description: "Change la casse du texte (camelCase, snake_case, MAJUSCULES, etc.)." },
     compound_interest_calc: { name: "Intérêts composés", description: "Calcule les intérêts composés avec versements périodiques et capitalisation." },
-    inflation_calc: { name: "Calculateur d’inflation", description: "Ce que vaut aujourd’hui une somme d’il y a des années, en euros, dollars, yens ou lires, avec les données officielles des prix à la consommation." },
+    inflation_calc: { name: "Inflation", description: "Ce que vaut aujourd’hui une somme d’il y a des années, en euros, dollars, yens ou lires, avec les données officielles des prix à la consommation." },
     text_diff: { name: "Comparaison de textes", description: "Compare deux textes ligne par ligne en surlignant les différences." },
     discord_timestamp: { name: "Horodatages et mise en forme Discord", description: "Génère des horodatages Unix dynamiques et des styles de chat spéciaux pour Discord." },
     codice_fiscale_calc: { name: "Code fiscal italien", description: "Génère le code fiscal italien officiel à partir des données personnelles et du lieu de naissance." },

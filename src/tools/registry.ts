@@ -169,7 +169,7 @@ export interface ToolItem {
 export const TOOLS: ToolItem[] = [
   {
     id: "currency",
-    name: "Convertitore di Valuta",
+    name: "Valuta",
     description: "Tassi di cambio aggiornati in tempo reale per le principali monete mondiali.",
     icon: ArrowLeftRight,
     colorClass: "border-indigo-900/30 hover:border-indigo-500/50",
@@ -411,7 +411,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "inflation_calc",
-    name: "Calcolatore inflazione",
+    name: "Inflazione",
     description: "Quanto vale oggi una somma di anni fa, in euro, dollari, yen o lire, con i dati ufficiali sui prezzi al consumo.",
     icon: TrendingUp,
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
