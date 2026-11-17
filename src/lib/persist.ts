@@ -4,8 +4,18 @@ const PREFIX = "tool:";
 /** Keys of the fields that are on screen now: a reset forgets exactly these. */
 const mounted = new Set<string>();
 
+/** Resets of state kept outside the component (a running timer): the tool that is open registers its own. */
+const resetters = new Set<() => void>();
+export function useOnReset(reset: () => void) {
+  useEffect(() => {
+    resetters.add(reset);
+    return () => void resetters.delete(reset);
+  }, [reset]);
+}
+
 /** Forgets the remembered values of the tool that is open, so that it starts again from its defaults. */
 export function clearPersisted() {
+  resetters.forEach((reset) => reset());
   for (const key of mounted) {
     try {
       localStorage.removeItem(PREFIX + key);

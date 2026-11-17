@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { ListPlus, Pause, Play, RotateCcw } from "lucide-react";
 import { Notice, Chips, Button, IconButton, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { parseTime } from "../lib/timeInput";
 import { ALLOW, keepAllowed } from "../lib/inputGuards";
+import { useOnReset } from "../lib/persist";
+import { pomodoro, pomodoroLeft, pomodoroStore, stopwatch, stopwatchElapsed, stopwatchStore } from "../lib/timers";
+import type { Phase } from "../lib/timers";
 
-type Phase = "work" | "short" | "long";
-
-const PHASES: Record<Phase, { label: string; short: string; seconds: number }> = {
-  work: { label: "Focus", short: "Focus", seconds: 25 * 60 },
-  short: { label: "Pausa breve", short: "Pausa", seconds: 5 * 60 },
-  long: { label: "Pausa lunga", short: "Lunga", seconds: 15 * 60 },
+const PHASES: Record<Phase, { label: string; short: string }> = {
+  work: { label: "Focus", short: "Focus" },
+  short: { label: "Pausa breve", short: "Pausa" },
+  long: { label: "Pausa lunga", short: "Lunga" },
 };
 
 /** Shortest first, as the chips are shown. */
@@ -20,70 +21,37 @@ const RADIUS = 88;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const mmss = (total: number) => `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
-const stopwatch = (ms: number) =>
+const stopwatchText = (ms: number) =>
   `${String(Math.floor(ms / 60000)).padStart(2, "0")}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, "0")}.${String(Math.floor((ms % 1000) / 10)).padStart(2, "0")}`;
 
-function beep() {
-  try {
-    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    [0, 0.4].forEach((delay) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 880;
-      const t = ctx.currentTime + delay;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.4, t + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-      osc.start(t);
-      osc.stop(t + 0.4);
-    });
-    window.setTimeout(() => ctx.close(), 1500);
-  } catch {
-    // audio blocked: the visual state is enough
-  }
+/** Draws the component again every `ms` while `active`: the times are read from the clock, not counted here. */
+function useTick(active: boolean, ms: number) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const id = window.setInterval(() => setTick((n) => n + 1), ms);
+    return () => window.clearInterval(id);
+  }, [active, ms]);
 }
 
 function Pomodoro() {
   const u = useUi();
-  const [phase, setPhase] = useState<Phase>("work");
-  // Each phase keeps its own length, so a time typed in by hand stays after switching phase.
-  const [durations, setDurations] = useState<Record<Phase, number>>({ work: PHASES.work.seconds, short: PHASES.short.seconds, long: PHASES.long.seconds });
-  const [left, setLeft] = useState(PHASES.work.seconds);
-  const [running, setRunning] = useState(false);
+  const state = useSyncExternalStore(pomodoroStore.subscribe, pomodoroStore.get);
   const [editing, setEditing] = useState<string | null>(null);
-  const endAt = useRef(0);
-  const total = durations[phase];
-
-  // Uses a wall-clock deadline so background-tab throttling does not make the timer drift.
-  useEffect(() => {
-    if (!running) return;
-    endAt.current = Date.now() + left * 1000;
-    const id = window.setInterval(() => {
-      const remaining = Math.max(0, Math.ceil((endAt.current - Date.now()) / 1000));
-      setLeft(remaining);
-      if (remaining === 0) {
-        window.clearInterval(id);
-        setRunning(false);
-        beep();
-      }
-    }, 250);
-    return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running]);
+  const running = state.endAt !== null;
+  useTick(running, 250);
+  useOnReset(pomodoro.reset);
+  const { phase } = state;
+  const left = pomodoroLeft(state);
+  const total = state.durations[phase];
 
   const choose = (next: Phase) => {
-    setRunning(false);
     setEditing(null);
-    setPhase(next);
-    setLeft(durations[next]);
+    pomodoro.choose(next);
   };
 
   const startEditing = () => {
-    setRunning(false);
+    pomodoro.pause();
     setEditing(mmss(left));
   };
 
@@ -91,9 +59,7 @@ function Pomodoro() {
     if (editing === null) return;
     const seconds = parseTime(editing);
     setEditing(null);
-    if (seconds === null) return;
-    setDurations((d) => ({ ...d, [phase]: seconds }));
-    setLeft(seconds);
+    if (seconds !== null) pomodoro.setDuration(seconds);
   };
 
   const progress = total ? left / total : 0;
@@ -140,11 +106,11 @@ function Pomodoro() {
       {/* Start sits in the middle of the container; reset is beside it, so the button stays centred. */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <span />
-        <Button variant="primary" onClick={() => { if (left === 0) setLeft(total); setRunning((r) => !r); }} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
+        <Button variant="primary" onClick={() => (running ? pomodoro.pause() : pomodoro.start())} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
           {running ? "Pausa" : left === 0 ? "Ricomincia" : "Avvia"}
         </Button>
         <div className="justify-self-start">
-          <IconButton size="md" onClick={() => { setRunning(false); setLeft(total); }} title="Reset" className="border-current"><RotateCcw /></IconButton>
+          <IconButton size="md" onClick={pomodoro.restart} title="Reset" className="border-current"><RotateCcw /></IconButton>
         </div>
       </div>
     </div>
@@ -153,37 +119,28 @@ function Pomodoro() {
 
 function Stopwatch() {
   const u = useUi();
-  const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(false);
-  const [laps, setLaps] = useState<number[]>([]);
-  const base = useRef(0);
-
-  useEffect(() => {
-    if (!running) return;
-    base.current = performance.now() - elapsed;
-    const id = window.setInterval(() => setElapsed(performance.now() - base.current), 30);
-    return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running]);
-
-  const reset = useCallback(() => { setRunning(false); setElapsed(0); setLaps([]); }, []);
+  const state = useSyncExternalStore(stopwatchStore.subscribe, stopwatchStore.get);
+  const running = state.since !== null;
+  useTick(running, 30);
+  useOnReset(stopwatch.reset);
+  const elapsed = stopwatchElapsed(state);
 
   return (
     <div className="space-y-5 text-center">
-      <div className={cx("py-6 text-5xl font-bold font-mono tabular-nums", u.text)} role="timer">{stopwatch(elapsed)}</div>
+      <div className={cx("py-6 text-5xl font-bold font-mono tabular-nums", u.text)} role="timer">{stopwatchText(elapsed)}</div>
       <div className="flex justify-center gap-3">
-        <IconButton size="md" onClick={reset} disabled={elapsed === 0} title="Reset"><RotateCcw /></IconButton>
-        <Button variant="primary" onClick={() => setRunning((r) => !r)} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
+        <IconButton size="md" onClick={stopwatch.reset} disabled={elapsed === 0} title="Reset"><RotateCcw /></IconButton>
+        <Button variant="primary" onClick={stopwatch.toggle} className="px-6" icon={running ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}>
           {running ? "Ferma" : "Avvia"}
         </Button>
-        <IconButton size="md" onClick={() => setLaps((l) => [elapsed, ...l])} disabled={!running} title="Giro"><ListPlus /></IconButton>
+        <IconButton size="md" onClick={stopwatch.lap} disabled={!running} title="Giro"><ListPlus /></IconButton>
       </div>
-      {laps.length > 0 && (
+      {state.laps.length > 0 && (
         <div className={cx("max-h-40 overflow-y-auto divide-y text-left", u.panel, u.divider)}>
-          {laps.map((lap, i) => (
+          {state.laps.map((lap, i) => (
             <div key={i} className={cx("flex justify-between px-4 py-2 text-xs", u.divider)}>
-              <span className={u.muted}>Giro {laps.length - i}</span>
-              <span className={cx("font-mono", u.text)}>{stopwatch(lap)}</span>
+              <span className={u.muted}>Giro {state.laps.length - i}</span>
+              <span className={cx("font-mono", u.text)}>{stopwatchText(lap)}</span>
             </div>
           ))}
         </div>
@@ -196,7 +153,7 @@ export function PomodoroPage() {
   return (
     <Stack>
       <Pomodoro />
-      <Notice>Tecnica Pomodoro: 25 minuti di concentrazione, poi una pausa. Il tempo è calcolato sull’orologio di sistema, quindi non si ferma se cambi scheda.</Notice>
+      <Notice>Tecnica Pomodoro: 25 minuti di concentrazione, poi una pausa. Il tempo è calcolato sull’orologio di sistema: continua anche se cambi scheda o chiudi questa finestra, e alla fine suona.</Notice>
     </Stack>
   );
 }
@@ -205,6 +162,7 @@ export function StopwatchPage() {
   return (
     <Stack>
       <Stopwatch />
+      <Notice>Il cronometro continua a contare anche se chiudi questa finestra: riaprilo per leggere il tempo.</Notice>
     </Stack>
   );
 }
