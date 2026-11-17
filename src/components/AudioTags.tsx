@@ -121,7 +121,7 @@ export default function AudioTags() {
       <input ref={input} type="file" multiple accept="audio/*,.mp3,.flac,.wav" className="hidden" onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} />
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="primary" onClick={() => input.current?.click()}>{items.length ? "Aggiungi file" : "Scegli file"}</Button>
-        <Button disabled={dirtyCount === 0} onClick={saveChanges}>Salva modifiche{dirtyCount ? ` (${dirtyCount})` : ""}</Button>
+        <Button disabled={dirtyCount === 0} onClick={saveChanges}>Salva{dirtyCount ? ` (${dirtyCount})` : ""}</Button>
         {multi && <Button variant="ghost" disabled={bulkCount === 0} onClick={removeSelected}>Rimuovi selezionati</Button>}
         {items.length > 0 && <span className={`ml-auto text-xs ${u.muted}`}>{items.length} file{multi ? ` · ${bulkCount} selezionati` : ""}</span>}
       </div>

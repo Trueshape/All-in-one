@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, RotateCcw, RotateCw, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Download, RotateCcw, RotateCw, Trash2, X } from "lucide-react";
 import { PDFDocument, degrees } from "pdf-lib";
 import { Button, Field, IconButton, Notice, Segmented, Stack, TextInput, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
@@ -134,7 +134,7 @@ export function PdfMerge() {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>Salva</Button>
+            <Button icon={<Download />} variant="primary" disabled={items.length < 2 || saver.busy} onClick={() => void merge()}>Salva</Button>
             <span className={cx("text-xs", u.muted)}>{items.length < 2 ? "Servono almeno due PDF." : `${items.length} file, ${total} pagine in tutto`}</span>
             <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setItems([])}>Svuota</Button>
           </div>
@@ -219,7 +219,7 @@ export function PdfSplit() {
           groups.map((group, i) => (
             <div key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 text-xs">
               <span className={cx("font-mono", u.muted)}>Parte {i + 1} · {groupLabel(group)}</span>
-              {pdf && <Button size="sm" disabled={saver.busy} onClick={() => void save(pdf, groups, [i])}>Salva</Button>}
+              {pdf && <Button icon={<Download />} size="sm" disabled={saver.busy} onClick={() => void save(pdf, groups, [i])}>Salva</Button>}
             </div>
           ))}
       </div>
@@ -241,7 +241,7 @@ export function PdfSplit() {
       {(pdf) => (
         <>
           <PdfFileBar pdf={pdf} onClear={state.clear}>
-            <Button variant="primary" disabled={typeof groups === "string" || !groups.length || saver.busy} onClick={() => typeof groups !== "string" && void save(pdf, groups, groups.map((_, i) => i))}>
+            <Button icon={<Download />} variant="primary" disabled={typeof groups === "string" || !groups.length || saver.busy} onClick={() => typeof groups !== "string" && void save(pdf, groups, groups.map((_, i) => i))}>
               {typeof groups === "string" ? "Salva" : `Salva (${groups.length})`}
             </Button>
           </PdfFileBar>
@@ -330,7 +330,7 @@ export function PdfRemovePages() {
       {(pdf) => (
         <>
           <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setRemoved(new Set()); }}>
-            <Button variant="primary" disabled={!removed.size || removed.size === pdf.pages || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+            <Button icon={<Download />} variant="primary" disabled={!removed.size || removed.size === pdf.pages || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </PdfFileBar>
           {body(pdf)}
         </>
@@ -400,7 +400,7 @@ export function PdfRotate() {
       {(pdf) => (
         <>
           <PdfFileBar pdf={pdf} onClear={() => { state.clear(); reset(); }}>
-            <Button variant="primary" disabled={!changed || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+            <Button icon={<Download />} variant="primary" disabled={!changed || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </PdfFileBar>
           {body(pdf)}
         </>
@@ -481,7 +481,7 @@ export function PdfReorder() {
       {(pdf) => (
         <>
           <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setOrder(null); }}>
-            <Button variant="primary" disabled={!orderFor(pdf.pages).some((p, i) => p !== i) || saver.busy} onClick={() => void save(pdf, orderFor(pdf.pages))}>Salva</Button>
+            <Button icon={<Download />} variant="primary" disabled={!orderFor(pdf.pages).some((p, i) => p !== i) || saver.busy} onClick={() => void save(pdf, orderFor(pdf.pages))}>Salva</Button>
           </PdfFileBar>
           {body(pdf)}
         </>

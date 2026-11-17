@@ -487,7 +487,7 @@ export function PdfFileBar({ pdf, onClear, children }: { pdf: PdfFile; onClear: 
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {children}
-        <Button size="sm" variant="danger" icon={<Trash2 />} onClick={onClear}>Rimuovi</Button>
+        <IconButton onClick={onClear} title="Rimuovi il PDF"><Trash2 /></IconButton>
       </div>
     </div>
   );

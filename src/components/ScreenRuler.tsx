@@ -197,7 +197,7 @@ export default function ScreenRuler() {
             <Button onClick={() => setDraft((d) => Math.max(2, d - 0.01))}>− Rimpicciolisci</Button>
             <Button onClick={() => setDraft((d) => Math.min(12, d + 0.01))}>+ Ingrandisci</Button>
             <Button variant="primary" onClick={save}>
-              Salva calibrazione
+              Salva
             </Button>
           </div>
         </>

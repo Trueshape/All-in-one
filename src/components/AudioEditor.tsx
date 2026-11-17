@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Music, Pause, Play, Trash2 } from "lucide-react";
+import { Download, Music, Pause, Play, Trash2 } from "lucide-react";
 import { useUnsaved } from "../ui/unsaved";
-import { Field, TextInput, Toggle, Chips, Segmented, Select, Slider, Button, Notice, Stack, Row, cx } from "../ui/kit";
+import { Field, TextInput, Toggle, Chips, Segmented, Select, Slider, Button, IconButton, Notice, Stack, Row, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { AUDIO_FORMATS, DEFAULT_AUDIO_OPTIONS, MP3_BITRATES, encodeAudio } from "../lib/audioEncoders";
 import type { AudioFormat, AudioOptions, Mp3Setting } from "../lib/audioEncoders";
@@ -191,7 +191,7 @@ export default function AudioEditor() {
           ) : (
             <Field label="Parti da (secondi)"><TextInput className="w-32" type="number" inputMode="decimal" min={1} max={36000} decimals={1} value={every} onChange={(e) => setEvery(e.target.value)} /></Field>
           )}
-          {file && <Button size="sm" variant="danger" icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => { stop(); setFile(null); setStart(0); setEnd(0); }}>Cambia file</Button>}
+          {file && <IconButton onClick={() => { stop(); setFile(null); setStart(0); setEnd(0); }} title="Rimuovi file"><Trash2 className="w-4 h-4" /></IconButton>}
         </div>
 
         <div className="space-y-4 min-w-0">
@@ -232,7 +232,7 @@ export default function AudioEditor() {
           )}
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" disabled={validRanges.length === 0} icon={playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />} onClick={preview}>{playing ? "Stop" : "Ascolta"}</Button>
-            {mode === "trim" && <Button variant="primary" disabled={!!busy || validRanges.length === 0} onClick={() => void save(ranges[0], 0)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>}
+            {mode === "trim" && <Button variant="primary" icon={<Download className="w-3.5 h-3.5" />} disabled={!!busy || validRanges.length === 0} onClick={() => void save(ranges[0], 0)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>}
             {file && busy && <span className={cx("text-xs", u.muted)}>{busy}</span>}
           </div>
           {mode === "split" && (
@@ -241,7 +241,7 @@ export default function AudioEditor() {
               {validRanges.map((r, i) => (
                 <div key={i} className="flex items-center justify-between gap-3 px-3 py-1.5 text-xs">
                   <span className={cx("font-mono", u.muted)}>Parte {i + 1} · {formatTime(r.start)}–{formatTime(r.end)}</span>
-                  <Button size="sm" disabled={!!busy} onClick={() => void save(r, i)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>
+                  <Button size="sm" icon={<Download className="w-3.5 h-3.5" />} disabled={!!busy} onClick={() => void save(r, i)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>
                 </div>
               ))}
             </div>

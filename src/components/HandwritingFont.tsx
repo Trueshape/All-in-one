@@ -452,7 +452,7 @@ export default function HandwritingFont() {
               <Panel className="space-y-3">
                 <img src={source.url} alt="Foglio compilato" className="max-h-40 mx-auto" />
                 <Row label="File" value={`${source.name} · ${source.width} × ${source.height} px`} />
-                <Button size="sm" variant="danger" icon={<Trash2 className="w-3.5 h-3.5" />} onClick={clear}>Rimuovi</Button>
+                <IconButton onClick={clear} title="Rimuovi immagine"><Trash2 className="w-4 h-4" /></IconButton>
               </Panel>
             )}
           </div>
@@ -501,7 +501,7 @@ export default function HandwritingFont() {
               {mode === "sheet" && sheetGlyphs.length > 0 && <Row label="Dal foglio" value={`${sheetGlyphs.length} su ${CHARS.length}`} />}
             </div>
           )}
-          <Button variant="primary" disabled={!file} icon={<Download className="w-3.5 h-3.5" />} onClick={saveFont}>.ttf</Button>
+          <Button variant="primary" disabled={!file} icon={<Download className="w-3.5 h-3.5" />} onClick={saveFont}>TTF</Button>
         </div>
       </div>
 

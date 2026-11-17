@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { ImagePlus, Trash2 } from "lucide-react";
+import { Download, ImagePlus, Trash2 } from "lucide-react";
 import { PDFCheckBox, PDFDropdown, PDFOptionList, PDFRadioGroup, PDFTextField, degrees } from "pdf-lib";
 import { Button, Chips, DatePicker, Field, IconButton, Notice, Segmented, Select, Slider, TextArea, TextInput, Toggle, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
@@ -191,7 +191,7 @@ export function PdfWatermark() {
         <div className={EDITOR_GRID}>
           <div className="space-y-4 min-w-0 md:order-last">
             <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }}>
-              <Button variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>Salva</Button>
+              <Button icon={<Download />} variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>Salva</Button>
             </PdfFileBar>
             {options}
             {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
@@ -311,7 +311,7 @@ export function PdfProperties() {
       {(pdf) => (
         <>
           <PdfFileBar pdf={pdf} onClear={state.clear}>
-            <Button variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+            <Button icon={<Download />} variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </PdfFileBar>
           {form}
         </>
@@ -403,7 +403,7 @@ export function PdfAddText() {
     <div className="space-y-4 min-w-0">
       {pdf && (
         <PdfFileBar pdf={pdf} onClear={reset}>
-          <Button variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>Salva</Button>
+          <Button icon={<Download />} variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>Salva</Button>
         </PdfFileBar>
       )}
       {/* The controls are always shown, dimmed until a text is selected, so the panel does not jump */}
@@ -538,7 +538,7 @@ export function PdfAddImage() {
     <div className="space-y-4 min-w-0">
       {pdf && (
         <PdfFileBar pdf={pdf} onClear={reset}>
-          <Button variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+          <Button icon={<Download />} variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
         </PdfFileBar>
       )}
       <ImageButton onImage={add}>Aggiungi immagine</ImageButton>
@@ -800,7 +800,7 @@ export function PdfForms() {
       {(pdf) => (
         <>
           <PdfFileBar pdf={pdf} onClear={reset}>
-            <Button variant="primary" disabled={(!editable.length && !added.length) || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+            <Button icon={<Download />} variant="primary" disabled={(!editable.length && !added.length) || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </PdfFileBar>
           {body(pdf)}
         </>

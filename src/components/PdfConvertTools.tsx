@@ -219,7 +219,7 @@ export function PdfConvert() {
           {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
           {images.length > 0 && (
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="primary" disabled={saver.busy} onClick={() => void toPdf()}>Salva</Button>
+              <Button icon={<Download />} variant="primary" disabled={saver.busy} onClick={() => void toPdf()}>Salva</Button>
               <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setImages([])}>Svuota</Button>
             </div>
           )}
@@ -240,7 +240,7 @@ export function PdfConvert() {
             <>
               <PdfFileBar pdf={p} onClear={reset}>
                 {mode === "images" ? (
-                  <Button variant="primary" disabled={saver.busy} onClick={() => void toImages(p)}>Salva</Button>
+                  <Button icon={<Download />} variant="primary" disabled={saver.busy} onClick={() => void toImages(p)}>Salva</Button>
                 ) : (
                   <>
                     <Button variant="primary" onClick={() => void extract(p)}>Leggi il testo</Button>
@@ -429,7 +429,7 @@ export function PdfExtractImages() {
       {(p) => (
         <>
           <PdfFileBar pdf={p} onClear={state.clear}>
-            <Button variant="primary" disabled={!picked.length || saver.busy} onClick={() => void save(p, picked)}>{`Salva${picked.length ? ` (${picked.length})` : ""}`}</Button>
+            <Button icon={<Download />} variant="primary" disabled={!picked.length || saver.busy} onClick={() => void save(p, picked)}>{`Salva${picked.length ? ` (${picked.length})` : ""}`}</Button>
           </PdfFileBar>
           {body(p)}
         </>
@@ -628,7 +628,7 @@ export function PdfEditText() {
     <div className="space-y-4 min-w-0">
       {p && (
         <PdfFileBar pdf={p} onClear={reset}>
-          <Button variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>Salva</Button>
+          <Button icon={<Download />} variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>Salva</Button>
         </PdfFileBar>
       )}
       <Field label="Font del testo nuovo">
