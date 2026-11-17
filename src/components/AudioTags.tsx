@@ -1,84 +1,215 @@
 import { useRef, useState } from "react";
-import { Field, TextInput, TextArea, Button, Notice, Stack } from "../ui/kit";
+import { Button, Field, TextArea, TextInput, Notice, Stack } from "../ui/kit";
+import { useUi } from "../ui/tokens";
 import { EMPTY_TAGS, detectFormat, readTags, writeTags } from "../lib/audioTags";
 import type { Tags, TagFormat } from "../lib/audioTags";
 import { download } from "../lib/imageOps";
 
-interface Loaded {
+interface Item {
+  id: number;
   name: string;
   bytes: Uint8Array;
   format: TagFormat;
+  tags: Tags;
+  dirty: boolean;
 }
 
-const FIELDS: Array<{ key: Exclude<keyof Tags, "lyrics">; label: string; numeric?: boolean; maxLength?: number }> = [
-  { key: "title", label: "Nome canzone" },
-  { key: "artist", label: "Artista" },
+const COLUMNS: Array<{ key: Exclude<keyof Tags, "lyrics">; label: string; width: string }> = [
+  { key: "album", label: "Album", width: "w-40" },
+  { key: "artist", label: "Artista", width: "w-40" },
+  { key: "title", label: "Titolo", width: "w-48" },
+  { key: "genre", label: "Genere", width: "w-28" },
+  { key: "year", label: "Anno", width: "w-20" },
+  { key: "track", label: "Traccia", width: "w-20" },
+];
+const BULK: Array<{ key: Exclude<keyof Tags, "lyrics" | "track" | "title">; label: string }> = [
   { key: "album", label: "Album" },
+  { key: "artist", label: "Artista" },
   { key: "genre", label: "Genere" },
-  { key: "year", label: "Anno", numeric: true, maxLength: 4 },
-  { key: "track", label: "Numero traccia", numeric: true },
+  { key: "year", label: "Anno" },
 ];
 
+const outputName = (name: string) => name.replace(/(\.[^.]+)$/, "_metadati$1");
+const mimeOf = (f: TagFormat) => (f === "mp3" ? "audio/mpeg" : f === "flac" ? "audio/flac" : "audio/wav");
+
 export default function AudioTags() {
+  const u = useUi();
   const input = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<Loaded | null>(null);
-  const [tags, setTags] = useState<Tags>(EMPTY_TAGS);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState<string | null>(null);
+  const nextId = useRef(1);
+  const [items, setItems] = useState<Item[]>([]);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [active, setActive] = useState<number | null>(null);
+  const [bulk, setBulk] = useState<Partial<Record<keyof Tags, string>>>({});
+  const [dragging, setDragging] = useState(false);
+  const [message, setMessage] = useState<{ tone: "warn" | "success" | "error"; text: string } | null>(null);
 
-  const load = async (picked: File | undefined) => {
-    if (!picked) return;
-    setError(null);
-    setSaved(null);
-    const bytes = new Uint8Array(await picked.arrayBuffer());
-    const format = detectFormat(bytes);
-    if (!format) {
-      setFile(null);
-      setError("Formato non supportato: sono ammessi MP3, FLAC e WAV.");
-      return;
+  const multi = items.length > 1;
+  const single = items.length === 1 ? items[0] : null;
+  const current = items.find((it) => it.id === active) ?? single;
+  const dirtyCount = items.filter((it) => it.dirty).length;
+
+  const addFiles = async (picked: FileList | null | undefined) => {
+    if (!picked || picked.length === 0) return;
+    const added: Item[] = [];
+    let skipped = 0;
+    for (const f of Array.from(picked)) {
+      const bytes = new Uint8Array(await f.arrayBuffer());
+      const format = detectFormat(bytes);
+      if (!format) {
+        skipped++;
+        continue;
+      }
+      added.push({ id: nextId.current++, name: f.name, bytes, format, tags: readTags(bytes, format), dirty: false });
     }
-    setFile({ name: picked.name.replace(/\.[^.]+$/, "") || "audio", bytes, format });
-    setTags(readTags(bytes, format));
+    setItems((prev) => [...prev, ...added]);
+    if (added.length) setActive((a) => a ?? added[0].id);
+    setMessage(skipped ? { tone: "warn", text: `${skipped} file saltati: formato non supportato (sono ammessi MP3, FLAC e WAV).` } : null);
   };
 
-  const update = (key: keyof Tags, value: string) => setTags((t) => ({ ...t, [key]: value }));
+  const patch = (id: number, change: Partial<Tags>) =>
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, tags: { ...it.tags, ...change }, dirty: true } : it)));
 
-  const save = () => {
-    if (!file) return;
-    const out = writeTags(file.bytes, file.format, tags);
-    const mime = file.format === "mp3" ? "audio/mpeg" : file.format === "flac" ? "audio/flac" : "audio/wav";
-    download(new Blob([out], { type: mime }), `${file.name}_metadati.${file.format}`);
-    setSaved(file.format === "wav" ? "File salvato. Nei WAV il testo della canzone non viene salvato." : "File salvato con i nuovi metadati.");
+  const toggle = (id: number) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const allSelected = items.length > 0 && selected.size === items.length;
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(items.map((it) => it.id)));
+
+  const applyBulk = () => {
+    const change = Object.fromEntries(Object.entries(bulk).filter(([, v]) => v && v.trim())) as Partial<Tags>;
+    if (Object.keys(change).length === 0) return;
+    setItems((prev) => prev.map((it) => (selected.has(it.id) ? { ...it, tags: { ...it.tags, ...change }, dirty: true } : it)));
   };
+
+  // numbers the selected files 1, 2, 3… in the order they are listed (the counter lives inside the update, which React may run twice)
+  const numberTracks = () =>
+    setItems((prev) => {
+      let n = 0;
+      return prev.map((it) => (selected.has(it.id) ? { ...it, tags: { ...it.tags, track: String(++n) }, dirty: true } : it));
+    });
+
+  const removeSelected = () => {
+    setItems((prev) => prev.filter((it) => !selected.has(it.id)));
+    if (active !== null && selected.has(active)) setActive(null);
+    setSelected(new Set());
+  };
+
+  const saveChanges = () => {
+    const targets = items.filter((it) => it.dirty);
+    if (targets.length === 0) return;
+    const outs = new Map(targets.map((it) => [it.id, writeTags(it.bytes, it.format, it.tags)]));
+    // browsers may ask once to allow several downloads; they are spaced out so each one starts
+    targets.forEach((it, i) => setTimeout(() => download(new Blob([outs.get(it.id)!], { type: mimeOf(it.format) }), outputName(it.name)), i * 400));
+    setItems((prev) => prev.map((it) => (outs.has(it.id) ? { ...it, bytes: outs.get(it.id)!, dirty: false } : it)));
+    setMessage({ tone: "success", text: `${targets.length} ${targets.length === 1 ? "file salvato" : "file salvati"} con i nuovi metadati.` });
+  };
+
+  const bulkCount = selected.size;
 
   return (
     <Stack>
-      <input ref={input} type="file" accept="audio/*,.mp3,.flac,.wav" className="hidden" onChange={(e) => { void load(e.target.files?.[0]); e.target.value = ""; }} />
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" onClick={() => input.current?.click()}>Scegli file audio</Button>
-        {file && <span className="text-sm">{file.name} · {file.format.toUpperCase()}</span>}
+      <input ref={input} type="file" multiple accept="audio/*,.mp3,.flac,.wav" className="hidden" onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} />
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="primary" onClick={() => input.current?.click()}>{items.length ? "Aggiungi file" : "Scegli file"}</Button>
+        <Button disabled={dirtyCount === 0} onClick={saveChanges}>Salva modifiche{dirtyCount ? ` (${dirtyCount})` : ""}</Button>
+        {multi && <Button variant="ghost" disabled={bulkCount === 0} onClick={removeSelected}>Rimuovi selezionati</Button>}
+        {items.length > 0 && <span className={`ml-auto text-xs ${u.muted}`}>{items.length} file{multi ? ` · ${bulkCount} selezionati` : ""}</span>}
       </div>
 
-      {error && <Notice tone="error">{error}</Notice>}
+      {message && <Notice tone={message.tone}>{message.text}</Notice>}
 
-      {file ? (
-        <>
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => { e.preventDefault(); setDragging(false); void addFiles(e.dataTransfer.files); }}
+        className={`border border-dashed p-4 transition-colors ${dragging ? u.accent : u.divider}`}
+      >
+        {items.length === 0 && (
+          <Notice tone="empty">Trascina qui uno o più file MP3, FLAC o WAV. Con un file solo lo modifichi da solo; con più file appare la tabella. I file restano sul tuo dispositivo.</Notice>
+        )}
+
+        {single && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {FIELDS.map((f) => (
-              <Field key={f.key} label={f.label}>
-                <TextInput value={tags[f.key]} onChange={(e) => update(f.key, e.target.value)} inputMode={f.numeric ? "numeric" : undefined} maxLength={f.maxLength} />
+            {COLUMNS.map((c) => (
+              <Field key={c.key} label={c.label}>
+                <TextInput value={single.tags[c.key]} onChange={(e) => patch(single.id, { [c.key]: e.target.value })} inputMode={c.key === "year" || c.key === "track" ? "numeric" : undefined} maxLength={c.key === "year" ? 4 : undefined} />
               </Field>
             ))}
+            <div className="sm:col-span-2">
+              <Field label="Testo della canzone" hint={single.format === "wav" ? "Nei file WAV il testo non viene salvato." : undefined}>
+                <TextArea rows={7} value={single.tags.lyrics} onChange={(e) => patch(single.id, { lyrics: e.target.value })} />
+              </Field>
+            </div>
           </div>
-          <Field label="Testo della canzone" hint={file.format === "wav" ? "Nei file WAV il testo non viene salvato." : undefined}>
-            <TextArea rows={8} value={tags.lyrics} onChange={(e) => update("lyrics", e.target.value)} />
-          </Field>
-          <Button variant="primary" onClick={save}>Salva file</Button>
-          {saved && <Notice tone="success">{saved}</Notice>}
-        </>
-      ) : (
-        <Notice tone="empty">Carica un file MP3, FLAC o WAV per modificarne i metadati. Il file resta sul tuo dispositivo.</Notice>
-      )}
+        )}
+
+        {multi && (
+          <div className="space-y-4">
+            <div className={`max-h-[40vh] overflow-auto border ${u.divider}`}>
+              <table className="w-full text-xs">
+                <thead className={`sticky top-0 ${u.muted}`}>
+                  <tr className={`border-b ${u.divider}`}>
+                    <th className="p-2 w-8"><input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Seleziona tutti" /></th>
+                    <th className="p-2 text-left font-medium min-w-56">Nome file</th>
+                    {COLUMNS.map((c) => <th key={c.key} className="p-2 text-left font-medium">{c.label}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((it) => (
+                    <tr key={it.id} className={`border-b ${u.divider} ${it.id === active ? "bg-white/5" : ""}`} onClick={() => setActive(it.id)}>
+                      <td className="p-2"><input type="checkbox" checked={selected.has(it.id)} onChange={() => toggle(it.id)} onClick={(e) => e.stopPropagation()} aria-label={`Seleziona ${it.name}`} /></td>
+                      <td className="p-2 font-mono truncate max-w-72" title={it.name}>{it.dirty ? "● " : ""}{it.name}</td>
+                      {COLUMNS.map((c) => (
+                        <td key={c.key} className="p-1">
+                          <input
+                            value={it.tags[c.key]}
+                            onFocus={() => setActive(it.id)}
+                            onChange={(e) => patch(it.id, { [c.key]: e.target.value })}
+                            className={`${c.width} bg-transparent px-1.5 py-1 outline-none rounded focus:bg-white/10`}
+                            aria-label={`${c.label} di ${it.name}`}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <p className={`text-xs ${u.subtle}`}>{bulkCount ? `Applica ai ${bulkCount} selezionati (i campi vuoti non cambiano)` : "Seleziona dei file per modificarli insieme"}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {BULK.map((b) => (
+                    <Field key={b.key} label={b.label}>
+                      <TextInput value={bulk[b.key] ?? ""} onChange={(e) => setBulk((s) => ({ ...s, [b.key]: e.target.value }))} disabled={bulkCount === 0} />
+                    </Field>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button disabled={bulkCount === 0} onClick={applyBulk}>Applica</Button>
+                  <Button disabled={bulkCount === 0} onClick={numberTracks}>Numera le tracce</Button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {current ? (
+                  <Field label={`Testo di ${current.name}`} hint={current.format === "wav" ? "Nei file WAV il testo non viene salvato." : undefined}>
+                    <TextArea rows={7} value={current.tags.lyrics} onChange={(e) => patch(current.id, { lyrics: e.target.value })} />
+                  </Field>
+                ) : (
+                  <Notice tone="empty">Clicca un file per modificarne il testo.</Notice>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </Stack>
   );
 }

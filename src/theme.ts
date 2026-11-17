@@ -121,6 +121,7 @@ export const getToolModalSize = (toolId: string): string => {
       return "max-w-5xl";
     case "pdf_remove_pages":
     case "pdf_edit_text":
+    case "audio_tags":
     case "pdf_rotate":
     case "pdf_reorder":
       return "max-w-6xl";
@@ -155,7 +156,6 @@ export const getToolModalSize = (toolId: string): string => {
       return "max-w-4xl";
     case "compound_interest_calc":
     case "inflation_calc":
-    case "audio_tags":
     case "geometry_calc":
     case "circle_calc":
     case "units":
