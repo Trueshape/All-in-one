@@ -142,6 +142,9 @@ type SelectProps = {
 /** Background of the open list: the same as the tool modal of each theme, so the list reads as part of it. */
 const LIST_BG = { artistic: "bg-[#0a0a0a]", immersive: "bg-[#030812]", sophisticated: "bg-slate-900" } as const;
 const LIST_MAX = 280;
+/** Lists longer than this get a search box: typing narrows them to the options that contain the text. */
+const SEARCH_FROM = 12;
+const norm = (t: string) => t.toLowerCase().replace(/_/g, " ");
 
 /**
  * Drop-down drawn with the site's own tokens instead of the browser's native list. It takes <option>
@@ -154,7 +157,9 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
   const listId = useId();
   const button = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
+  const search = useRef<HTMLInputElement>(null);
   const typed = useRef({ text: "", at: 0 });
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [box, setBox] = useState<{ left: number; width: number; top?: number; bottom?: number; maxHeight: number } | null>(null);
@@ -166,6 +171,10 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
       return { value: String(props.value ?? ""), label: props.children, disabled: !!props.disabled };
     });
   const selected = options.find((o) => o.value === value);
+  const searchable = options.length > SEARCH_FROM;
+  const matches = (o: { label: ReactNode; value: string }, q: string) => !q || norm(typeof o.label === "string" ? o.label : o.value).includes(q) || norm(o.value).includes(q);
+  const words = norm(query.trim());
+  const visible = options.map((o, i) => ({ o, i })).filter(({ o }) => matches(o, words));
   // The radius of the site's fields (square, soft or round), reused for the list.
   const radius = /rounded(?:-[a-z0-9]+)?/.exec(u.input)?.[0] ?? "";
 
@@ -178,6 +187,7 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
     const up = below < 180 && above > below;
     setBox({ left: r.left, width: r.width, maxHeight: Math.min(LIST_MAX, up ? above : below), ...(up ? { bottom: window.innerHeight - r.top + 4 } : { top: r.bottom + 4 }) });
     setActive(Math.max(0, options.findIndex((o) => o.value === value)));
+    setQuery("");
     setOpen(true);
   };
 
@@ -212,20 +222,33 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
   }, [open]);
 
   useEffect(() => {
-    if (open) list.current?.children[active]?.scrollIntoView({ block: "nearest" });
+    if (open) list.current?.querySelector(`[data-i="${active}"]`)?.scrollIntoView({ block: "nearest" });
   }, [open, active]);
 
+  // a long list opens with the cursor in its search box
+  useEffect(() => {
+    if (open && searchable) search.current?.focus();
+  }, [open, searchable]);
+
+  /** Next enabled option among the ones shown, before or after `from` (an index in all the options). */
   const move = (from: number, step: 1 | -1) => {
-    for (let i = from + step; i >= 0 && i < options.length; i += step) if (!options[i].disabled) return i;
-    return from;
+    const ids = visible.filter(({ o }) => !o.disabled).map(({ i }) => i);
+    const next = step === 1 ? ids.find((i) => i > from) : [...ids].reverse().find((i) => i < from);
+    return next ?? from;
   };
 
-  const onKeyDown = (e: ReactKeyboardEvent<HTMLButtonElement>) => {
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLElement>) => {
     if (disabled) return;
     if (!open) {
       if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
         e.preventDefault();
         show();
+      } else if (searchable && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // typing on the closed field opens the list already filtered by that letter
+        e.preventDefault();
+        show();
+        setQuery(e.key);
+        setActive(Math.max(0, options.findIndex((o) => !o.disabled && matches(o, norm(e.key)))));
       }
       return;
     }
@@ -236,15 +259,17 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
         close();
+        button.current?.focus();
         return;
       case "ArrowDown": e.preventDefault(); setActive((a) => move(a, 1)); return;
       case "ArrowUp": e.preventDefault(); setActive((a) => move(a, -1)); return;
-      case "Home": e.preventDefault(); setActive(move(-1, 1)); return;
-      case "End": e.preventDefault(); setActive(move(options.length, -1)); return;
-      case "Enter":
-      case " ": e.preventDefault(); choose(active); return;
+      case "Home": if (searchable) return; e.preventDefault(); setActive(move(-1, 1)); return;
+      case "End": if (searchable) return; e.preventDefault(); setActive(move(options.length, -1)); return;
+      case " ": if (searchable) return; e.preventDefault(); choose(active); return;
+      case "Enter": e.preventDefault(); choose(active); return;
       case "Tab": close(); return;
     }
+    if (searchable) return;
     // Typing letters jumps to the next option that starts with them.
     if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
       const now = Date.now();
@@ -276,35 +301,56 @@ export function Select({ value, onChange, children, className, disabled, id, "ar
         <ChevronDown className={cx("w-4 h-4 shrink-0 transition-transform", u.muted, open && "rotate-180")} aria-hidden />
       </button>
       {open && box && createPortal(
-        <ul
-          ref={list}
-          id={listId}
-          role="listbox"
-          aria-label={ariaLabel}
-          className={cx("fixed z-[70] overflow-y-auto border shadow-2xl py-1", u.divider, LIST_BG[u.id], radius, u.font)}
+        <div
+          className={cx("fixed z-[70] flex flex-col border shadow-2xl", u.divider, LIST_BG[u.id], radius, u.font)}
           style={{ left: box.left, width: box.width, top: box.top, bottom: box.bottom, maxHeight: box.maxHeight }}
         >
-          {options.map((o, i) => (
-            <li
-              key={o.value}
-              role="option"
-              aria-selected={o.value === value}
-              aria-disabled={o.disabled || undefined}
-              onMouseEnter={() => !o.disabled && setActive(i)}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => choose(i)}
-              className={cx(
-                "flex items-center justify-between gap-2 px-3 py-2 text-sm",
-                o.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer",
-                i === active && !o.disabled && "bg-white/10",
-                o.value === value ? u.accent : u.text,
-              )}
-            >
-              <span className="truncate">{o.label}</span>
-              {o.value === value && <Check className="w-3.5 h-3.5 shrink-0" aria-hidden />}
-            </li>
-          ))}
-        </ul>,
+          {searchable && (
+            <div className={cx("p-2 border-b shrink-0", u.divider)}>
+              <input
+                ref={search}
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  // the cursor goes to the first match
+                  const first = options.findIndex((o) => !o.disabled && matches(o, norm(e.target.value.trim())));
+                  if (first >= 0) setActive(first);
+                }}
+                onKeyDown={onKeyDown}
+                placeholder="Scrivi per cercare"
+                aria-label="Cerca nell'elenco"
+                aria-controls={listId}
+                autoComplete="off"
+                spellCheck={false}
+                className={cx(u.input, "h-9 text-sm")}
+              />
+            </div>
+          )}
+          <ul ref={list} id={listId} role="listbox" aria-label={ariaLabel} className="overflow-y-auto min-h-0 py-1">
+            {visible.length === 0 && <li className={cx("px-3 py-2 text-sm", u.muted)}>Nessun risultato</li>}
+            {visible.map(({ o, i }) => (
+              <li
+                key={o.value}
+                data-i={i}
+                role="option"
+                aria-selected={o.value === value}
+                aria-disabled={o.disabled || undefined}
+                onMouseEnter={() => !o.disabled && setActive(i)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => choose(i)}
+                className={cx(
+                  "flex items-center justify-between gap-2 px-3 py-2 text-sm",
+                  o.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer",
+                  i === active && !o.disabled && "bg-white/10",
+                  o.value === value ? u.accent : u.text,
+                )}
+              >
+                <span className="truncate">{o.label}</span>
+                {o.value === value && <Check className="w-3.5 h-3.5 shrink-0" aria-hidden />}
+              </li>
+            ))}
+          </ul>
+        </div>,
         document.body,
       )}
     </>
