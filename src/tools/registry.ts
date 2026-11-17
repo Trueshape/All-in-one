@@ -164,6 +164,8 @@ export interface ToolItem {
   iconColor: string;
   category: "convertitori" | "calcolo" | "produttivita" | "creative" | "immagini" | "testo" | "pdf";
   component: React.ComponentType<any>;
+  /** The tool keeps what the user built (teams, a drawn font): the generic reset button is not shown. */
+  keepsData?: boolean;
 }
 
 /** Order of the categories wherever the tools are listed; inside a category they are sorted by name. */
@@ -543,6 +545,7 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-amber-400 bg-amber-500/10",
     category: "immagini",
     component: HandwritingFont,
+    keepsData: true,
   },
   {
     id: "text_codes",
@@ -719,6 +722,7 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-amber-400 bg-amber-500/10",
     category: "produttivita",
     component: BracketMaker,
+    keepsData: true,
   },
   {
     id: "scoreboard",
@@ -730,6 +734,7 @@ export const TOOLS: ToolItem[] = [
     iconColor: "text-emerald-400 bg-emerald-500/10",
     category: "produttivita",
     component: Scoreboard,
+    keepsData: true,
   },
   {
     id: "pdf_merge",

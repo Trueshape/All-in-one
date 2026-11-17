@@ -1,13 +1,14 @@
 import type React from "react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronLeft, ChevronRight, Info, Pencil, Settings, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Info, Pencil, RotateCcw, Settings, X } from "lucide-react";
 import { getThemeClasses, getToolModalSize, type Theme } from "./theme";
 import type { ToolItem } from "./tools/registry";
 import { UiContext, UI_TOKENS } from "./ui/tokens";
 import { HeaderActionsContext, InfoContext } from "./ui/kit";
 import { ToolErrorBoundary } from "./ui/ToolErrorBoundary";
 import { useI18n } from "./i18n";
+import { clearPersisted } from "./lib/persist";
 
 /** Fixed-width sizes replace the default max width; a size that starts with w-fit also drops w-full so the window can follow its content. */
 const sizeClass = (container: string, size: string) =>
@@ -27,6 +28,8 @@ interface ToolModalProps {
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
+  /** Runs `run` after the app has checked that no unsaved work would be lost. */
+  onReset: (run: () => void) => void;
   showInfo: boolean;
   onToggleInfo: () => void;
 }
@@ -45,6 +48,7 @@ export default function ToolModal({
   onClose,
   onNext,
   onPrev,
+  onReset,
   showInfo,
   onToggleInfo,
 }: ToolModalProps) {
@@ -66,6 +70,13 @@ export default function ToolModal({
   };
   const [actionsEl, setActionsEl] = useState<HTMLElement | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  // Reset: the remembered values are forgotten and the tool is built again, so it starts from its defaults.
+  const [resets, setResets] = useState(0);
+  const reset = () =>
+    onReset(() => {
+      clearPersisted();
+      setResets((n) => n + 1);
+    });
   // Settings belong to one tool: close them when the open tool changes.
   useEffect(() => setShowSettings(false), [activeTool?.id]);
 
@@ -203,6 +214,18 @@ export default function ToolModal({
                   </button>
                 )}
 
+                {!activeTool.keepsData && (
+                  <button
+                    onClick={reset}
+                    className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic}`}
+                    title="Ripristina i valori iniziali"
+                    aria-label="Ripristina i valori iniziali"
+                    id="btn-reset-tool"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                )}
+
                 <button
                   onClick={onToggleInfo}
                   className={`p-1.5 transition-colors border ${tc.borderClass} ${tc.btnClassic} ${showInfo ? `${UI_TOKENS[activeTheme].accent} border-current` : ""}`}
@@ -232,7 +255,7 @@ export default function ToolModal({
                 <HeaderActionsContext.Provider value={{ el: actionsEl, buttonClass: `${tc.borderClass} ${tc.btnClassic}` }}>
                   {/* PDF tools have a minimum height: their content sits in the middle of it, not glued to the top */}
                   <div className={activeTool.category === "pdf" ? "my-auto" : undefined}>
-                    <ToolErrorBoundary key={activeTool.id}>
+                    <ToolErrorBoundary key={`${activeTool.id}:${resets}`}>
                       <Suspense fallback={<div className="p-8 font-mono text-sm text-zinc-500">Caricamento…</div>}>
                         <activeTool.component showSettings={showSettings} />
                       </Suspense>

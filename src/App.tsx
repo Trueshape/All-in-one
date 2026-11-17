@@ -35,9 +35,12 @@ export default function App() {
   }, []);
   const unsaved = useMemo(() => ({ mark }), [mark]);
   const [pending, setPending] = useState<(() => void) | null>(null);
-  const guard = (action: () => void) => {
-    if (dirtyKeys.current.size > 0) setPending(() => action);
-    else action();
+  const [pendingReset, setPendingReset] = useState(false);
+  const guard = (action: () => void, reset = false) => {
+    if (dirtyKeys.current.size > 0) {
+      setPendingReset(reset);
+      setPending(() => action);
+    } else action();
   };
   useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
@@ -191,6 +194,7 @@ export default function App() {
         onClose={() => guard(() => setActiveToolId(null))}
         onNext={() => guard(handleNextTool)}
         onPrev={() => guard(handlePrevTool)}
+        onReset={(run) => guard(run, true)}
         showInfo={showInfo}
         onToggleInfo={() => setShowInfo((v) => !v)}
       />
@@ -199,10 +203,10 @@ export default function App() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70" role="alertdialog" aria-modal="true" aria-labelledby="unsaved-title">
           <div className={`w-full max-w-md p-6 space-y-4 border ${tc.borderClass} bg-zinc-950 text-zinc-200 rounded-lg shadow-2xl`}>
             <h2 id="unsaved-title" className="text-base font-semibold">Modifiche non salvate</h2>
-            <p className="text-sm text-zinc-400">Se cambi pagina ora puoi perdere il lavoro fatto su questo file. Vuoi uscire lo stesso?</p>
+            <p className="text-sm text-zinc-400">{pendingReset ? "Se ripristini ora perdi il lavoro fatto su questo file. Vuoi ripristinare lo stesso?" : "Se cambi pagina ora puoi perdere il lavoro fatto su questo file. Vuoi uscire lo stesso?"}</p>
             <div className="flex justify-end gap-2">
               <button type="button" autoFocus onClick={() => setPending(null)} className={`px-4 py-2 text-sm border ${tc.borderClass} ${tc.btnClassic}`}>Resta qui</button>
-              <button type="button" onClick={() => { const go = pending; dirtyKeys.current.clear(); setPending(null); go(); }} className="px-4 py-2 text-sm border border-red-500/50 text-red-300 hover:bg-red-500/10">Cambia pagina</button>
+              <button type="button" onClick={() => { const go = pending; dirtyKeys.current.clear(); setPending(null); go(); }} className="px-4 py-2 text-sm border border-red-500/50 text-red-300 hover:bg-red-500/10">{pendingReset ? "Ripristina" : "Cambia pagina"}</button>
             </div>
           </div>
         </div>

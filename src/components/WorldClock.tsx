@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftRight, Globe, Moon, RotateCcw, Sun } from "lucide-react";
-import { DatePicker, Field, HeaderAction, IconButton, Notice, Panel, Select, Slider, Button, Stack, TextInput, cx } from "../ui/kit";
+import { ArrowLeftRight, Globe, Moon, Sun } from "lucide-react";
+import { DatePicker, Field, IconButton, Notice, Panel, Select, Slider, Button, Stack, TextInput, cx } from "../ui/kit";
 import { usePersisted } from "../lib/persist";
 import { offsetDifference, zonedTimeToInstant } from "../lib/timeZones";
 import { useUi } from "../ui/tokens";
@@ -55,7 +55,6 @@ export default function WorldClock() {
   // the zone of each of the 8 cards, remembered; anything that is not 8 known zones falls back to the default
   const [saved, setSaved] = usePersisted<string[]>("world_clock_zones", DEFAULT_ZONES);
   const zones = Array.isArray(saved) && saved.length === DEFAULT_ZONES.length && saved.every((z) => ZONES.includes(z)) ? saved : DEFAULT_ZONES;
-  const isDefault = zones.every((z, i) => z === DEFAULT_ZONES[i]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000);
@@ -97,9 +96,6 @@ export default function WorldClock() {
 
   return (
     <Stack>
-      <HeaderAction onClick={() => setSaved(DEFAULT_ZONES)} disabled={isDefault} title="Ripristina i fusi orari predefiniti">
-        <RotateCcw className="w-4 h-4" />
-      </HeaderAction>
       <Panel className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <span className={cx("inline-flex items-center gap-2", u.statLabel)}><Globe className="w-4 h-4" /> Pianificatore fusi orari</span>
@@ -126,7 +122,7 @@ export default function WorldClock() {
                     aria-label={`Fuso orario della scheda ${slot + 1}`}
                     shownLabel={name}
                     listMinWidth={260}
-                    className="border-transparent! bg-transparent! px-0! py-0! h-6! text-sm font-semibold [&_svg]:hidden hover:underline underline-offset-4 decoration-dotted"
+                    className="border-transparent! bg-transparent! px-0! py-0! h-6! text-[13px] tracking-tight font-semibold [&_svg]:hidden hover:underline underline-offset-4 decoration-dotted"
                   >
                     {ZONES.map((z) => <option key={z} value={z}>{zoneName(z)}</option>)}
                   </Select>

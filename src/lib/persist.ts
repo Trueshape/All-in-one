@@ -1,6 +1,19 @@
 import { useEffect, useState } from "react";
 
 const PREFIX = "tool:";
+/** Keys of the fields that are on screen now: a reset forgets exactly these. */
+const mounted = new Set<string>();
+
+/** Forgets the remembered values of the tool that is open, so that it starts again from its defaults. */
+export function clearPersisted() {
+  for (const key of mounted) {
+    try {
+      localStorage.removeItem(PREFIX + key);
+    } catch {
+      // storage unavailable: nothing was remembered
+    }
+  }
+}
 
 /** The saved value when it has the same type as `initial`, otherwise `initial`. Pure, so it can be tested. */
 export function parseSaved<T>(raw: string | null, initial: T): T {
@@ -29,5 +42,9 @@ export function usePersisted<T>(key: string, initial: T): [T, (v: T) => void] {
       // storage unavailable: the value only lasts for this visit
     }
   }, [key, value]);
+  useEffect(() => {
+    mounted.add(key);
+    return () => void mounted.delete(key);
+  }, [key]);
   return [value, setValue];
 }
