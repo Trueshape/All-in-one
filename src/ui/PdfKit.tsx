@@ -243,6 +243,54 @@ export function ResultPreview({ bytes, page, width }: { bytes: Uint8Array | null
 }
 
 /** The three standard PDF fonts (no file to embed), with the CSS fonts that look closest on screen. */
+/** Pages of the made-up document the tools show before a real PDF is loaded. */
+export const SAMPLE_PAGES = 6;
+/** Size in points of a sample page (A4), for tools that measure the page. */
+export const SAMPLE_SIZE = { width: 595, height: 842 };
+
+/** A made-up A4 page (grey lines in place of text) that stands in for a PDF while none is loaded. `width` is in px. */
+export function SampleSheet({ width = 300, className, plain = false, children }: { width?: number; className?: string; plain?: boolean; children?: ReactNode }) {
+  const bar = (top: number, right: number, h: number) => (
+    <div key={top} className="absolute rounded bg-zinc-300" style={{ left: "14%", right: `${right}%`, top: `${top}%`, height: Math.max(2, Math.round((h * width) / 300)) }} />
+  );
+  return (
+    <div className={cx("relative bg-white overflow-hidden shadow border border-zinc-300", className)} style={{ width, aspectRatio: "1 / 1.414" }}>
+      {!plain && (
+        <>
+          {bar(10, 14, 8)}
+          {[20, 26, 32, 38, 44].map((t, i) => bar(t, [30, 18, 24, 14, 36][i], 5))}
+          <div className="absolute border border-zinc-300 rounded" style={{ left: "14%", right: "14%", top: "54%", height: "22%" }} />
+          {bar(82, 40, 5)}
+        </>
+      )}
+      {children}
+    </div>
+  );
+}
+
+/** The sample page as a stage like the real one: zoomable, and a click on the bare page reports where (as fractions of the page). Items inside carry `data-item`. */
+export function SampleStage({ width, stageRef, onPick, plain, children }: { width: number; stageRef?: React.RefObject<HTMLDivElement | null>; onPick?: (fx: number, fy: number) => void; plain?: boolean; children?: ReactNode }) {
+  const u = useUi();
+  return (
+    <div className="flex flex-col items-center gap-3 min-w-0">
+      <span className={cx("text-xs font-mono", u.muted)}>Pagina d'esempio</span>
+      <ZoomPan resetKey="sample">
+        <div
+          ref={stageRef}
+          className={cx("relative select-none", onPick && "cursor-crosshair")}
+          onClick={(e) => {
+            if (!onPick || (e.target as HTMLElement).closest("[data-item]")) return;
+            const { fx, fy } = fractionAt(e, e.currentTarget);
+            onPick(fx, fy);
+          }}
+        >
+          <SampleSheet width={width} plain={plain}>{children}</SampleSheet>
+        </div>
+      </ZoomPan>
+    </div>
+  );
+}
+
 export const FONTS = {
   helvetica: { label: "Helvetica", regular: StandardFonts.Helvetica, bold: StandardFonts.HelveticaBold, css: "Helvetica, Arial, sans-serif" },
   times: { label: "Times", regular: StandardFonts.TimesRoman, bold: StandardFonts.TimesRomanBold, css: "'Times New Roman', Times, serif" },

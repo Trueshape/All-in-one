@@ -5,7 +5,7 @@ import { useUnsaved } from "../ui/unsaved";
 import { Button, Chips, CopyButton, Field, IconButton, Notice, Segmented, Slider, Stack, TextArea, TextInput, Toggle, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { ImageDrop } from "../ui/ImageDrop";
-import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, SinglePdf, editPdf, embedImage, pdfColor, pdfPoint, pdfjs, readImage, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
+import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, SAMPLE_SIZE, SampleStage, SinglePdf, editPdf, embedImage, pdfColor, pdfPoint, pdfjs, readImage, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { download, toBlob } from "../lib/imageOps";
 import { groupText, inkBounds, inkColour, mmToPt, moveItem, parsePageList, piecesToLines, ringBackground } from "../lib/pdfPages";
@@ -164,6 +164,32 @@ export function PdfConvert() {
     </Field>
   );
 
+  // the options of the two modes that read a PDF, shown with or without one
+  const imageOptions = (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-4 min-w-0">
+        <Field label="Formato"><Chips value={format} onChange={setFormat} options={[{ value: "png", label: "PNG" }, { value: "jpeg", label: "JPG" }]} /></Field>
+        <Slider label="Risoluzione" value={dpi} min={72} max={300} step={6} onChange={setDpi} display={`${dpi} DPI`} />
+      </div>
+      <div className="space-y-4 min-w-0">
+        {pageField}
+        {saver.error && <Notice tone="error">{saver.error}</Notice>}
+      </div>
+    </div>
+  );
+  const textOptions = (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+        {pageField}
+        <Toggle checked={split} onChange={setSplit} label="Intestazione per ogni pagina" />
+      </div>
+      {problem && <Notice tone="warn">{problem}</Notice>}
+      <Field label="Testo" actions={<CopyButton text={text} />}>
+        <TextArea rows={14} readOnly value={text} placeholder="Il testo letto dal PDF compare qui" />
+      </Field>
+    </>
+  );
+
   return (
     <Stack>
       <Segmented fill value={mode} onChange={setMode} options={[{ value: "images", label: "PDF in immagini" }, { value: "pdf", label: "Immagini in PDF" }, { value: "text", label: "PDF in testo" }]} />
@@ -190,48 +216,38 @@ export function PdfConvert() {
             {sheet !== "image" && <Toggle checked={fit} onChange={setFit} label="Margine di 10 mm" />}
           </div>
           {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="primary" disabled={!images.length || saver.busy} onClick={() => void toPdf()}>Salva</Button>
-            {images.length > 0 && <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setImages([])}>Svuota</Button>}
-          </div>
+          {images.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="primary" disabled={saver.busy} onClick={() => void toPdf()}>Salva</Button>
+              <Button size="sm" variant="danger" icon={<Trash2 />} className="ml-auto" onClick={() => setImages([])}>Svuota</Button>
+            </div>
+          )}
           <Notice>Ogni immagine diventa una pagina. PNG e JPG entrano senza perdere qualità, gli altri formati vengono ridisegnati come PNG.</Notice>
         </>
       ) : (
         <SinglePdf
           state={{ ...state, clear: reset }}
           info={mode === "images" ? "Ogni pagina diventa un'immagine. Più DPI vuol dire più nitidezza e file più grandi: 150 va bene per lo schermo, 300 per stampare." : "Il testo viene letto dal PDF, riga per riga. Se il PDF è una scansione non c'è testo da leggere."}
+          empty={(drop) => (
+            <>
+              {drop}
+              {mode === "images" ? imageOptions : textOptions}
+            </>
+          )}
         >
           {(p) => (
             <>
-              <PdfFileBar pdf={p} onClear={reset} />
-              {mode === "images" ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4 min-w-0">
-                    <Field label="Formato"><Chips value={format} onChange={setFormat} options={[{ value: "png", label: "PNG" }, { value: "jpeg", label: "JPG" }]} /></Field>
-                    <Slider label="Risoluzione" value={dpi} min={72} max={300} step={6} onChange={setDpi} display={`${dpi} DPI`} />
-                  </div>
-                  <div className="space-y-4 min-w-0">
-                    {pageField}
-                    {saver.error && <Notice tone="error">{saver.error}</Notice>}
-                    <Button variant="primary" disabled={saver.busy} onClick={() => void toImages(p)}>{format === "png" ? "PNG" : "JPG"}</Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                    {pageField}
-                    <Toggle checked={split} onChange={setSplit} label="Intestazione per ogni pagina" />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3">
+              <PdfFileBar pdf={p} onClear={reset}>
+                {mode === "images" ? (
+                  <Button variant="primary" disabled={saver.busy} onClick={() => void toImages(p)}>Salva</Button>
+                ) : (
+                  <>
                     <Button variant="primary" onClick={() => void extract(p)}>Leggi il testo</Button>
-                    <Button disabled={!text} icon={<Download />} onClick={() => download(new Blob([text], { type: "text/plain;charset=utf-8" }), `${p.name}.txt`)}>TXT</Button>
-                  </div>
-                  {problem && <Notice tone="warn">{problem}</Notice>}
-                  <Field label="Testo" actions={<CopyButton text={text} />}>
-                    <TextArea rows={14} readOnly value={text} placeholder="Premi «Leggi il testo»" />
-                  </Field>
-                </>
-              )}
+                    <Button icon={<Download />} disabled={!text} onClick={() => download(new Blob([text], { type: "text/plain;charset=utf-8" }), `${p.name}.txt`)}>Salva</Button>
+                  </>
+                )}
+              </PdfFileBar>
+              {mode === "images" ? imageOptions : textOptions}
             </>
           )}
         </SinglePdf>
@@ -274,6 +290,14 @@ function toCanvas(img: { bitmap?: ImageBitmap; data?: Uint8ClampedArray; width: 
 }
 
 const MIN_SIDE = 16;
+
+/** Made-up pictures shown before a PDF is loaded, so the choice can be tried. */
+const SAMPLE_FOUND = [
+  { id: "s1", page: 1, width: 1200, height: 800, color: "#60a5fa" },
+  { id: "s2", page: 2, width: 640, height: 640, color: "#f59e0b" },
+  { id: "s3", page: 3, width: 300, height: 120, color: "#34d399" },
+  { id: "s4", page: 5, width: 1600, height: 900, color: "#f472b6" },
+];
 
 export function PdfExtractImages() {
   const u = useUi();
@@ -357,33 +381,56 @@ export function PdfExtractImages() {
       await downloadAll(files);
     });
 
+  // before a PDF is loaded the grid shows made-up pictures, which can be ticked like the real ones
+  const cards: Array<{ id: string; page: number; width: number; height: number; url?: string; color?: string }> = pdf ? shown : SAMPLE_FOUND;
+
+  const body = (p: PdfFile | null) => (
+    <>
+      <div className="flex flex-wrap items-center gap-4">
+        <Field label="Formato"><Chips value={format} onChange={setFormat} options={[{ value: "png", label: "PNG" }, { value: "jpeg", label: "JPG" }]} /></Field>
+        <Toggle checked={skipSmall} onChange={setSkipSmall} label="Salta le immagini minuscole" />
+        <span className={cx("text-xs", u.muted)}>{scanning ? "Cerco le immagini…" : p ? `${shown.length} immagini trovate` : `${cards.length} immagini d'esempio`}</span>
+        <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" disabled={!cards.length} onClick={() => setChosen(new Set(cards.map((f) => f.id)))}>Tutte</Button>
+          <Button size="sm" disabled={!chosen.size} onClick={() => setChosen(new Set())}>Nessuna</Button>
+        </div>
+      </div>
+      {saver.error && <Notice tone="error">{saver.error}</Notice>}
+      {p && !scanning && !shown.length && <Notice tone="empty">Questo PDF non ha immagini incorporate{found.length && skipSmall ? " (a parte quelle minuscole)" : ""}.</Notice>}
+      <div className="grid gap-3 max-h-[560px] overflow-auto p-1" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
+        {cards.map((f) => (
+          <button key={f.id} type="button" onClick={() => toggle(f.id)} aria-pressed={chosen.has(f.id)} className={cx("flex flex-col items-center gap-2 p-2 border rounded-lg cursor-pointer", u.divider, chosen.has(f.id) && "ring-2")} style={chosen.has(f.id) ? { boxShadow: `0 0 0 2px ${u.accentHex}` } : undefined}>
+            <span className="h-28 w-full flex items-center justify-center bg-[repeating-conic-gradient(#80808022_0_25%,transparent_0_50%)] bg-[length:16px_16px]">
+              {f.url ? (
+                <img src={f.url} alt={`Immagine della pagina ${f.page}`} className="max-h-28 max-w-full object-contain" />
+              ) : (
+                <span className="rounded" style={{ background: f.color, width: `${Math.min(100, (f.width / Math.max(f.width, f.height)) * 100)}%`, aspectRatio: `${f.width} / ${f.height}`, maxHeight: "100%" }} />
+              )}
+            </span>
+            <span className={cx("text-[11px] font-mono", u.muted)}>Pag. {f.page} · {f.width} × {f.height}</span>
+          </button>
+        ))}
+      </div>
+    </>
+  );
+
   return (
-    <SinglePdf state={{ ...state, clear: state.clear }} info="Cerca le immagini incorporate nelle pagine (foto, loghi, scansioni). Il disegno vettoriale e il testo non sono immagini e non vengono estratti. Un'immagine usata su più pagine compare una volta sola.">
+    <SinglePdf
+      state={{ ...state, clear: state.clear }}
+      info="Cerca le immagini incorporate nelle pagine (foto, loghi, scansioni). Il disegno vettoriale e il testo non sono immagini e non vengono estratti. Un'immagine usata su più pagine compare una volta sola."
+      empty={(drop) => (
+        <>
+          {drop}
+          {body(null)}
+        </>
+      )}
+    >
       {(p) => (
         <>
-          <PdfFileBar pdf={p} onClear={state.clear} />
-          <div className="flex flex-wrap items-center gap-4">
-            <Field label="Formato"><Chips value={format} onChange={setFormat} options={[{ value: "png", label: "PNG" }, { value: "jpeg", label: "JPG" }]} /></Field>
-            <Toggle checked={skipSmall} onChange={setSkipSmall} label="Salta le immagini minuscole" />
-            <span className={cx("text-xs", u.muted)}>{scanning ? "Cerco le immagini…" : `${shown.length} immagini trovate`}</span>
-            <div className="ml-auto flex items-center gap-2">
-              <Button size="sm" disabled={!shown.length} onClick={() => setChosen(new Set(shown.map((f) => f.id)))}>Tutte</Button>
-              <Button size="sm" disabled={!chosen.size} onClick={() => setChosen(new Set())}>Nessuna</Button>
-              <Button variant="primary" disabled={!picked.length || saver.busy} onClick={() => void save(p, picked)}>{format === "png" ? "PNG" : "JPG"}{picked.length ? ` (${picked.length})` : ""}</Button>
-            </div>
-          </div>
-          {saver.error && <Notice tone="error">{saver.error}</Notice>}
-          {!scanning && !shown.length && <Notice tone="empty">Questo PDF non ha immagini incorporate{found.length && skipSmall ? " (a parte quelle minuscole)" : ""}.</Notice>}
-          <div className="grid gap-3 max-h-[560px] overflow-auto p-1" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))" }}>
-            {shown.map((f) => (
-              <button key={f.id} type="button" onClick={() => toggle(f.id)} aria-pressed={chosen.has(f.id)} className={cx("flex flex-col items-center gap-2 p-2 border rounded-lg cursor-pointer", u.divider, chosen.has(f.id) && "ring-2")} style={chosen.has(f.id) ? { boxShadow: `0 0 0 2px ${u.accentHex}` } : undefined}>
-                <span className="h-28 w-full flex items-center justify-center bg-[repeating-conic-gradient(#80808022_0_25%,transparent_0_50%)] bg-[length:16px_16px]">
-                  <img src={f.url} alt={`Immagine della pagina ${f.page}`} className="max-h-28 max-w-full object-contain" />
-                </span>
-                <span className={cx("text-[11px] font-mono", u.muted)}>Pag. {f.page} · {f.width} × {f.height}</span>
-              </button>
-            ))}
-          </div>
+          <PdfFileBar pdf={p} onClear={state.clear}>
+            <Button variant="primary" disabled={!picked.length || saver.busy} onClick={() => void save(p, picked)}>{`Salva${picked.length ? ` (${picked.length})` : ""}`}</Button>
+          </PdfFileBar>
+          {body(p)}
         </>
       )}
     </SinglePdf>
@@ -464,11 +511,19 @@ async function readBoxes(pdf: PdfFile, page: number): Promise<Array<TextBox & { 
 
 const autoFont = (family?: string): FontKey => (family && /serif(?!.*sans)/i.test(family) && !/sans/i.test(family) ? "times" : family && /mono|courier/i.test(family) ? "courier" : "helvetica");
 
+/** Made-up lines shown on the sample page before a PDF is loaded, so the editing can be tried (points on an A4 page). */
+const SAMPLE_BOXES: EditBox[] = [
+  { text: "Fattura n. 2024/118", x: 60, y: 90, width: 230, size: 18 },
+  { text: "Cliente: Mario Rossi", x: 60, y: 150, width: 200, size: 13 },
+  { text: "Data: 12/03/2024", x: 60, y: 175, width: 160, size: 13 },
+  { text: "Totale da pagare: 1.250,00 €", x: 60, y: 260, width: 300, size: 14 },
+].map((b, i) => ({ ...b, id: i + 1, page: 0, value: b.text, bg: "#ffffff", ink: "#000000", hide: { x: b.x - 1, y: b.y - b.size * 0.75 - 1, w: b.width + 2, h: b.size * 0.95 + 2 } }));
+
 export function PdfEditText() {
   const u = useUi();
   const state = usePdf();
   const [page, setPage] = useState(0);
-  const [boxes, setBoxes] = useState<EditBox[]>([]);
+  const [boxes, setBoxes] = useState<EditBox[]>(SAMPLE_BOXES);
   const [loading, setLoading] = useState(false);
   const [fontChoice, setFontChoice] = useState<FontKey | "auto">("auto");
   const [color, setColor] = useState("#000000");
@@ -480,7 +535,8 @@ export function PdfEditText() {
   const read = useRef(new Set<number>());
   const saver = useSaver();
   const pdf = state.pdf;
-  const size = usePageSize(pdf?.doc, page);
+  // without a PDF the lines of a made-up A4 page can be edited
+  const size = usePageSize(pdf?.doc, page) ?? (pdf ? null : SAMPLE_SIZE);
   const zoom = size ? STAGE / size.width : 1;
 
   // A page's text is read once, the first time it is shown; edits stay when moving between pages.
@@ -493,6 +549,13 @@ export function PdfEditText() {
       setLoading(false);
     }, () => setLoading(false));
   }, [pdf, page]);
+
+  // the sample lines stand in until a PDF arrives, and come back when it is removed
+  useEffect(() => {
+    read.current = new Set();
+    setPage(0);
+    setBoxes(pdf ? [] : SAMPLE_BOXES);
+  }, [pdf]);
 
   const reset = () => {
     state.clear();
@@ -527,93 +590,112 @@ export function PdfEditText() {
       savePdf(await doc.save(), `${p.name}_modificato.pdf`);
     });
 
+  /** The lines of the page being shown, editable in place. */
+  const overlay = boxes.filter((b) => b.page === page).map((b) => {
+    const changed = b.value !== b.text;
+    const shown = changed || focused === b.id;
+    return (
+      <Fragment key={b.id}>
+        {shown && <div className="absolute pointer-events-none" style={{ left: b.hide.x * zoom, top: b.hide.y * zoom, width: b.hide.w * zoom, height: b.hide.h * zoom, background: coverOf(b) }} />}
+        <input
+          data-item
+          value={b.value}
+          onChange={(e) => setBoxes((list) => list.map((x) => (x.id === b.id ? { ...x, value: e.target.value } : x)))}
+          aria-label={`Testo: ${b.text}`}
+          spellCheck={false}
+          onFocus={() => setFocused(b.id)}
+          onBlur={() => setFocused((id) => (id === b.id ? null : id))}
+          className={cx("absolute m-0 p-0 outline-none border border-dashed hover:border-current focus:border-solid", pdf ? "border-transparent" : "border-zinc-400")}
+          style={{
+            left: b.x * zoom - 1,
+            top: (b.y - b.size * 0.95) * zoom,
+            width: Math.max(b.width, b.value.length * b.size * 0.5) * zoom + 4,
+            height: b.size * 1.3 * zoom,
+            fontSize: b.size * zoom,
+            lineHeight: `${b.size * 1.3 * zoom}px`,
+            fontFamily: fontOf(b.family).css,
+            // untouched lines of a real PDF show the page itself; the sample lines, edited ones and the one being typed show their own text
+            color: shown || !pdf ? inkOf(b) : "transparent",
+            caretColor: inkOf(b),
+          }}
+        />
+      </Fragment>
+    );
+  });
+
+  const panel = (p: PdfFile | null) => (
+    <div className="space-y-4 min-w-0">
+      {p && (
+        <PdfFileBar pdf={p} onClear={reset}>
+          <Button variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>Salva</Button>
+        </PdfFileBar>
+      )}
+      <Field label="Font del testo nuovo">
+        <Chips value={fontChoice} onChange={setFontChoice} options={[{ value: "auto", label: "Come l'originale" }, ...FONT_OPTIONS]} />
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Colore del testo nuovo">
+          <div className="space-y-2">
+            <Chips value={colorAuto ? "auto" : "own"} onChange={(v) => setColorAuto(v === "auto")} options={[{ value: "auto", label: "Come l'originale" }, { value: "own", label: "Scelto" }]} />
+            {!colorAuto && (
+              <div className="flex items-center gap-2">
+                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore del testo nuovo" />
+                <span className={`font-mono text-xs ${u.subtle}`}>{color.toUpperCase()}</span>
+              </div>
+            )}
+          </div>
+        </Field>
+        <Field label="Sfondo che copre il vecchio testo">
+          <div className="space-y-2">
+            <Chips value={coverAuto ? "auto" : "own"} onChange={(v) => setCoverAuto(v === "auto")} options={[{ value: "auto", label: "Come la pagina" }, { value: "own", label: "Scelto" }]} />
+            {!coverAuto && (
+              <div className="flex items-center gap-2">
+                <input type="color" value={cover} onChange={(e) => setCover(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore dello sfondo" />
+                <span className={`font-mono text-xs ${u.subtle}`}>{cover.toUpperCase()}</span>
+              </div>
+            )}
+          </div>
+        </Field>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <span className={cx("text-xs", u.muted)}>{loading ? "Leggo il testo…" : edited.length === 1 ? "1 riga modificata" : `${edited.length} righe modificate`}</span>
+        {edited.length > 0 && <Button size="sm" onClick={() => setBoxes((list) => list.map((b) => ({ ...b, value: b.text })))}>Annulla tutto</Button>}
+      </div>
+      {/* The same lines as a list: easier for small print, and it keeps the two columns about as tall */}
+      {boxes.some((b) => b.page === page) && (
+        <Field label={p ? `Righe della pagina ${page + 1}` : "Righe della pagina d'esempio"}>
+          <div className={cx("h-[400px] overflow-auto space-y-1.5 p-2 border", u.divider)}>
+            {boxes.filter((b) => b.page === page).map((b) => (
+              <TextInput key={b.id} value={b.value} aria-label={`Riga: ${b.text}`} className={b.value !== b.text ? u.accent : undefined} onChange={(e) => setBoxes((list) => list.map((x) => (x.id === b.id ? { ...x, value: e.target.value } : x)))} />
+            ))}
+          </div>
+        </Field>
+      )}
+      {p && !loading && boxes.every((b) => b.page !== page) && <Notice tone="warn">In questa pagina non trovo testo: potrebbe essere una scansione.</Notice>}
+      {saver.error && <Notice tone="error">{saver.error}</Notice>}
+    </div>
+  );
+
   return (
     <SinglePdf
       state={{ ...state, clear: reset }}
       info="Clicca su una riga della pagina e correggila. Il vecchio testo viene coperto da un rettangolo, non cancellato: nel file resta sotto e si può ancora selezionare, quindi non serve per nascondere dati riservati. Il nuovo testo usa i font standard dei PDF, non quello originale."
+      empty={(drop) => (
+        <>
+          {drop}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SampleStage width={STAGE} plain>{overlay}</SampleStage>
+            {panel(null)}
+          </div>
+        </>
+      )}
     >
       {(p) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PageStage pdf={p} page={page} onPage={setPage} width={STAGE}>
-            {boxes.filter((b) => b.page === page).map((b) => {
-              const changed = b.value !== b.text;
-              const shown = changed || focused === b.id;
-              return (
-                <Fragment key={b.id}>
-                {shown && <div className="absolute pointer-events-none" style={{ left: b.hide.x * zoom, top: b.hide.y * zoom, width: b.hide.w * zoom, height: b.hide.h * zoom, background: coverOf(b) }} />}
-                <input
-                  value={b.value}
-                  onChange={(e) => setBoxes((list) => list.map((x) => (x.id === b.id ? { ...x, value: e.target.value } : x)))}
-                  aria-label={`Testo: ${b.text}`}
-                  spellCheck={false}
-                  onFocus={() => setFocused(b.id)}
-                  onBlur={() => setFocused((id) => (id === b.id ? null : id))}
-                  className="absolute m-0 p-0 outline-none border border-dashed border-transparent hover:border-current focus:border-solid"
-                  style={{
-                    left: b.x * zoom - 1,
-                    top: (b.y - b.size * 0.95) * zoom,
-                    width: Math.max(b.width, b.value.length * b.size * 0.5) * zoom + 4,
-                    height: b.size * 1.3 * zoom,
-                    fontSize: b.size * zoom,
-                    lineHeight: `${b.size * 1.3 * zoom}px`,
-                    fontFamily: fontOf(b.family).css,
-                    // untouched lines show the page itself; edited ones, and the one being typed, show how they will come out
-                    color: shown ? inkOf(b) : "transparent",
-                    caretColor: inkOf(b),
-                  }}
-                />
-                </Fragment>
-              );
-            })}
+            {overlay}
           </PageStage>
-          <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={p} onClear={reset}>
-              <Button variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>Salva</Button>
-            </PdfFileBar>
-            <Field label="Font del testo nuovo">
-              <Chips value={fontChoice} onChange={setFontChoice} options={[{ value: "auto", label: "Come l'originale" }, ...FONT_OPTIONS]} />
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Colore del testo nuovo">
-                <div className="space-y-2">
-                  <Chips value={colorAuto ? "auto" : "own"} onChange={(v) => setColorAuto(v === "auto")} options={[{ value: "auto", label: "Come l'originale" }, { value: "own", label: "Scelto" }]} />
-                  {!colorAuto && (
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore del testo nuovo" />
-                      <span className={`font-mono text-xs ${u.subtle}`}>{color.toUpperCase()}</span>
-                    </div>
-                  )}
-                </div>
-              </Field>
-              <Field label="Sfondo che copre il vecchio testo">
-                <div className="space-y-2">
-                  <Chips value={coverAuto ? "auto" : "own"} onChange={(v) => setCoverAuto(v === "auto")} options={[{ value: "auto", label: "Come la pagina" }, { value: "own", label: "Scelto" }]} />
-                  {!coverAuto && (
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={cover} onChange={(e) => setCover(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore dello sfondo" />
-                      <span className={`font-mono text-xs ${u.subtle}`}>{cover.toUpperCase()}</span>
-                    </div>
-                  )}
-                </div>
-              </Field>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className={cx("text-xs", u.muted)}>{loading ? "Leggo il testo…" : edited.length === 1 ? "1 riga modificata" : `${edited.length} righe modificate`}</span>
-              {edited.length > 0 && <Button size="sm" onClick={() => setBoxes((list) => list.map((b) => ({ ...b, value: b.text })))}>Annulla tutto</Button>}
-            </div>
-            {/* The same lines as a list: easier for small print, and it keeps the two columns about as tall */}
-            {boxes.some((b) => b.page === page) && (
-              <Field label={`Righe della pagina ${page + 1}`}>
-                <div className={cx("h-[400px] overflow-auto space-y-1.5 p-2 border", u.divider)}>
-                  {boxes.filter((b) => b.page === page).map((b) => (
-                    <TextInput key={b.id} value={b.value} aria-label={`Riga: ${b.text}`} className={b.value !== b.text ? u.accent : undefined} onChange={(e) => setBoxes((list) => list.map((x) => (x.id === b.id ? { ...x, value: e.target.value } : x)))} />
-                  ))}
-                </div>
-              </Field>
-            )}
-            {!loading && boxes.every((b) => b.page !== page) && <Notice tone="warn">In questa pagina non trovo testo: potrebbe essere una scansione.</Notice>}
-            {saver.error && <Notice tone="error">{saver.error}</Notice>}
-          </div>
+          {panel(p)}
         </div>
       )}
     </SinglePdf>

@@ -4,7 +4,7 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import { PDFCheckBox, PDFDropdown, PDFOptionList, PDFRadioGroup, PDFTextField, degrees } from "pdf-lib";
 import { Button, Chips, DatePicker, Field, IconButton, Notice, Segmented, Select, Slider, TextArea, TextInput, Toggle, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, ResultPreview, SinglePdf, drawError, editPdf, embedImage, pdfColor, pdfPoint, readImage, savePdf, startDrag, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
+import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, ResultPreview, SAMPLE_SIZE, SampleSheet, SampleStage, SinglePdf, drawError, editPdf, embedImage, pdfColor, pdfPoint, readImage, savePdf, startDrag, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { markAnchors, parsePageList } from "../lib/pdfPages";
 
@@ -61,21 +61,6 @@ function pagesOf(text: string, count: number): number[] {
 }
 
 /* ---------------- Filigrana ---------------- */
-
-/** An A4-like sample page (300 px wide) with grey placeholder lines, used while no PDF is loaded. */
-function SampleSheet({ children }: { children?: ReactNode }) {
-  const u = useUi();
-  const line = (top: number, right: number, h = 5) => <div key={top} className={cx("absolute rounded", u.id === "sophisticated" ? "bg-slate-300" : "bg-zinc-300")} style={{ left: "14%", right: `${right}%`, top: `${top}%`, height: h }} />;
-  return (
-    <div className="relative bg-white overflow-hidden shadow border border-zinc-300" style={{ width: STAGE - 60, aspectRatio: "1 / 1.414" }}>
-      {line(10, 14, 8)}
-      {[20, 26, 32, 38, 44].map((t, i) => line(t, [30, 18, 24, 14, 36][i]))}
-      <div className="absolute border border-zinc-300 rounded" style={{ left: "14%", right: "14%", top: "54%", height: "22%" }} />
-      {line(82, 40)}
-      {children}
-    </div>
-  );
-}
 
 const SAMPLE_FONTS: Record<FontKey, string> = { helvetica: "Helvetica, Arial, sans-serif", times: "'Times New Roman', Times, serif", courier: "'Courier New', Courier, monospace" };
 
@@ -292,27 +277,42 @@ export function PdfProperties() {
   const text = (key: keyof Props, label: string, hint?: string) => (
     <Field label={label} hint={hint}><TextInput value={props[key]} onChange={(e) => set(key)(e.target.value)} /></Field>
   );
+  // the same form with or without a PDF: before one is loaded it shows what can be edited (the PDF's own values replace it on loading)
+  const form = (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+        {text("title", "Titolo")}
+        {text("author", "Autore")}
+        {text("subject", "Oggetto")}
+        {text("keywords", "Parole chiave", "Separate da virgola.")}
+        {text("creator", "Programma di origine")}
+        {text("producer", "Produttore PDF")}
+        <Field label="Data di creazione"><DatePicker value={props.created} onChange={set("created")} /></Field>
+        <div className="space-y-2">
+          <Field label="Data di modifica">{touchToday ? <TextInput value="Oggi, al salvataggio" disabled /> : <DatePicker value={props.modified} onChange={set("modified")} />}</Field>
+          <Toggle checked={touchToday} onChange={setTouchToday} label="Usa la data di oggi" />
+        </div>
+      </div>
+      {saver.error && <Notice tone="error">{saver.error}</Notice>}
+    </>
+  );
   return (
-    <SinglePdf state={state} info="Le proprietà sono i dati che i lettori PDF mostrano in Proprietà del documento. Il contenuto delle pagine non cambia.">
+    <SinglePdf
+      state={state}
+      info="Le proprietà sono i dati che i lettori PDF mostrano in Proprietà del documento. Il contenuto delle pagine non cambia."
+      empty={(drop) => (
+        <>
+          {drop}
+          {form}
+        </>
+      )}
+    >
       {(pdf) => (
         <>
           <PdfFileBar pdf={pdf} onClear={state.clear}>
-              <Button variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>Salva</Button>
-            </PdfFileBar>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-            {text("title", "Titolo")}
-            {text("author", "Autore")}
-            {text("subject", "Oggetto")}
-            {text("keywords", "Parole chiave", "Separate da virgola.")}
-            {text("creator", "Programma di origine")}
-            {text("producer", "Produttore PDF")}
-            <Field label="Data di creazione"><DatePicker value={props.created} onChange={set("created")} /></Field>
-            <div className="space-y-2">
-              <Field label="Data di modifica">{touchToday ? <TextInput value="Oggi, al salvataggio" disabled /> : <DatePicker value={props.modified} onChange={set("modified")} />}</Field>
-              <Toggle checked={touchToday} onChange={setTouchToday} label="Usa la data di oggi" />
-            </div>
-          </div>
-          {saver.error && <Notice tone="error">{saver.error}</Notice>}
+            <Button variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+          </PdfFileBar>
+          {form}
         </>
       )}
     </SinglePdf>
@@ -357,8 +357,14 @@ export function PdfAddText() {
   const [page, setPage] = useState(0);
   const stage = useRef<HTMLDivElement>(null);
   const saver = useSaver();
-  const size = usePageSize(state.pdf?.doc, page);
+  // without a PDF the texts are placed on a made-up A4 page
+  const size = usePageSize(state.pdf?.doc, page) ?? (state.pdf ? null : SAMPLE_SIZE);
   const zoom = size ? STAGE / size.width : 1;
+  useEffect(() => {
+    setItems([]);
+    setSelected(null);
+    setPage(0);
+  }, [state.pdf]);
 
   const current = items.find((i) => i.id === selected);
   const shownText = current ?? { text: "", size: 14, color: "#000000", font: "helvetica" as FontKey, bold: false };
@@ -376,53 +382,75 @@ export function PdfAddText() {
     setSelected(item.id);
   };
 
+  /** The texts on the page being shown, draggable. */
+  const placed = items.filter((i) => i.page === page).map((item) => (
+    <div
+      key={item.id}
+      data-item
+      onPointerDown={(e) => {
+        setSelected(item.id);
+        startDrag(e, stage.current, item, (fx, fy) => setItems((list) => list.map((i) => (i.id === item.id ? { ...i, fx, fy } : i))));
+      }}
+      className={cx("absolute whitespace-pre cursor-move", item.id === selected && "outline outline-1 outline-offset-2")}
+      style={{ left: `${item.fx * 100}%`, top: `${item.fy * 100}%`, fontFamily: FONTS[item.font].css, fontWeight: item.bold ? 700 : 400, fontSize: item.size * zoom, lineHeight: 1.2, color: item.color, outlineColor: u.accentHex }}
+    >
+      {item.text || " "}
+    </div>
+  ));
+
+  const panel = (pdf: PdfFile | null) => (
+    <div className="space-y-4 min-w-0">
+      {pdf && (
+        <PdfFileBar pdf={pdf} onClear={reset}>
+          <Button variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>Salva</Button>
+        </PdfFileBar>
+      )}
+      {/* The controls are always shown, dimmed until a text is selected, so the panel does not jump */}
+      <div className={cx("space-y-4", !current && "opacity-40")} inert={!current}>
+        <Field label="Testo" actions={<Button size="sm" variant="danger" disabled={!current} icon={<Trash2 />} onClick={() => { setItems(items.filter((i) => i.id !== selected)); setSelected(null); }}>Elimina</Button>}>
+          <TextArea rows={3} value={shownText.text} onChange={(e) => update({ text: e.target.value })} />
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Font"><Chips value={shownText.font} onChange={(font) => update({ font })} options={FONT_OPTIONS} /></Field>
+          <ColorField label="Colore" value={shownText.color} onChange={(color) => update({ color })} />
+        </div>
+        <Slider label="Dimensione" value={shownText.size} min={6} max={96} onChange={(s) => update({ size: s })} display={`${shownText.size} pt`} />
+        <Toggle checked={shownText.bold} onChange={(bold) => update({ bold })} label="Grassetto" />
+      </div>
+      {!current && <Notice tone="empty">Clicca sulla pagina nel punto dove vuoi scrivere.</Notice>}
+      {items.length > 0 && (
+        <div className={cx("max-h-40 overflow-auto border divide-y", u.divider)}>
+          {items.map((item) => (
+            <button key={item.id} type="button" onClick={() => { setSelected(item.id); setPage(item.page); }} className={cx("w-full text-left px-3 py-1.5 text-xs truncate cursor-pointer", item.id === selected ? u.accent : u.subtle)}>
+              Pagina {item.page + 1} · {item.text || "(vuoto)"}
+            </button>
+          ))}
+        </div>
+      )}
+      {saver.error && <Notice tone="error">{saver.error}</Notice>}
+    </div>
+  );
+
   return (
-    <SinglePdf state={{ ...state, clear: reset }} info="Clicca sulla pagina per aggiungere un testo, trascinalo per spostarlo. Usa i font standard dei PDF: lettere latine, numeri e punteggiatura comune.">
+    <SinglePdf
+      state={{ ...state, clear: reset }}
+      info="Clicca sulla pagina per aggiungere un testo, trascinalo per spostarlo. Usa i font standard dei PDF: lettere latine, numeri e punteggiatura comune."
+      empty={(drop) => (
+        <>
+          {drop}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SampleStage width={STAGE} stageRef={stage} onPick={add}>{placed}</SampleStage>
+            {panel(null)}
+          </div>
+        </>
+      )}
+    >
       {(pdf) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE} onPick={add} stageRef={stage}>
-            {items.filter((i) => i.page === page).map((item) => (
-              <div
-                key={item.id}
-                onPointerDown={(e) => {
-                  setSelected(item.id);
-                  startDrag(e, stage.current, item, (fx, fy) => setItems((list) => list.map((i) => (i.id === item.id ? { ...i, fx, fy } : i))));
-                }}
-                className={cx("absolute whitespace-pre cursor-move", item.id === selected && "outline outline-1 outline-offset-2")}
-                style={{ left: `${item.fx * 100}%`, top: `${item.fy * 100}%`, fontFamily: FONTS[item.font].css, fontWeight: item.bold ? 700 : 400, fontSize: item.size * zoom, lineHeight: 1.2, color: item.color, outlineColor: u.accentHex }}
-              >
-                {item.text || " "}
-              </div>
-            ))}
+            {placed}
           </PageStage>
-          <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={pdf} onClear={reset}>
-              <Button variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>Salva</Button>
-            </PdfFileBar>
-            {/* The controls are always shown, dimmed until a text is selected, so the panel does not jump */}
-            <div className={cx("space-y-4", !current && "opacity-40")} inert={!current}>
-              <Field label="Testo" actions={<Button size="sm" variant="danger" disabled={!current} icon={<Trash2 />} onClick={() => { setItems(items.filter((i) => i.id !== selected)); setSelected(null); }}>Elimina</Button>}>
-                <TextArea rows={3} value={shownText.text} onChange={(e) => update({ text: e.target.value })} />
-              </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Font"><Chips value={shownText.font} onChange={(font) => update({ font })} options={FONT_OPTIONS} /></Field>
-                <ColorField label="Colore" value={shownText.color} onChange={(color) => update({ color })} />
-              </div>
-              <Slider label="Dimensione" value={shownText.size} min={6} max={96} onChange={(s) => update({ size: s })} display={`${shownText.size} pt`} />
-              <Toggle checked={shownText.bold} onChange={(bold) => update({ bold })} label="Grassetto" />
-            </div>
-            {!current && <Notice tone="empty">Clicca sulla pagina nel punto dove vuoi scrivere.</Notice>}
-            {items.length > 0 && (
-              <div className={cx("max-h-40 overflow-auto border divide-y", u.divider)}>
-                {items.map((item) => (
-                  <button key={item.id} type="button" onClick={() => { setSelected(item.id); setPage(item.page); }} className={cx("w-full text-left px-3 py-1.5 text-xs truncate cursor-pointer", item.id === selected ? u.accent : u.subtle)}>
-                    Pagina {item.page + 1} · {item.text || "(vuoto)"}
-                  </button>
-                ))}
-              </div>
-            )}
-            {saver.error && <Notice tone="error">{saver.error}</Notice>}
-          </div>
+          {panel(pdf)}
         </div>
       )}
     </SinglePdf>
@@ -450,7 +478,13 @@ export function PdfAddImage() {
   const [page, setPage] = useState(0);
   const stage = useRef<HTMLDivElement>(null);
   const saver = useSaver();
-  const size = usePageSize(state.pdf?.doc, page);
+  // without a PDF the images are placed on a made-up A4 page
+  const size = usePageSize(state.pdf?.doc, page) ?? (state.pdf ? null : SAMPLE_SIZE);
+  useEffect(() => {
+    setItems([]);
+    setSelected(null);
+    setPage(0);
+  }, [state.pdf]);
 
   const current = items.find((i) => i.id === selected);
   const update = (patch: Partial<ImageItem>) => setItems((list) => list.map((i) => (i.id === selected ? { ...i, ...patch } : i)));
@@ -482,49 +516,71 @@ export function PdfAddImage() {
       savePdf(await doc.save(), `${pdf.name}_immagini.pdf`);
     });
 
+  /** The images on the page being shown, draggable. */
+  const placed = items.filter((i) => i.page === page).map((item) => (
+    <img
+      key={item.id}
+      data-item
+      src={item.image.url}
+      alt=""
+      draggable={false}
+      onPointerDown={(e) => {
+        setSelected(item.id);
+        startDrag(e, stage.current, item, (fx, fy) => setItems((list) => list.map((i) => (i.id === item.id ? { ...i, fx, fy } : i))));
+      }}
+      className={cx("absolute cursor-move", item.id === selected && "outline outline-2 outline-offset-1")}
+      style={{ left: `${item.fx * 100}%`, top: `${item.fy * 100}%`, width: `${item.fw * 100}%`, opacity: item.opacity / 100, outlineColor: u.accentHex }}
+    />
+  ));
+
+  const panel = (pdf: PdfFile | null) => (
+    <div className="space-y-4 min-w-0">
+      {pdf && (
+        <PdfFileBar pdf={pdf} onClear={reset}>
+          <Button variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+        </PdfFileBar>
+      )}
+      <ImageButton onImage={add}>Aggiungi immagine</ImageButton>
+      {/* The controls are always shown, dimmed until an image is selected, so the panel does not jump */}
+      <div className={cx("space-y-4", !current && "opacity-40")} inert={!current}>
+        <Slider label="Larghezza" value={Math.round((current?.fw ?? 0.3) * 100)} min={2} max={100} onChange={(v) => update({ fw: v / 100 })} display={size ? `${Math.round(((current?.fw ?? 0.3) * size.width * 25.4) / 72)} mm` : `${Math.round((current?.fw ?? 0.3) * 100)}%`} />
+        <Slider label="Opacità" value={current?.opacity ?? 100} min={5} max={100} onChange={(opacity) => update({ opacity })} display={`${current?.opacity ?? 100}%`} />
+        <Button size="sm" variant="danger" disabled={!current} icon={<Trash2 />} onClick={() => { setItems(items.filter((i) => i.id !== selected)); setSelected(null); }}>Elimina</Button>
+      </div>
+      {!current && items.length === 0 && <Notice tone="empty">Scegli un'immagine: compare sulla pagina, poi la sposti.</Notice>}
+      {items.length > 0 && (
+        <div className={cx("max-h-40 overflow-auto border divide-y", u.divider)}>
+          {items.map((item) => (
+            <button key={item.id} type="button" onClick={() => { setSelected(item.id); setPage(item.page); }} className={cx("w-full text-left px-3 py-1.5 text-xs truncate cursor-pointer", item.id === selected ? u.accent : u.subtle)}>
+              Pagina {item.page + 1} · {item.image.name}
+            </button>
+          ))}
+        </div>
+      )}
+      {saver.error && <Notice tone="error">{saver.error}</Notice>}
+    </div>
+  );
+
   return (
-    <SinglePdf state={{ ...state, clear: reset }} info="Aggiungi un'immagine e trascinala dove vuoi. PNG e JPG entrano così come sono, gli altri formati come PNG.">
+    <SinglePdf
+      state={{ ...state, clear: reset }}
+      info="Aggiungi un'immagine e trascinala dove vuoi. PNG e JPG entrano così come sono, gli altri formati come PNG."
+      empty={(drop) => (
+        <>
+          {drop}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SampleStage width={320} stageRef={stage}>{placed}</SampleStage>
+            {panel(null)}
+          </div>
+        </>
+      )}
+    >
       {(pdf) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <PageStage pdf={pdf} page={page} onPage={setPage} width={320} stageRef={stage}>
-            {items.filter((i) => i.page === page).map((item) => (
-              <img
-                key={item.id}
-                src={item.image.url}
-                alt=""
-                draggable={false}
-                onPointerDown={(e) => {
-                  setSelected(item.id);
-                  startDrag(e, stage.current, item, (fx, fy) => setItems((list) => list.map((i) => (i.id === item.id ? { ...i, fx, fy } : i))));
-                }}
-                className={cx("absolute cursor-move", item.id === selected && "outline outline-2 outline-offset-1")}
-                style={{ left: `${item.fx * 100}%`, top: `${item.fy * 100}%`, width: `${item.fw * 100}%`, opacity: item.opacity / 100, outlineColor: u.accentHex }}
-              />
-            ))}
+            {placed}
           </PageStage>
-          <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={pdf} onClear={reset}>
-              <Button variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
-            </PdfFileBar>
-            <ImageButton onImage={add}>Aggiungi immagine</ImageButton>
-            {/* The controls are always shown, dimmed until an image is selected, so the panel does not jump */}
-            <div className={cx("space-y-4", !current && "opacity-40")} inert={!current}>
-              <Slider label="Larghezza" value={Math.round((current?.fw ?? 0.3) * 100)} min={2} max={100} onChange={(v) => update({ fw: v / 100 })} display={size ? `${Math.round(((current?.fw ?? 0.3) * size.width * 25.4) / 72)} mm` : `${Math.round((current?.fw ?? 0.3) * 100)}%`} />
-              <Slider label="Opacità" value={current?.opacity ?? 100} min={5} max={100} onChange={(opacity) => update({ opacity })} display={`${current?.opacity ?? 100}%`} />
-              <Button size="sm" variant="danger" disabled={!current} icon={<Trash2 />} onClick={() => { setItems(items.filter((i) => i.id !== selected)); setSelected(null); }}>Elimina</Button>
-            </div>
-            {!current && items.length === 0 && <Notice tone="empty">Scegli un'immagine: compare sulla pagina, poi la sposti.</Notice>}
-            {items.length > 0 && (
-              <div className={cx("max-h-40 overflow-auto border divide-y", u.divider)}>
-                {items.map((item) => (
-                  <button key={item.id} type="button" onClick={() => { setSelected(item.id); setPage(item.page); }} className={cx("w-full text-left px-3 py-1.5 text-xs truncate cursor-pointer", item.id === selected ? u.accent : u.subtle)}>
-                    Pagina {item.page + 1} · {item.image.name}
-                  </button>
-                ))}
-              </div>
-            )}
-            {saver.error && <Notice tone="error">{saver.error}</Notice>}
-          </div>
+          {panel(pdf)}
         </div>
       )}
     </SinglePdf>
@@ -550,12 +606,21 @@ interface NewField {
   name: string;
 }
 
+/** Made-up fields shown before a PDF is loaded, so the "Compila" mode can be tried. */
+const SAMPLE_FIELDS: FieldInfo[] = [
+  { name: "Nome", type: "text", multiline: false },
+  { name: "Note", type: "text", multiline: true },
+  { name: "Accetto le condizioni", type: "check" },
+  { name: "Tipo di cliente", type: "choice", options: ["Privato", "Azienda"] },
+];
+const SAMPLE_VALUES: Record<string, string | boolean> = { Nome: "", Note: "", "Accetto le condizioni": false, "Tipo di cliente": "" };
+
 export function PdfForms() {
   const u = useUi();
   const state = usePdf();
   const [mode, setMode] = useState<"fill" | "add">("fill");
-  const [fields, setFields] = useState<FieldInfo[]>([]);
-  const [values, setValues] = useState<Record<string, string | boolean>>({});
+  const [fields, setFields] = useState<FieldInfo[]>(SAMPLE_FIELDS);
+  const [values, setValues] = useState<Record<string, string | boolean>>(SAMPLE_VALUES);
   const [flatten, setFlatten] = useState(false);
   const [added, setAdded] = useState<NewField[]>([]);
   const [kind, setKind] = useState<"text" | "check">("text");
@@ -563,13 +628,19 @@ export function PdfForms() {
   const stage = useRef<HTMLDivElement>(null);
   const saver = useSaver();
   const pdf = state.pdf;
-  const size = usePageSize(pdf?.doc, page);
+  // without a PDF the new fields are placed on a made-up A4 page
+  const size = usePageSize(pdf?.doc, page) ?? (pdf ? null : SAMPLE_SIZE);
 
   useEffect(() => {
+    setAdded([]);
+    setPage(0);
+    if (!pdf) {
+      setFields(SAMPLE_FIELDS);
+      setValues(SAMPLE_VALUES);
+      return;
+    }
     setFields([]);
     setValues({});
-    setAdded([]);
-    if (!pdf) return;
     editPdf(pdf.bytes).then((doc) => {
       const form = doc.getForm();
       const info: FieldInfo[] = [];
@@ -640,69 +711,96 @@ export function PdfForms() {
     });
 
   const editable = fields.filter((f) => f.type !== "other");
+
+  /** The new fields on the page being shown, draggable. */
+  const boxes = added.filter((n) => n.page === page).map((n) => (
+    <div
+      key={n.id}
+      data-item
+      onPointerDown={(e) => startDrag(e, stage.current, n, (fx, fy) => setAdded((list) => list.map((i) => (i.id === n.id ? { ...i, fx, fy } : i))))}
+      className="absolute border-2 cursor-move"
+      style={{ left: `${n.fx * 100}%`, top: `${n.fy * 100}%`, width: `${n.fw * 100}%`, height: `${n.fh * 100}%`, borderColor: u.accentHex, background: `${u.accentHex}22` }}
+      title={n.name}
+    />
+  ));
+
+  const addPanel = (
+    <div className="space-y-4 min-w-0">
+      <Field label="Tipo di campo da aggiungere"><Segmented fill value={kind} onChange={setKind} options={[{ value: "text", label: "Testo" }, { value: "check", label: "Casella" }]} /></Field>
+      {added.length ? (
+        <div className={cx("max-h-[360px] overflow-auto border divide-y", u.divider)}>
+          {added.map((n) => (
+            <div key={n.id} className="flex items-center gap-2 px-3 py-1.5">
+              <span className={cx("text-[11px] font-mono w-28 shrink-0", u.muted)}>{n.kind === "text" ? "Testo" : "Casella"} · pag. {n.page + 1}</span>
+              <TextInput value={n.name} aria-label="Nome del campo" onChange={(e) => setAdded(added.map((i) => (i.id === n.id ? { ...i, name: e.target.value } : i)))} />
+              <IconButton onClick={() => setAdded(added.filter((i) => i.id !== n.id))} title="Elimina campo"><Trash2 /></IconButton>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Notice tone="empty">Clicca sulla pagina dove vuoi il campo, poi trascinalo per sistemarlo.</Notice>
+      )}
+    </div>
+  );
+
+  const body = (pdf: PdfFile | null) => (
+    <>
+      <Segmented fill value={mode} onChange={setMode} options={[{ value: "fill", label: `Compila (${editable.length})` }, { value: "add", label: `Aggiungi campi (${added.length})` }]} />
+      {mode === "fill" ? (
+        editable.length ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[560px] overflow-auto p-1">
+            {editable.map((f) => (
+              <Field key={f.name} label={f.name}>
+                {f.type === "text" ? (
+                  f.multiline ? <TextArea rows={3} value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} /> : <TextInput value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} />
+                ) : f.type === "check" ? (
+                  <Toggle checked={!!values[f.name]} onChange={(v) => setValues({ ...values, [f.name]: v })} label="Spuntata" />
+                ) : f.type === "choice" ? (
+                  <Select value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}>
+                    <option value="">—</option>
+                    {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                  </Select>
+                ) : null}
+              </Field>
+            ))}
+          </div>
+        ) : (
+          <Notice tone="empty">Questo PDF non ha campi da compilare: puoi aggiungerli da «Aggiungi campi».</Notice>
+        )
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {pdf ? (
+            <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE} onPick={place} stageRef={stage}>{boxes}</PageStage>
+          ) : (
+            <SampleStage width={STAGE} stageRef={stage} onPick={place}>{boxes}</SampleStage>
+          )}
+          {addPanel}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-4">
+        <Toggle checked={flatten} onChange={setFlatten} label="Rendi non modificabile" />
+      </div>
+      {saver.error && <Notice tone="error">{saver.error}</Notice>}
+    </>
+  );
+
   return (
-    <SinglePdf state={{ ...state, clear: reset }} info="Compila i campi di un modulo PDF, oppure aggiungine di nuovi cliccando sulla pagina. Con «Rendi non modificabile» i valori diventano parte della pagina.">
+    <SinglePdf
+      state={{ ...state, clear: reset }}
+      info="Compila i campi di un modulo PDF, oppure aggiungine di nuovi cliccando sulla pagina. Con «Rendi non modificabile» i valori diventano parte della pagina."
+      empty={(drop) => (
+        <>
+          {drop}
+          {body(null)}
+        </>
+      )}
+    >
       {(pdf) => (
         <>
-          <PdfFileBar pdf={pdf} onClear={reset} />
-          <Segmented fill value={mode} onChange={setMode} options={[{ value: "fill", label: `Compila (${editable.length})` }, { value: "add", label: `Aggiungi campi (${added.length})` }]} />
-          {mode === "fill" ? (
-            editable.length ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[560px] overflow-auto p-1">
-                {editable.map((f) => (
-                  <Field key={f.name} label={f.name}>
-                    {f.type === "text" ? (
-                      f.multiline ? <TextArea rows={3} value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} /> : <TextInput value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} />
-                    ) : f.type === "check" ? (
-                      <Toggle checked={!!values[f.name]} onChange={(v) => setValues({ ...values, [f.name]: v })} label="Spuntata" />
-                    ) : f.type === "choice" ? (
-                      <Select value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}>
-                        <option value="">—</option>
-                        {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
-                      </Select>
-                    ) : null}
-                  </Field>
-                ))}
-              </div>
-            ) : (
-              <Notice tone="empty">Questo PDF non ha campi da compilare: puoi aggiungerli da «Aggiungi campi».</Notice>
-            )
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE} onPick={place} stageRef={stage}>
-                {added.filter((n) => n.page === page).map((n) => (
-                  <div
-                    key={n.id}
-                    onPointerDown={(e) => startDrag(e, stage.current, n, (fx, fy) => setAdded((list) => list.map((i) => (i.id === n.id ? { ...i, fx, fy } : i))))}
-                    className="absolute border-2 cursor-move"
-                    style={{ left: `${n.fx * 100}%`, top: `${n.fy * 100}%`, width: `${n.fw * 100}%`, height: `${n.fh * 100}%`, borderColor: u.accentHex, background: `${u.accentHex}22` }}
-                    title={n.name}
-                  />
-                ))}
-              </PageStage>
-              <div className="space-y-4 min-w-0">
-                <Field label="Tipo di campo da aggiungere"><Segmented fill value={kind} onChange={setKind} options={[{ value: "text", label: "Testo" }, { value: "check", label: "Casella" }]} /></Field>
-                {added.length ? (
-                  <div className={cx("max-h-[360px] overflow-auto border divide-y", u.divider)}>
-                    {added.map((n) => (
-                      <div key={n.id} className="flex items-center gap-2 px-3 py-1.5">
-                        <span className={cx("text-[11px] font-mono w-28 shrink-0", u.muted)}>{n.kind === "text" ? "Testo" : "Casella"} · pag. {n.page + 1}</span>
-                        <TextInput value={n.name} aria-label="Nome del campo" onChange={(e) => setAdded(added.map((i) => (i.id === n.id ? { ...i, name: e.target.value } : i)))} />
-                        <IconButton onClick={() => setAdded(added.filter((i) => i.id !== n.id))} title="Elimina campo"><Trash2 /></IconButton>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <Notice tone="empty">Clicca sulla pagina dove vuoi il campo, poi trascinalo per sistemarlo.</Notice>
-                )}
-              </div>
-            </div>
-          )}
-          <div className="flex flex-wrap items-center gap-4">
-            <Toggle checked={flatten} onChange={setFlatten} label="Rendi non modificabile" />
-            <Button variant="primary" className="ml-auto" disabled={(!editable.length && !added.length) || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
-          </div>
-          {saver.error && <Notice tone="error">{saver.error}</Notice>}
+          <PdfFileBar pdf={pdf} onClear={reset}>
+            <Button variant="primary" disabled={(!editable.length && !added.length) || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+          </PdfFileBar>
+          {body(pdf)}
         </>
       )}
     </SinglePdf>
