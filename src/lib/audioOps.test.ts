@@ -22,7 +22,8 @@ test("volume scales, clamps and fades", () => {
   const faded = applyVolume(flat, 1, 1, 0).channels[0];
   assert.deepEqual([...faded], [0, 0.125, 0.25, 0.375]);
   assert.equal(applyVolume(flat, 1, 0, 1).channels[0][3], 0);
-  assert.ok(Math.abs(normalizeGain(flat) * 0.5 - 0.98) < 1e-6);
+  assert.ok(Math.abs(normalizeGain(flat) * 0.5 - 10 ** (-1 / 20)) < 1e-6);
+  assert.ok(Math.abs(normalizeGain(flat, -6) * 0.5 - 10 ** (-6 / 20)) < 1e-6);
 });
 
 test("split ranges cover the duration with a shorter last part", () => {

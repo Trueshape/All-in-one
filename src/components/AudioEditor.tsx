@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Music, Pause, Play, Trash2 } from "lucide-react";
-import { Field, TextInput, Toggle, Chips, Segmented, Slider, Button, Notice, Stack, Row, cx } from "../ui/kit";
+import { Field, TextInput, Toggle, Chips, Segmented, Select, Slider, Button, Notice, Stack, Row, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import { AUDIO_FORMATS, encodeAudio } from "../lib/audioEncoders";
-import type { AudioFormat } from "../lib/audioEncoders";
+import { AUDIO_FORMATS, DEFAULT_AUDIO_OPTIONS, MP3_BITRATES, encodeAudio } from "../lib/audioEncoders";
+import type { AudioFormat, AudioOptions, Mp3Setting } from "../lib/audioEncoders";
 import { applyVolume, durationOf, formatTime, normalizeGain, sliceAudio, splitRanges, waveformPeaks } from "../lib/audioOps";
 import type { Pcm } from "../lib/audioOps";
 import { download, formatBytes } from "../lib/imageOps";
@@ -29,9 +29,15 @@ export default function AudioEditor() {
   const [every, setEvery] = useState("30");
   const [volume, setVolume] = useState(100);
   const [normalize, setNormalize] = useState(false);
+  const [targetDb, setTargetDb] = useState(-1);
   const [fadeIn, setFadeIn] = useState("0");
   const [fadeOut, setFadeOut] = useState("0");
   const [format, setFormat] = useState<AudioFormat>("mp3");
+  const [mp3Mode, setMp3Mode] = useState<Mp3Setting["mode"]>("vbr");
+  const [mp3Kbps, setMp3Kbps] = useState(192);
+  const [mp3Quality, setMp3Quality] = useState<"low" | "mid" | "high">("mid");
+  const [oggQuality, setOggQuality] = useState(60);
+  const [wavBits, setWavBits] = useState<16 | 24>(16);
   const [dragging, setDragging] = useState(false);
   const [playing, setPlaying] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -95,7 +101,7 @@ export default function AudioEditor() {
 
   const render = (range: { start: number; end: number }): Pcm => {
     const part = sliceAudio(file!.pcm, range.start, range.end);
-    const gain = normalize ? normalizeGain(part) : volume / 100;
+    const gain = normalize ? normalizeGain(part, targetDb) : volume / 100;
     return applyVolume(part, gain, Number(fadeIn.replace(",", ".")) || 0, Number(fadeOut.replace(",", ".")) || 0);
   };
 
@@ -121,7 +127,9 @@ export default function AudioEditor() {
     setError(null);
     setBusy("Codifica in corso…");
     try {
-      const blob = await encodeAudio(render(range), format);
+      const mp3: Mp3Setting = mp3Mode === "cbr" ? { mode: "cbr", kbps: mp3Kbps } : { mode: "vbr", quality: mp3Quality };
+      const options: AudioOptions = { ...DEFAULT_AUDIO_OPTIONS, mp3, oggQuality, wavBits };
+      const blob = await encodeAudio(render(range), format, options);
       const suffix = mode === "split" ? `_parte${index + 1}` : "_modificato";
       download(blob, `${file.name}${suffix}.${format}`);
     } catch {
@@ -179,13 +187,41 @@ export default function AudioEditor() {
         </div>
 
         <div className="space-y-4 min-w-0">
-          <Slider label="Volume" value={volume} min={0} max={300} step={5} onChange={setVolume} display={normalize ? "auto" : `${volume}%`} />
+          {normalize ? (
+            <Slider label="Normalizza a" value={targetDb} min={-30} max={0} step={0.5} onChange={setTargetDb} display={`${targetDb} dB`} />
+          ) : (
+            <Slider label="Volume" value={volume} min={0} max={300} step={5} onChange={setVolume} display={`${volume}%`} />
+          )}
           <Toggle checked={normalize} onChange={setNormalize} label="Normalizza al massimo" />
           <div className="grid grid-cols-2 gap-3">
             <Field label="Dissolvenza in entrata (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeIn} onChange={(e) => setFadeIn(e.target.value)} /></Field>
             <Field label="Dissolvenza in uscita (s)"><TextInput type="number" inputMode="decimal" min={0} step="any" value={fadeOut} onChange={(e) => setFadeOut(e.target.value)} /></Field>
           </div>
           <Field label="Formato"><Chips value={format} onChange={setFormat} options={AUDIO_FORMATS.map((f) => ({ value: f.value, label: f.label }))} /></Field>
+          {format === "mp3" && (
+            <div className="space-y-3">
+              <Chips value={mp3Mode} onChange={setMp3Mode} options={[{ value: "vbr", label: "Variabile" }, { value: "cbr", label: "Costante" }]} />
+              {mp3Mode === "cbr" ? (
+                <Field label="Bitrate (kbps)">
+                  <Select value={String(mp3Kbps)} onChange={(e) => setMp3Kbps(Number(e.target.value))}>
+                    {MP3_BITRATES.map((k) => <option key={k} value={k}>{k} kbps</option>)}
+                  </Select>
+                </Field>
+              ) : (
+                <Field label="Qualità">
+                  <Chips value={mp3Quality} onChange={setMp3Quality} options={[{ value: "low", label: "Bassa" }, { value: "mid", label: "Media" }, { value: "high", label: "Alta" }]} />
+                </Field>
+              )}
+            </div>
+          )}
+          {format === "ogg" && (
+            <Slider label="Qualità" value={oggQuality} min={0} max={100} step={1} onChange={setOggQuality} display={`${oggQuality}`} />
+          )}
+          {format === "wav" && (
+            <Field label="Bit per campione">
+              <Chips value={wavBits} onChange={setWavBits} options={[{ value: 16, label: "16 bit" }, { value: 24, label: "24 bit" }]} />
+            </Field>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" disabled={validRanges.length === 0} icon={playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />} onClick={preview}>{playing ? "Stop" : "Ascolta"}</Button>
             {mode === "trim" && <Button variant="primary" disabled={!!busy || validRanges.length === 0} onClick={() => void save(ranges[0], 0)}>{AUDIO_FORMATS.find((f) => f.value === format)!.label}</Button>}

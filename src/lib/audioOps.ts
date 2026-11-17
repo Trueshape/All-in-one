@@ -20,10 +20,10 @@ export const peakOf = (pcm: Pcm) => {
   return peak;
 };
 
-/** Gain that brings the loudest sample to just under full scale. */
-export const normalizeGain = (pcm: Pcm) => {
+/** Gain that brings the loudest sample to `targetDb` dBFS (0 is full scale). */
+export const normalizeGain = (pcm: Pcm, targetDb = -1) => {
   const peak = peakOf(pcm);
-  return peak > 0 ? 0.98 / peak : 1;
+  return peak > 0 ? 10 ** (targetDb / 20) / peak : 1;
 };
 
 /** Scales the volume and applies linear fades in seconds. Samples are clamped, so a big gain clips instead of wrapping. */
@@ -73,12 +73,18 @@ export const formatTime = (seconds: number) => {
 };
 
 const to16 = (x: number) => Math.round(Math.max(-1, Math.min(1, x)) * (x < 0 ? 32768 : 32767));
+/** A sample in [-1, 1] as a signed integer of `bits` bits. */
+const toInt = (x: number, bits: number) => {
+  const half = 2 ** (bits - 1);
+  return Math.round(Math.max(-1, Math.min(1, x)) * (x < 0 ? half : half - 1));
+};
 
-/** 16-bit PCM WAV. */
-export function encodeWav(pcm: Pcm): Uint8Array {
+/** PCM WAV with 16 or 24 bits per sample. */
+export function encodeWav(pcm: Pcm, bits: 16 | 24 = 16): Uint8Array {
   const channels = pcm.channels.length;
   const length = pcm.channels[0]?.length ?? 0;
-  const out = new Uint8Array(44 + length * channels * 2);
+  const bytes = bits / 8;
+  const out = new Uint8Array(44 + length * channels * bytes);
   const view = new DataView(out.buffer);
   const text = (offset: number, s: string) => [...s].forEach((ch, i) => (out[offset + i] = ch.charCodeAt(0)));
   text(0, "RIFF");
@@ -88,16 +94,23 @@ export function encodeWav(pcm: Pcm): Uint8Array {
   view.setUint16(20, 1, true);
   view.setUint16(22, channels, true);
   view.setUint32(24, pcm.sampleRate, true);
-  view.setUint32(28, pcm.sampleRate * channels * 2, true);
-  view.setUint16(32, channels * 2, true);
-  view.setUint16(34, 16, true);
+  view.setUint32(28, pcm.sampleRate * channels * bytes, true);
+  view.setUint16(32, channels * bytes, true);
+  view.setUint16(34, bits, true);
   text(36, "data");
-  view.setUint32(40, length * channels * 2, true);
+  view.setUint32(40, length * channels * bytes, true);
   let p = 44;
   for (let i = 0; i < length; i++) {
     for (let c = 0; c < channels; c++) {
-      view.setInt16(p, to16(pcm.channels[c][i]), true);
-      p += 2;
+      const v = toInt(pcm.channels[c][i], bits);
+      if (bits === 16) view.setInt16(p, v, true);
+      else {
+        const u = v & 0xffffff;
+        out[p] = u & 255;
+        out[p + 1] = (u >> 8) & 255;
+        out[p + 2] = (u >> 16) & 255;
+      }
+      p += bytes;
     }
   }
   return out;
