@@ -415,8 +415,10 @@ export function PdfCrop() {
     <SinglePdf state={{ ...state, clear: () => { state.clear(); setPage(0); } }} info="I margini si misurano dal bordo della pagina come la vedi. Il ritaglio nasconde il contenuto fuori dal riquadro, ma non lo cancella dal file.">
       {(pdf) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }} />
+          <div className="space-y-4 min-w-0 md:order-last">
+            <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }}>
+              <Button variant="primary" disabled={tooBig || negative || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+            </PdfFileBar>
             <Segmented fill value={scope} onChange={setScope} options={[{ value: "all", label: "Tutte le pagine" }, { value: "one", label: "Solo questa pagina" }]} />
             <div className="grid grid-cols-2 gap-3">
               {SIDES.map((s) => (
@@ -433,7 +435,6 @@ export function PdfCrop() {
             )}
             {(tooBig || negative) && <Notice tone="warn">{negative ? "I margini non possono essere negativi." : "I margini sono più grandi della pagina."}</Notice>}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={tooBig || negative || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </div>
           <div className="space-y-3 min-w-0 flex flex-col items-center">
             <div className="flex items-center gap-3">

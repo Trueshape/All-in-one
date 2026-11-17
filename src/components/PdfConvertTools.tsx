@@ -567,7 +567,9 @@ export function PdfEditText() {
             })}
           </PageStage>
           <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={p} onClear={reset} />
+            <PdfFileBar pdf={p} onClear={reset}>
+              <Button variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>Salva</Button>
+            </PdfFileBar>
             <Field label="Font del testo nuovo">
               <Chips value={fontChoice} onChange={setFontChoice} options={[{ value: "auto", label: "Come l'originale" }, ...FONT_OPTIONS]} />
             </Field>
@@ -611,7 +613,6 @@ export function PdfEditText() {
             )}
             {!loading && boxes.every((b) => b.page !== page) && <Notice tone="warn">In questa pagina non trovo testo: potrebbe essere una scansione.</Notice>}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={!edited.length || saver.busy} onClick={() => void save(p)}>Salva</Button>
           </div>
         </div>
       )}

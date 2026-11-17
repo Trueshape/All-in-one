@@ -190,7 +190,7 @@ export function PdfWatermark() {
         <div className="space-y-4">
           {drop}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4 min-w-0">{options}</div>
+            <div className="space-y-4 min-w-0 md:order-last">{options}</div>
             <div className="flex flex-col items-center gap-3 min-w-0">
               <span className="text-xs font-mono opacity-60">Pagina d'esempio</span>
               <SampleSheet>
@@ -203,11 +203,12 @@ export function PdfWatermark() {
     >
       {(pdf) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }} />
+          <div className="space-y-4 min-w-0 md:order-last">
+            <PdfFileBar pdf={pdf} onClear={() => { state.clear(); setPage(0); }}>
+              <Button variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>Salva</Button>
+            </PdfFileBar>
             {options}
             {(problem || saver.error) && <Notice tone="error">{problem ?? saver.error}</Notice>}
-            <Button variant="primary" disabled={!ready || saver.busy} onClick={() => void saver.run(async () => savePdf(await build(pdf), `${pdf.name}_filigrana.pdf`))}>Salva</Button>
           </div>
           <PageStage pdf={pdf} page={page} onPage={setPage} width={300}>
             {preview && (
@@ -295,7 +296,9 @@ export function PdfProperties() {
     <SinglePdf state={state} info="Le proprietà sono i dati che i lettori PDF mostrano in Proprietà del documento. Il contenuto delle pagine non cambia.">
       {(pdf) => (
         <>
-          <PdfFileBar pdf={pdf} onClear={state.clear} />
+          <PdfFileBar pdf={pdf} onClear={state.clear}>
+              <Button variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+            </PdfFileBar>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
             {text("title", "Titolo")}
             {text("author", "Autore")}
@@ -310,7 +313,6 @@ export function PdfProperties() {
             </div>
           </div>
           {saver.error && <Notice tone="error">{saver.error}</Notice>}
-          <Button variant="primary" disabled={saver.busy} onClick={() => void save(pdf)}>Salva</Button>
         </>
       )}
     </SinglePdf>
@@ -394,7 +396,9 @@ export function PdfAddText() {
             ))}
           </PageStage>
           <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={pdf} onClear={reset} />
+            <PdfFileBar pdf={pdf} onClear={reset}>
+              <Button variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>Salva</Button>
+            </PdfFileBar>
             {/* The controls are always shown, dimmed until a text is selected, so the panel does not jump */}
             <div className={cx("space-y-4", !current && "opacity-40")} inert={!current}>
               <Field label="Testo" actions={<Button size="sm" variant="danger" disabled={!current} icon={<Trash2 />} onClick={() => { setItems(items.filter((i) => i.id !== selected)); setSelected(null); }}>Elimina</Button>}>
@@ -418,7 +422,6 @@ export function PdfAddText() {
               </div>
             )}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={!items.some((i) => i.text.trim()) || saver.busy} onClick={() => void saver.run(async () => savePdf(await drawTexts(pdf, items), `${pdf.name}_testo.pdf`))}>Salva</Button>
           </div>
         </div>
       )}
@@ -500,7 +503,9 @@ export function PdfAddImage() {
             ))}
           </PageStage>
           <div className="space-y-4 min-w-0">
-            <PdfFileBar pdf={pdf} onClear={reset} />
+            <PdfFileBar pdf={pdf} onClear={reset}>
+              <Button variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
+            </PdfFileBar>
             <ImageButton onImage={add}>Aggiungi immagine</ImageButton>
             {/* The controls are always shown, dimmed until an image is selected, so the panel does not jump */}
             <div className={cx("space-y-4", !current && "opacity-40")} inert={!current}>
@@ -519,7 +524,6 @@ export function PdfAddImage() {
               </div>
             )}
             {saver.error && <Notice tone="error">{saver.error}</Notice>}
-            <Button variant="primary" disabled={!items.length || saver.busy} onClick={() => void save(pdf)}>Salva</Button>
           </div>
         </div>
       )}
