@@ -336,13 +336,15 @@ export function usePdf() {
   return { pdf, error, setError, busy, load, clear };
 }
 
-export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.pdf", label, hint = "PDF", className = "h-56" }: {
+export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.pdf", label, hint = "PDF", className = "h-56", icon }: {
   onFiles: (files: File[]) => void;
   multiple?: boolean;
   accept?: string;
   label?: string;
   hint?: string;
   className?: string;
+  /** The icon above the text; the PDF sheet by default. */
+  icon?: ReactNode;
 }) {
   const u = useUi();
   const input = useRef<HTMLInputElement>(null);
@@ -369,8 +371,8 @@ export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.
         onDrop={onDrop}
         className={cx("w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed cursor-pointer transition-colors", className, u.divider, u.muted, dragging && u.accent, u.id === "sophisticated" && "rounded-2xl")}
       >
-        <FileText className="w-7 h-7" />
-        <span className={cx("text-xs font-semibold", u.text)}>{label ?? (multiple ? "Seleziona o trascina uno o più PDF" : "Seleziona o trascina un PDF")}</span>
+        {icon ?? <FileText className="w-7 h-7" />}
+        <span className={cx("text-xs font-semibold whitespace-pre-line text-center", u.text)}>{label ?? (multiple ? "Seleziona o trascina uno o più PDF" : "Seleziona o trascina un PDF")}</span>
         <span className="text-[11px]">{hint}</span>
       </button>
       <input ref={input} type="file" accept={accept} multiple={multiple} onChange={onChange} className="hidden" />

@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
+import { Music } from "lucide-react";
 import { Button, Field, TextArea, TextInput, Notice, Stack } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { PdfDrop } from "../ui/PdfKit";
 import { EMPTY_TAGS, detectFormat, readTags, writeTags } from "../lib/audioTags";
 import type { Tags, TagFormat } from "../lib/audioTags";
 import { download } from "../lib/imageOps";
@@ -48,7 +50,7 @@ export default function AudioTags() {
   const current = items.find((it) => it.id === active) ?? single;
   const dirtyCount = items.filter((it) => it.dirty).length;
 
-  const addFiles = async (picked: FileList | null | undefined) => {
+  const addFiles = async (picked: File[] | FileList | null | undefined) => {
     if (!picked || picked.length === 0) return;
     const added: Item[] = [];
     let skipped = 0;
@@ -130,7 +132,14 @@ export default function AudioTags() {
         className={`border border-dashed p-4 transition-colors ${dragging ? u.accent : u.divider}`}
       >
         {items.length === 0 && (
-          <Notice tone="empty">Trascina qui uno o più file MP3, FLAC o WAV. Con un file solo lo modifichi da solo; con più file appare la tabella. I file restano sul tuo dispositivo.</Notice>
+          <PdfDrop
+            multiple
+            accept="audio/*,.mp3,.flac,.wav"
+            icon={<Music className="w-7 h-7" />}
+            label={"Seleziona o trascina uno o più file audio\nMP3, FLAC o WAV"}
+            hint="Con un file solo lo modifichi da solo, con più file appare la tabella"
+            onFiles={(files) => void addFiles(files)}
+          />
         )}
 
         {single && (
