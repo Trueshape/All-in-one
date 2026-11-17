@@ -11,8 +11,8 @@ const COLORS = { discount: "#f59e0b", tip: "#818cf8", people: "#34d399" };
 
 type Mode = "percent" | "fixed";
 const MODES: Array<{ value: Mode; label: string }> = [
-  { value: "percent", label: "Percentuale" },
   { value: "fixed", label: "Valore fisso" },
+  { value: "percent", label: "Percentuale" },
 ];
 
 function Control({
@@ -119,10 +119,10 @@ function AmountControl({
 
 export default function TipCalculator() {
   const [bill, setBill] = useState("100");
-  const [discountMode, setDiscountMode] = useState<Mode>("percent");
+  const [discountMode, setDiscountMode] = useState<Mode>("fixed");
   const [discountPct, setDiscountPct] = useState(15);
   const [discountFixed, setDiscountFixed] = useState("0");
-  const [tipMode, setTipMode] = useState<Mode>("percent");
+  const [tipMode, setTipMode] = useState<Mode>("fixed");
   const [tipPct, setTipPct] = useState(10);
   const [tipFixed, setTipFixed] = useState("0");
   const [people, setPeople] = useState(2);
