@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Euro, Percent, Users } from "lucide-react";
-import { Field, TextInput, Chips, Tabs, ResultCard, Row, Notice, Stack, cx } from "../ui/kit";
+import { Field, TextInput, Chips, ResultCard, Row, Notice, Stack, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 
 const eur = (n: number) => n.toLocaleString("it-IT", { style: "currency", currency: "EUR" });
@@ -87,7 +87,6 @@ function AmountControl({
   fixed,
   onFixed,
   shown,
-  tabs = false,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -100,23 +99,20 @@ function AmountControl({
   fixed: string;
   onFixed: (v: string) => void;
   shown: string;
-  /** Trial: the two modes as tabs in the header line instead of buttons under it. */
-  tabs?: boolean;
 }) {
   const u = useUi();
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-baseline justify-between">
         <span className={cx("flex items-center gap-1.5 text-xs", u.subtle)}>{icon} {label}</span>
-        {tabs ? <Tabs value={mode} onChange={onMode} options={MODES} /> : <span className="text-sm font-mono font-semibold" style={{ color }}>{shown}</span>}
+        <span className="text-sm font-mono font-semibold" style={{ color }}>{shown}</span>
       </div>
-      {!tabs && <Chips fill value={mode} onChange={onMode} options={MODES} />}
+      <Chips fill value={mode} onChange={onMode} options={MODES} />
       {mode === "percent" ? (
         <input type="range" min={0} max={max} value={percent} onChange={(e) => onPercent(Number(e.target.value))} className="w-full cursor-pointer" style={{ accentColor: color }} />
       ) : (
         <TextInput type="number" inputMode="decimal" min="0" step="0.01" value={fixed} onChange={(e) => onFixed(e.target.value)} prefixText="€" placeholder="0,00" />
       )}
-      {tabs && <div className="text-right text-sm font-mono font-semibold" style={{ color }}>{shown}</div>}
     </div>
   );
 }
@@ -165,7 +161,6 @@ export default function TipCalculator() {
         fixed={discountFixed}
         onFixed={setDiscountFixed}
         shown={discountShown}
-        tabs
       />
       <AmountControl
         icon={tipMode === "percent" ? <Percent className="w-3.5 h-3.5" /> : <Euro className="w-3.5 h-3.5" />}
@@ -179,7 +174,6 @@ export default function TipCalculator() {
         fixed={tipFixed}
         onFixed={setTipFixed}
         shown={tipShown}
-        tabs
       />
       <Control icon={<Users className="w-3.5 h-3.5" />} label="Dividi tra persone" value={people} display={`${people}`} color={COLORS.people} min={1} max={30} onChange={setPeople} presets={[1, 2, 4, 8]} presetLabel={(v) => (v === 1 ? "Singolo" : `${v} Pers.`)} />
 
