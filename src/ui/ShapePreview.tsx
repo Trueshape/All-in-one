@@ -42,10 +42,10 @@ export function ShapePreview({ shape, values }: { shape: ShapeId; values: Record
     drawing = path
       ? <path d={path} className={move} {...body} />
       : <path d={trianglePath(3, 4, 5) ?? ""} {...body} fillOpacity={0.02} strokeOpacity={0.35} strokeDasharray="4 3" />;
-  } else if (shape === "cube" || shape === "box") {
-    const a = num("a", 3);
-    const b = shape === "cube" ? a : num("b", 3);
-    const c = shape === "cube" ? a : num("c", 2);
+  } else if (shape === "box") {
+    const a = num("a", 4);
+    const b = num("b", 3);
+    const c = num("c", 2);
     const k = Math.min(120 / (a + b * 0.5), 120 / (c + b * 0.5));
     const fw = a * k;
     const fh = c * k;

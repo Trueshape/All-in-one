@@ -345,7 +345,7 @@ export const TOOLS: ToolItem[] = [
   {
     id: "geometry_calc",
     name: "Geometria",
-    description: "Perimetro, area, superficie e volume di quadrato, rettangolo, triangolo, cubo, parallelepipedo, cilindro e sfera.",
+    description: "Perimetro, area, superficie e volume di quadrato, rettangolo, triangolo, parallelepipedo, cilindro e sfera.",
     icon: Shapes,
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
     glowClass: "shadow-emerald-950/20 hover:shadow-emerald-500/5",

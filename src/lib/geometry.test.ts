@@ -17,8 +17,7 @@ test("a triangle that cannot exist is reported", () => {
   assert.ok(measure("triangle", { a: 1, b: 2, c: 10 }).error);
 });
 
-test("cube, box, cylinder and sphere", () => {
-  assert.deepEqual(measure("cube", { a: 3 }), { area: 54, volume: 27 });
+test("box, cylinder and sphere", () => {
   assert.deepEqual(measure("box", { a: 4, b: 3, c: 2 }), { area: 52, volume: 24 });
   const cyl = measure("cylinder", { r: 2, h: 5 });
   assert.ok(Math.abs(cyl.volume - 20 * Math.PI) < 1e-9);
@@ -30,5 +29,5 @@ test("cube, box, cylinder and sphere", () => {
 
 test("2D shapes have no volume and solids have no perimeter", () => {
   assert.equal(measure("square", { a: 2 }).volume, undefined);
-  assert.equal(measure("cube", { a: 2 }).perimeter, undefined);
+  assert.equal(measure("box", { a: 2, b: 2, c: 2 }).perimeter, undefined);
 });

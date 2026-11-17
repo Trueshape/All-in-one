@@ -1,4 +1,4 @@
-export type ShapeId = "square" | "rectangle" | "triangle" | "cube" | "box" | "cylinder" | "sphere";
+export type ShapeId = "square" | "rectangle" | "triangle" | "box" | "cylinder" | "sphere";
 
 export interface ShapeField {
   key: string;
@@ -19,7 +19,6 @@ export const SHAPES: ShapeInfo[] = [
   { id: "square", name: "Quadrato", dimensions: 2, fields: [{ key: "a", label: "Lato (l)", placeholder: "Es. 4" }], formula: "P = 4·l · A = l²" },
   { id: "rectangle", name: "Rettangolo", dimensions: 2, fields: [{ key: "a", label: "Base (b)", placeholder: "Es. 6" }, { key: "b", label: "Altezza (h)", placeholder: "Es. 4" }], formula: "P = 2·(b+h) · A = b·h" },
   { id: "triangle", name: "Triangolo", dimensions: 2, fields: [{ key: "a", label: "Lato a", placeholder: "Es. 3" }, { key: "b", label: "Lato b", placeholder: "Es. 4" }, { key: "c", label: "Lato c", placeholder: "Es. 5" }], formula: "P = a+b+c · A = √(s(s−a)(s−b)(s−c)), s = P/2" },
-  { id: "cube", name: "Cubo", dimensions: 3, fields: [{ key: "a", label: "Lato (l)", placeholder: "Es. 3" }], formula: "S = 6·l² · V = l³" },
   { id: "box", name: "Parallelepipedo", dimensions: 3, fields: [{ key: "a", label: "Lunghezza (a)", placeholder: "Es. 4" }, { key: "b", label: "Larghezza (b)", placeholder: "Es. 3" }, { key: "c", label: "Altezza (c)", placeholder: "Es. 2" }], formula: "S = 2·(ab+bc+ca) · V = a·b·c" },
   { id: "cylinder", name: "Cilindro", dimensions: 3, fields: [{ key: "r", label: "Raggio (r)", placeholder: "Es. 2" }, { key: "h", label: "Altezza (h)", placeholder: "Es. 5" }], formula: "S = 2πr(r+h) · V = πr²h" },
   { id: "sphere", name: "Sfera", dimensions: 3, fields: [{ key: "r", label: "Raggio (r)", placeholder: "Es. 3" }], formula: "S = 4πr² · V = 4/3·πr³" },
@@ -49,8 +48,6 @@ export function measure(id: ShapeId, v: Record<string, number>): GeometryResult 
       const s = (a + b + c) / 2;
       return { perimeter: a + b + c, area: Math.sqrt(s * (s - a) * (s - b) * (s - c)) };
     }
-    case "cube":
-      return { area: 6 * v.a * v.a, volume: v.a ** 3 };
     case "box":
       return { area: 2 * (v.a * v.b + v.b * v.c + v.c * v.a), volume: v.a * v.b * v.c };
     case "cylinder":
