@@ -323,7 +323,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "age",
-    name: "Calcolatore Età e Longevità",
+    name: "Calcolatore età",
     description: "Scopri la tua età esatta, il giorno in cui sei nato e divertenti statistiche sui tuoi battiti cardiaci.",
     icon: Gift,
     colorClass: "border-pink-900/30 hover:border-pink-500/50",
@@ -400,7 +400,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "compound_interest_calc",
-    name: "Calcolatore interessi composti",
+    name: "Interessi composti",
     description: "Calcola l'interesse composto accumulato nel tempo inserendo versamenti periodici e capitalizzazioni.",
     icon: TrendingUp,
     colorClass: "border-emerald-900/30 hover:border-emerald-500/50",
@@ -576,7 +576,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "percentage_calc",
-    name: "Calcolatore Percentuali",
+    name: "Percentuali",
     description: "Quanto è il X% di Y, X è quanto per cento di Y, il numero di partenza e l'aumento o la diminuzione in percentuale.",
     icon: BadgePercent,
     colorClass: "border-lime-900/30 hover:border-lime-500/50",
