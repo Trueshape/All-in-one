@@ -108,7 +108,7 @@ export default function CurrencyConverter() {
           <span>Tassi di Cambio Riferimento (1 EUR)</span>
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs">
-          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").slice(0, 4).map((code) => (
+          {Object.keys(CURRENCIES).filter((c) => c !== "EUR").map((code) => (
             <div key={code} className={cx("flex items-center justify-between px-2 py-1.5 rounded-lg", u.panelInset)}>
               <span className={cx("font-medium", u.muted)}>{code}</span>
               <span className={cx("font-mono font-semibold", u.text)}>{fmtNumber(rates[code], 4)}</span>
