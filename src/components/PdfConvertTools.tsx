@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Download, Trash2 } from "lucide-react";
 import { PDFDocument, degrees } from "pdf-lib";
 import { Button, Chips, CopyButton, Field, IconButton, Notice, Segmented, Slider, Stack, TextArea, TextInput, Toggle, cx } from "../ui/kit";
@@ -7,7 +7,7 @@ import { ImageDrop } from "../ui/ImageDrop";
 import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, SinglePdf, editPdf, embedImage, pdfColor, pdfPoint, pdfjs, readImage, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { download, toBlob } from "../lib/imageOps";
-import { groupText, mmToPt, moveItem, parsePageList, piecesToLines } from "../lib/pdfPages";
+import { groupText, inkBounds, inkColour, mmToPt, moveItem, parsePageList, piecesToLines, ringBackground } from "../lib/pdfPages";
 import type { RawText, TextBox } from "../lib/pdfPages";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -395,12 +395,40 @@ interface EditBox extends TextBox {
   page: number;
   /** The text as typed; the box counts as edited when it differs from `text`. */
   value: string;
+  /** Colour of the page around the line and of the line itself, read from the rendered page. */
+  bg: string;
+  ink: string;
+  /** The rectangle that hides the old text: the ink plus 1 pt, in the page as shown (pt from its top-left corner). */
+  hide: { x: number; y: number; w: number; h: number };
 }
 
 const STAGE = 500;
 
-/** Reads the text of one page as boxes in the page as shown. */
-async function readBoxes(pdf: PdfFile, page: number): Promise<TextBox[]> {
+/** Pixels of a page drawn at `scale`, to read colours from; null when the browser does not draw it in time. */
+async function pagePixels(pdf: PdfFile, page: number, scale: number): Promise<ImageData | null> {
+  try {
+    const p = await pdf.doc.getPage(page + 1);
+    const viewport = p.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(viewport.width);
+    canvas.height = Math.round(viewport.height);
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return null;
+    const task = p.render({ canvas, viewport });
+    // a page that is not being painted (hidden window) never finishes drawing: the colours then fall back to paper and black
+    const done = await Promise.race([task.promise.then(() => true), new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 4000))]);
+    if (!done) {
+      task.cancel();
+      return null;
+    }
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+  } catch {
+    return null;
+  }
+}
+
+/** Reads the text of one page as boxes in the page as shown, with the colours around and inside each. */
+async function readBoxes(pdf: PdfFile, page: number): Promise<Array<TextBox & { bg: string; ink: string; hide: EditBox["hide"] }>> {
   const p = await pdf.doc.getPage(page + 1);
   const content = await p.getTextContent();
   const viewport = p.getViewport({ scale: 1 });
@@ -411,7 +439,25 @@ async function readBoxes(pdf: PdfFile, page: number): Promise<TextBox[]> {
     const style = content.styles[item.fontName];
     return [{ str: item.str, x, y, width: item.width, size, family: style?.fontFamily }];
   });
-  return groupText(pieces);
+  const boxes = groupText(pieces);
+  const SCALE = 2;
+  const pixels = boxes.length ? await pagePixels(pdf, page, SCALE) : null;
+  const MARGIN = 1;
+  return boxes.map((b) => {
+    // Without pixels the rectangle follows the font's own height: cap height above the baseline, descenders below.
+    const metrics = { x: b.x - MARGIN, y: b.y - b.size * 0.75 - MARGIN, w: b.width + MARGIN * 2, h: b.size * 0.95 + MARGIN * 2 };
+    if (!pixels) return { ...b, bg: "#ffffff", ink: "#000000", hide: metrics };
+    // the band the letters of this line can be in, in pixels of the sampled page: from just above the capitals to just below the descenders
+    const band = { x: b.x * SCALE, y: (b.y - b.size * 0.8) * SCALE, w: b.width * SCALE, h: b.size * 1.02 * SCALE };
+    const bg = ringBackground(pixels.data, pixels.width, pixels.height, band, 3);
+    const ink = inkColour(pixels.data, pixels.width, pixels.height, band, bg);
+    const bounds = inkBounds(pixels.data, pixels.width, pixels.height, band, bg);
+    // the ink box plus 1 pt each side, never wider than the line's own advance
+    const hide = bounds
+      ? { x: bounds.x0 / SCALE - MARGIN, y: bounds.y0 / SCALE - MARGIN, w: (bounds.x1 - bounds.x0) / SCALE + MARGIN * 2, h: (bounds.y1 - bounds.y0) / SCALE + MARGIN * 2 }
+      : metrics;
+    return { ...b, bg, ink, hide };
+  });
 }
 
 const autoFont = (family?: string): FontKey => (family && /serif(?!.*sans)/i.test(family) && !/sans/i.test(family) ? "times" : family && /mono|courier/i.test(family) ? "courier" : "helvetica");
@@ -425,6 +471,10 @@ export function PdfEditText() {
   const [fontChoice, setFontChoice] = useState<FontKey | "auto">("auto");
   const [color, setColor] = useState("#000000");
   const [cover, setCover] = useState("#ffffff");
+  // "auto" takes the colours from the page itself, line by line
+  const [colorAuto, setColorAuto] = useState(true);
+  const [coverAuto, setCoverAuto] = useState(true);
+  const [focused, setFocused] = useState<number | null>(null);
   const read = useRef(new Set<number>());
   const saver = useSaver();
   const pdf = state.pdf;
@@ -451,6 +501,8 @@ export function PdfEditText() {
 
   const edited = boxes.filter((b) => b.value !== b.text);
   const fontOf = (family?: string) => FONTS[fontChoice === "auto" ? autoFont(family) : fontChoice];
+  const coverOf = (b: EditBox) => (coverAuto ? b.bg : cover);
+  const inkOf = (b: EditBox) => (colorAuto ? b.ink : color);
 
   const save = (p: PdfFile) =>
     saver.run(async () => {
@@ -461,13 +513,13 @@ export function PdfEditText() {
         const key = fontOf(box.family).regular;
         if (!fonts.has(key)) fonts.set(key, await doc.embedFont(key));
         const target = doc.getPage(box.page);
-        // cover the old text: from just above the capital letters to just below the baseline
-        const [x1, y1] = pt.at((box.x - 1) / pt.width, (box.y - box.size * 0.85) / pt.height);
-        const [x2, y2] = pt.at((box.x + box.width + 1) / pt.width, (box.y + box.size * 0.25) / pt.height);
-        target.drawRectangle({ x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1), color: pdfColor(cover) });
+        // hide the old text with a rectangle that hugs it: 1 pt around the letters, so borders next to it stay visible
+        const [x1, y1] = pt.at(box.hide.x / pt.width, box.hide.y / pt.height);
+        const [x2, y2] = pt.at((box.hide.x + box.hide.w) / pt.width, (box.hide.y + box.hide.h) / pt.height);
+        target.drawRectangle({ x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1), color: pdfColor(coverOf(box)) });
         if (box.value.trim()) {
           const [x, y] = pt.at(box.x / pt.width, box.y / pt.height);
-          target.drawText(box.value, { x, y, size: box.size, font: fonts.get(key), color: pdfColor(color), rotate: degrees(pt.rotate) });
+          target.drawText(box.value, { x, y, size: box.size, font: fonts.get(key), color: pdfColor(inkOf(box)), rotate: degrees(pt.rotate) });
         }
       }
       savePdf(await doc.save(), `${p.name}_modificato.pdf`);
@@ -483,14 +535,18 @@ export function PdfEditText() {
           <PageStage pdf={p} page={page} onPage={setPage} width={STAGE}>
             {boxes.filter((b) => b.page === page).map((b) => {
               const changed = b.value !== b.text;
+              const shown = changed || focused === b.id;
               return (
+                <Fragment key={b.id}>
+                {shown && <div className="absolute pointer-events-none" style={{ left: b.hide.x * zoom, top: b.hide.y * zoom, width: b.hide.w * zoom, height: b.hide.h * zoom, background: coverOf(b) }} />}
                 <input
-                  key={b.id}
                   value={b.value}
                   onChange={(e) => setBoxes((list) => list.map((x) => (x.id === b.id ? { ...x, value: e.target.value } : x)))}
                   aria-label={`Testo: ${b.text}`}
                   spellCheck={false}
-                  className={cx("absolute m-0 p-0 outline-none border border-dashed border-transparent hover:border-current focus:border-solid focus:bg-white focus:text-black", changed && "bg-white text-black")}
+                  onFocus={() => setFocused(b.id)}
+                  onBlur={() => setFocused((id) => (id === b.id ? null : id))}
+                  className="absolute m-0 p-0 outline-none border border-dashed border-transparent hover:border-current focus:border-solid"
                   style={{
                     left: b.x * zoom - 1,
                     top: (b.y - b.size * 0.95) * zoom,
@@ -499,11 +555,12 @@ export function PdfEditText() {
                     fontSize: b.size * zoom,
                     lineHeight: `${b.size * 1.3 * zoom}px`,
                     fontFamily: fontOf(b.family).css,
-                    // untouched lines show the page itself; the caret stays visible
-                    color: changed ? undefined : "transparent",
-                    caretColor: "#000",
+                    // untouched lines show the page itself; edited ones, and the one being typed, show how they will come out
+                    color: shown ? inkOf(b) : "transparent",
+                    caretColor: inkOf(b),
                   }}
                 />
+                </Fragment>
               );
             })}
           </PageStage>
@@ -514,15 +571,25 @@ export function PdfEditText() {
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Colore del testo nuovo">
-                <div className="flex items-center gap-2">
-                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore del testo nuovo" />
-                  <span className={`font-mono text-xs ${u.subtle}`}>{color.toUpperCase()}</span>
+                <div className="space-y-2">
+                  <Chips value={colorAuto ? "auto" : "own"} onChange={(v) => setColorAuto(v === "auto")} options={[{ value: "auto", label: "Come l'originale" }, { value: "own", label: "Scelto" }]} />
+                  {!colorAuto && (
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore del testo nuovo" />
+                      <span className={`font-mono text-xs ${u.subtle}`}>{color.toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
               </Field>
-              <Field label="Colore dello sfondo" hint="Quello che copre il testo vecchio.">
-                <div className="flex items-center gap-2">
-                  <input type="color" value={cover} onChange={(e) => setCover(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore dello sfondo" />
-                  <span className={`font-mono text-xs ${u.subtle}`}>{cover.toUpperCase()}</span>
+              <Field label="Sfondo che copre il vecchio testo">
+                <div className="space-y-2">
+                  <Chips value={coverAuto ? "auto" : "own"} onChange={(v) => setCoverAuto(v === "auto")} options={[{ value: "auto", label: "Come la pagina" }, { value: "own", label: "Scelto" }]} />
+                  {!coverAuto && (
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={cover} onChange={(e) => setCover(e.target.value)} className="w-9 h-9 bg-transparent cursor-pointer" aria-label="Colore dello sfondo" />
+                      <span className={`font-mono text-xs ${u.subtle}`}>{cover.toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
               </Field>
             </div>

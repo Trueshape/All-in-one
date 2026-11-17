@@ -198,6 +198,110 @@ export function zoomAt(view: View, factor: number, px: number, py: number, width
   return clampView({ scale, x: px - (px - view.x) * ratio, y: py - (py - view.y) * ratio }, width, height);
 }
 
+/**
+ * The colour of the paper around a box: the most common colour on a thin ring just outside it, as "#rrggbb".
+ * A ring crossing a picture or a neighbouring letter still gives the background, because that is what most of it is.
+ */
+export function ringBackground(rgba: Uint8ClampedArray, width: number, height: number, box: { x: number; y: number; w: number; h: number }, margin = 2): string {
+  const counts = new Map<number, { n: number; r: number; g: number; b: number }>();
+  const take = (px: number, py: number) => {
+    const x = Math.round(px);
+    const y = Math.round(py);
+    if (x < 0 || y < 0 || x >= width || y >= height) return;
+    const i = (y * width + x) * 4;
+    if (rgba[i + 3] < 128) return;
+    // colours that differ by a few levels (compression, anti-aliasing) count as one
+    const key = ((rgba[i] >> 3) << 10) | ((rgba[i + 1] >> 3) << 5) | (rgba[i + 2] >> 3);
+    const hit = counts.get(key) ?? { n: 0, r: 0, g: 0, b: 0 };
+    hit.n++;
+    hit.r += rgba[i];
+    hit.g += rgba[i + 1];
+    hit.b += rgba[i + 2];
+    counts.set(key, hit);
+  };
+  const x0 = box.x - margin;
+  const y0 = box.y - margin;
+  const x1 = box.x + box.w + margin;
+  const y1 = box.y + box.h + margin;
+  for (let x = x0; x <= x1; x += 2) {
+    take(x, y0);
+    take(x, y1);
+  }
+  for (let y = y0; y <= y1; y += 2) {
+    take(x0, y);
+    take(x1, y);
+  }
+  let best: { n: number; r: number; g: number; b: number } | null = null;
+  for (const hit of counts.values()) if (!best || hit.n > best.n) best = hit;
+  if (!best) return "#ffffff";
+  const hex = (sum: number) => Math.round(sum / best!.n).toString(16).padStart(2, "0");
+  return "#" + hex(best.r) + hex(best.g) + hex(best.b);
+}
+
+/** The colour of the text inside a box: the pixel that stands out most from the background `bg` ("#rrggbb"), as "#rrggbb". */
+export function inkColour(rgba: Uint8ClampedArray, width: number, height: number, box: { x: number; y: number; w: number; h: number }, bg: string): string {
+  const back = [1, 3, 5].map((i) => parseInt(bg.slice(i, i + 2), 16));
+  let best = -1;
+  let ink = "#000000";
+  const x1 = Math.min(width, Math.ceil(box.x + box.w));
+  const y1 = Math.min(height, Math.ceil(box.y + box.h));
+  for (let y = Math.max(0, Math.floor(box.y)); y < y1; y++) {
+    for (let x = Math.max(0, Math.floor(box.x)); x < x1; x++) {
+      const i = (y * width + x) * 4;
+      if (rgba[i + 3] < 128) continue;
+      const d = (rgba[i] - back[0]) ** 2 + (rgba[i + 1] - back[1]) ** 2 + (rgba[i + 2] - back[2]) ** 2;
+      if (d > best) {
+        best = d;
+        ink = "#" + [rgba[i], rgba[i + 1], rgba[i + 2]].map((v) => v.toString(16).padStart(2, "0")).join("");
+      }
+    }
+  }
+  return ink;
+}
+
+/**
+ * The tightest rectangle around the ink inside `band` (pixels), or null when there is none.
+ * Rows of ink that run across almost the whole band at its top or bottom are a rule or an underline, not letters: they are left out,
+ * so a border drawn right under the text is never inside the rectangle.
+ */
+export function inkBounds(rgba: Uint8ClampedArray, width: number, height: number, band: { x: number; y: number; w: number; h: number }, bg: string, threshold = 60): { x0: number; y0: number; x1: number; y1: number } | null {
+  const back = [1, 3, 5].map((i) => parseInt(bg.slice(i, i + 2), 16));
+  const left = Math.max(0, Math.floor(band.x));
+  const right = Math.min(width, Math.ceil(band.x + band.w));
+  const top = Math.max(0, Math.floor(band.y));
+  const bottom = Math.min(height, Math.ceil(band.y + band.h));
+  const span = right - left;
+  if (span <= 0 || bottom <= top) return null;
+  const isInk = (x: number, y: number) => {
+    const i = (y * width + x) * 4;
+    if (rgba[i + 3] < 128) return false;
+    return (rgba[i] - back[0]) ** 2 + (rgba[i + 1] - back[1]) ** 2 + (rgba[i + 2] - back[2]) ** 2 > threshold * threshold;
+  };
+  const edge = Math.max(1, Math.round((bottom - top) * 0.25));
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -1;
+  let y1 = -1;
+  for (let y = top; y < bottom; y++) {
+    let first = -1;
+    let last = -1;
+    let count = 0;
+    for (let x = left; x < right; x++) {
+      if (!isInk(x, y)) continue;
+      if (first < 0) first = x;
+      last = x;
+      count++;
+    }
+    if (count === 0) continue;
+    if (count >= span * 0.92 && (y - top < edge || bottom - 1 - y < edge)) continue;
+    x0 = Math.min(x0, first);
+    x1 = Math.max(x1, last + 1);
+    y0 = Math.min(y0, y);
+    y1 = Math.max(y1, y + 1);
+  }
+  return x1 < 0 ? null : { x0, y0, x1, y1 };
+}
+
 /** Millimeters to PDF points (1 pt = 1/72 inch). */
 export const mmToPt = (mm: number) => (mm * 72) / 25.4;
 export const ptToMm = (pt: number) => (pt * 25.4) / 72;

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MAX_ZOOM, chunkPages, clampView, groupLabel, groupText, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines, zoomAt } from "./pdfPages";
+import { MAX_ZOOM, inkBounds, inkColour, ringBackground, chunkPages, clampView, groupLabel, groupText, marginsForRotation, markAnchors, moveItem, parsePageList, parseRangeGroups, piecesToLines, zoomAt } from "./pdfPages";
 
 test("zooming keeps the point under the cursor in place", () => {
   const at = (v: { scale: number; x: number; y: number }, px: number, py: number) => [(px - v.x) / v.scale, (py - v.y) / v.scale];
@@ -115,4 +115,43 @@ test("text pieces become lines from top to bottom", () => {
     { str: "Seconda riga", x: 10, y: 680, height: 12 },
   ]);
   assert.deepEqual(lines, ["Ciao mondo", "Seconda riga"]);
+});
+
+test("the background is the colour that surrounds the box, even with text or a picture on the ring", () => {
+  const w = 40;
+  const h = 20;
+  const img = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0; i < w * h; i++) img.set([200, 230, 255, 255], i * 4);
+  // dark text inside the box
+  for (let y = 7; y < 13; y++) for (let x = 12; x < 28; x++) img.set([10, 10, 10, 255], (y * w + x) * 4);
+  // a dark letter of the next word touching the ring on the right
+  for (let y = 6; y < 9; y++) for (let x = 31; x < 33; x++) img.set([0, 0, 0, 255], (y * w + x) * 4);
+  assert.equal(ringBackground(img, w, h, { x: 10, y: 5, w: 20, h: 10 }), "#c8e6ff");
+  assert.equal(ringBackground(new Uint8ClampedArray(4 * 4 * 4).fill(255), 4, 4, { x: 1, y: 1, w: 1, h: 1 }), "#ffffff");
+  assert.equal(ringBackground(new Uint8ClampedArray(16), 2, 2, { x: 50, y: 50, w: 1, h: 1 }), "#ffffff");
+});
+
+test("the ink colour is the pixel that differs most from the background", () => {
+  const w = 20;
+  const h = 10;
+  const img = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0; i < w * h; i++) img.set([255, 255, 255, 255], i * 4);
+  img.set([120, 120, 120, 255], (4 * w + 6) * 4);
+  img.set([200, 0, 0, 255], (5 * w + 7) * 4);
+  assert.equal(inkColour(img, w, h, { x: 2, y: 2, w: 14, h: 6 }, "#ffffff"), "#c80000");
+  assert.equal(inkColour(img, w, h, { x: 15, y: 0, w: 3, h: 3 }, "#ffffff"), "#ffffff");
+});
+
+test("the ink box hugs the letters and leaves out an underline or a border", () => {
+  const w = 60;
+  const h = 30;
+  const img = new Uint8ClampedArray(w * h * 4);
+  for (let i = 0; i < w * h; i++) img.set([255, 255, 255, 255], i * 4);
+  const dark = (x: number, y: number) => img.set([0, 0, 0, 255], (y * w + x) * 4);
+  for (let y = 10; y < 18; y++) for (let x = 12; x < 40; x += 2) dark(x, y);
+  // a rule right under the text, across the whole band
+  for (let x = 0; x < w; x++) dark(x, 21);
+  const band = { x: 4, y: 5, w: 50, h: 17 };
+  assert.deepEqual(inkBounds(img, w, h, band, "#ffffff"), { x0: 12, y0: 10, x1: 39, y1: 18 });
+  assert.equal(inkBounds(img, w, h, { x: 44, y: 0, w: 10, h: 8 }, "#ffffff"), null);
 });
