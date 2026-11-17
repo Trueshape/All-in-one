@@ -323,7 +323,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "age",
-    name: "Calcolatore età",
+    name: "Età",
     description: "Scopri la tua età esatta, il giorno in cui sei nato e divertenti statistiche sui tuoi battiti cardiaci.",
     icon: Gift,
     colorClass: "border-pink-900/30 hover:border-pink-500/50",
