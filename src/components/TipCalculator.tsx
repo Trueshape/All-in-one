@@ -179,6 +179,7 @@ export default function TipCalculator() {
         fixed={tipFixed}
         onFixed={setTipFixed}
         shown={tipShown}
+        tabs
       />
       <Control icon={<Users className="w-3.5 h-3.5" />} label="Dividi tra persone" value={people} display={`${people}`} color={COLORS.people} min={1} max={30} onChange={setPeople} presets={[1, 2, 4, 8]} presetLabel={(v) => (v === 1 ? "Singolo" : `${v} Pers.`)} />
 
