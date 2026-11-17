@@ -124,7 +124,7 @@ export default function CurrencyConverter() {
             return (
               <Fragment key={code}>
                 <span className={cx("font-medium px-2 py-1.5", u.muted)}>{code}</span>
-                <span className={cx("font-mono text-right px-2 py-1.5 rounded-lg", u.panelInset, rate === null ? u.muted : u.subtle)}>{rate === null ? "—" : fmtNumber(rate, 4)}</span>
+                <span className={cx("font-mono text-right px-2 py-1.5 rounded-lg", u.panelInset, rate === null ? u.muted : u.subtle)}>{rate === null ? "—" : fmtNumber(rate, 2)}</span>
                 <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, u.text)}>{now === null ? "—" : fmtNumber(now, 2)}</span>
                 <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, past === null ? u.muted : u.text)}>{past === null ? "—" : fmtNumber(past, 2)}</span>
               </Fragment>
