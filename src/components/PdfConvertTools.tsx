@@ -5,7 +5,7 @@ import { useUnsaved } from "../ui/unsaved";
 import { Button, Chips, CopyButton, Field, IconButton, Notice, Segmented, Slider, Stack, TextArea, TextInput, Toggle, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
 import { ImageDrop } from "../ui/ImageDrop";
-import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, SAMPLE_SIZE, SampleStage, SinglePdf, editPdf, embedImage, pdfColor, pdfPoint, pdfjs, readImage, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
+import { EDITOR_GRID, EDITOR_STAGE, FONTS, FONT_OPTIONS, PageStage, PdfFileBar, SAMPLE_SIZE, SampleStage, SinglePdf, editPdf, embedImage, pdfColor, pdfPoint, pdfjs, readImage, savePdf, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { download, toBlob } from "../lib/imageOps";
 import { ALLOW } from "../lib/inputGuards";
@@ -452,7 +452,7 @@ interface EditBox extends TextBox {
   hide: { x: number; y: number; w: number; h: number };
 }
 
-const STAGE = 500;
+const STAGE = EDITOR_STAGE;
 
 /** Pixels of a page drawn at `scale`, to read colours from; null when the browser does not draw it in time. */
 async function pagePixels(pdf: PdfFile, page: number, scale: number): Promise<ImageData | null> {
@@ -665,7 +665,7 @@ export function PdfEditText() {
       {/* The same lines as a list: easier for small print, and it keeps the two columns about as tall */}
       {boxes.some((b) => b.page === page) && (
         <Field label={p ? `Righe della pagina ${page + 1}` : "Righe della pagina d'esempio"}>
-          <div className={cx("h-[400px] overflow-auto space-y-1.5 p-2 border", u.divider)}>
+          <div className={cx("h-[380px] overflow-auto space-y-1.5 p-2 border", u.divider)}>
             {boxes.filter((b) => b.page === page).map((b) => (
               <TextInput key={b.id} value={b.value} aria-label={`Riga: ${b.text}`} className={b.value !== b.text ? u.accent : undefined} onChange={(e) => setBoxes((list) => list.map((x) => (x.id === b.id ? { ...x, value: e.target.value } : x)))} />
             ))}
@@ -684,7 +684,7 @@ export function PdfEditText() {
       empty={(drop) => (
         <>
           {drop}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className={EDITOR_GRID}>
             <SampleStage width={STAGE} plain>{overlay}</SampleStage>
             {panel(null)}
           </div>
@@ -692,7 +692,7 @@ export function PdfEditText() {
       )}
     >
       {(p) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={EDITOR_GRID}>
           <PageStage pdf={p} page={page} onPage={setPage} width={STAGE}>
             {overlay}
           </PageStage>

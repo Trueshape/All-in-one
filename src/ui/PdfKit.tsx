@@ -248,6 +248,10 @@ export const SAMPLE_PAGES = 6;
 /** Size in points of a sample page (A4), for tools that measure the page. */
 export const SAMPLE_SIZE = { width: 595, height: 842 };
 
+/** Width of the page shown on the left of every tool built as page + options, and the grid that holds them: the same minimum height, so they open the same size. */
+export const EDITOR_STAGE = 360;
+export const EDITOR_GRID = "grid grid-cols-1 md:grid-cols-2 gap-6 md:min-h-[560px]";
+
 /** A made-up A4 page (grey lines in place of text) that stands in for a PDF while none is loaded. `width` is in px. */
 export function SampleSheet({ width = 300, className, plain = false, children }: { width?: number; className?: string; plain?: boolean; children?: ReactNode }) {
   const bar = (top: number, right: number, h: number) => (

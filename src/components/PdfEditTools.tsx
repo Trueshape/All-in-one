@@ -4,14 +4,12 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import { PDFCheckBox, PDFDropdown, PDFOptionList, PDFRadioGroup, PDFTextField, degrees } from "pdf-lib";
 import { Button, Chips, DatePicker, Field, IconButton, Notice, Segmented, Select, Slider, TextArea, TextInput, Toggle, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-import { FONTS, FONT_OPTIONS, PageStage, PdfFileBar, ResultPreview, SAMPLE_SIZE, SampleSheet, SampleStage, SinglePdf, drawError, editPdf, embedImage, pdfColor, pdfPoint, readImage, savePdf, startDrag, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
+import { EDITOR_GRID, EDITOR_STAGE, FONTS, FONT_OPTIONS, PageStage, PdfFileBar, ResultPreview, SAMPLE_SIZE, SampleSheet, SampleStage, SinglePdf, drawError, editPdf, embedImage, pdfColor, pdfPoint, readImage, savePdf, startDrag, usePageSize, usePdf, useSaver } from "../ui/PdfKit";
 import type { FontKey, PdfFile, PickedImage } from "../ui/PdfKit";
 import { markAnchors, parsePageList } from "../lib/pdfPages";
 import { ALLOW } from "../lib/inputGuards";
 
-const STAGE = 360;
-/** Page on the left, options on the right: the same minimum height for every tool built like that, so they open the same size. */
-const EDITOR_GRID = "grid grid-cols-1 md:grid-cols-2 gap-6 md:min-h-[560px]";
+const STAGE = EDITOR_STAGE;
 
 /** Colour square with its hex code, like the other tools. */
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -746,44 +744,45 @@ export function PdfForms() {
     </div>
   );
 
+  /** The page on the left (also while filling, to see the form); the mode, its options and the lock switch on the right. */
   const body = (pdf: PdfFile | null) => (
     <>
-      <Segmented fill value={mode} onChange={setMode} options={[{ value: "fill", label: `Compila (${editable.length})` }, { value: "add", label: `Aggiungi campi (${added.length})` }]} />
-      {mode === "fill" ? (
-        editable.length ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[560px] overflow-auto p-1">
-            {editable.map((f) => (
-              <Field key={f.name} label={f.name}>
-                {f.type === "text" ? (
-                  f.multiline ? <TextArea rows={3} value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} /> : <TextInput value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} />
-                ) : f.type === "check" ? (
-                  <Toggle checked={!!values[f.name]} onChange={(v) => setValues({ ...values, [f.name]: v })} label="Spuntata" />
-                ) : f.type === "choice" ? (
-                  <Select value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}>
-                    <option value="">—</option>
-                    {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
-                  </Select>
-                ) : null}
-              </Field>
-            ))}
-          </div>
+      <div className={EDITOR_GRID}>
+        {pdf ? (
+          <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE} onPick={mode === "add" ? place : undefined} stageRef={stage}>{mode === "add" ? boxes : null}</PageStage>
         ) : (
-          <Notice tone="empty">Questo PDF non ha campi da compilare: puoi aggiungerli da «Aggiungi campi».</Notice>
-        )
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {pdf ? (
-            <PageStage pdf={pdf} page={page} onPage={setPage} width={STAGE} onPick={place} stageRef={stage}>{boxes}</PageStage>
+          <SampleStage width={STAGE} stageRef={stage} onPick={mode === "add" ? place : undefined}>{mode === "add" ? boxes : null}</SampleStage>
+        )}
+        <div className="space-y-4 min-w-0">
+          <Segmented fill value={mode} onChange={setMode} options={[{ value: "fill", label: `Compila (${editable.length})` }, { value: "add", label: `Aggiungi campi (${added.length})` }]} />
+          {mode === "fill" ? (
+            editable.length ? (
+              <div className="space-y-4 max-h-[400px] overflow-auto p-1">
+                {editable.map((f) => (
+                  <Field key={f.name} label={f.name}>
+                    {f.type === "text" ? (
+                      f.multiline ? <TextArea rows={3} value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} /> : <TextInput value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })} />
+                    ) : f.type === "check" ? (
+                      <Toggle checked={!!values[f.name]} onChange={(v) => setValues({ ...values, [f.name]: v })} label="Spuntata" />
+                    ) : f.type === "choice" ? (
+                      <Select value={String(values[f.name] ?? "")} onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}>
+                        <option value="">—</option>
+                        {f.options.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </Select>
+                    ) : null}
+                  </Field>
+                ))}
+              </div>
+            ) : (
+              <Notice tone="empty">Questo PDF non ha campi da compilare: puoi aggiungerli da «Aggiungi campi».</Notice>
+            )
           ) : (
-            <SampleStage width={STAGE} stageRef={stage} onPick={place}>{boxes}</SampleStage>
+            addPanel
           )}
-          {addPanel}
+          <Toggle checked={flatten} onChange={setFlatten} label="Rendi non modificabile" />
+          {saver.error && <Notice tone="error">{saver.error}</Notice>}
         </div>
-      )}
-      <div className="flex flex-wrap items-center gap-4">
-        <Toggle checked={flatten} onChange={setFlatten} label="Rendi non modificabile" />
       </div>
-      {saver.error && <Notice tone="error">{saver.error}</Notice>}
     </>
   );
 
