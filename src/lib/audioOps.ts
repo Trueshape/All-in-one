@@ -300,3 +300,18 @@ export function encodeFlac(pcm: Pcm): Uint8Array {
   }
   return w.bytes.slice(0, w.length);
 }
+
+/** Loudness of a whole file in dBFS: the highest peak and the average (RMS) level. -Infinity for silence. */
+export function levelsOf(pcm: Pcm): { peakDb: number; rmsDb: number } {
+  let sum = 0;
+  let count = 0;
+  for (const channel of pcm.channels) {
+    for (let i = 0; i < channel.length; i++) sum += channel[i] * channel[i];
+    count += channel.length;
+  }
+  const toDb = (x: number) => (x > 0 ? 20 * Math.log10(x) : -Infinity);
+  return { peakDb: toDb(peakOf(pcm)), rmsDb: toDb(Math.sqrt(count ? sum / count : 0)) };
+}
+
+/** Gain in dB that brings the average level to `targetDb`, without pushing the peak above full scale. */
+export const trackGainDb = (levels: { peakDb: number; rmsDb: number }, targetDb = -18) => Math.min(targetDb - levels.rmsDb, -levels.peakDb);

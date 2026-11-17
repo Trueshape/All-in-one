@@ -4,7 +4,7 @@ import { Field, TextInput, Toggle, Chips, Segmented, Select, Slider, Button, Not
 import { useUi } from "../ui/tokens";
 import { AUDIO_FORMATS, DEFAULT_AUDIO_OPTIONS, MP3_BITRATES, encodeAudio } from "../lib/audioEncoders";
 import type { AudioFormat, AudioOptions, Mp3Setting } from "../lib/audioEncoders";
-import { applyVolume, durationOf, formatTime, normalizeGain, sliceAudio, splitRanges, waveformPeaks } from "../lib/audioOps";
+import { applyVolume, durationOf, formatTime, levelsOf, normalizeGain, sliceAudio, splitRanges, trackGainDb, waveformPeaks } from "../lib/audioOps";
 import type { Pcm } from "../lib/audioOps";
 import { download, formatBytes } from "../lib/imageOps";
 
@@ -13,7 +13,10 @@ interface Loaded {
   pcm: Pcm;
   name: string;
   size: number;
+  levels: { peakDb: number; rmsDb: number };
 }
+
+const fmtDb = (x: number) => (Number.isFinite(x) ? `${x.toFixed(1)} dB` : "silenzio");
 
 const BINS = 480;
 
@@ -70,7 +73,7 @@ export default function AudioEditor() {
       const decoded = await ctx.decodeAudioData(await picked.arrayBuffer());
       void ctx.close();
       const pcm: Pcm = { sampleRate: decoded.sampleRate, channels: Array.from({ length: decoded.numberOfChannels }, (_, c) => decoded.getChannelData(c).slice()) };
-      setFile({ pcm, name: picked.name.replace(/\.[^.]+$/, "") || "audio", size: picked.size });
+      setFile({ pcm, name: picked.name.replace(/\.[^.]+$/, "") || "audio", size: picked.size, levels: levelsOf(pcm) });
       setStart(0);
       setEnd(decoded.duration);
     } catch {
@@ -171,6 +174,9 @@ export default function AudioEditor() {
               <div className="space-y-1">
                 <Row label="File" value={file.name} />
                 <Row label="Durata" value={`${formatTime(duration)} · ${file.pcm.sampleRate} Hz · ${file.pcm.channels.length === 1 ? "mono" : "stereo"} · ${formatBytes(file.size)}`} />
+                <Row label="Picco" value={fmtDb(file.levels.peakDb)} />
+                <Row label="Volume medio" value={fmtDb(file.levels.rmsDb)} />
+                <Row label="Track gain (verso -18 dB medi)" value={Number.isFinite(trackGainDb(file.levels)) ? `${trackGainDb(file.levels) > 0 ? "+" : ""}${trackGainDb(file.levels).toFixed(1)} dB` : "—"} />
               </div>
             </>
           )}

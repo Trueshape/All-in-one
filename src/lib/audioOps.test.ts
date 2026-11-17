@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyVolume, durationOf, encodeFlac, encodeWav, normalizeGain, sliceAudio, splitRanges, waveformPeaks } from "./audioOps";
+import { applyVolume, durationOf, encodeFlac, encodeWav, levelsOf, normalizeGain, sliceAudio, splitRanges, trackGainDb, waveformPeaks } from "./audioOps";
 import type { Pcm } from "./audioOps";
 
 const tone = (seconds: number, sampleRate = 8000): Pcm => ({
@@ -54,4 +54,19 @@ test("FLAC: stream header, STREAMINFO and compression of a tone", () => {
   assert.ok(flac.length < 8000 * 2 * 0.7, `expected compression, got ${flac.length} bytes`);
   assert.equal(flac[42], 0xff); // first frame sync
   assert.equal(flac[43] & 0xfc, 0xf8);
+});
+
+test("levels: a constant half-scale signal has peak and average at -6 dB", () => {
+  const half = { sampleRate: 8000, channels: [new Float32Array(1000).fill(0.5)] };
+  const l = levelsOf(half);
+  assert.ok(Math.abs(l.peakDb - 20 * Math.log10(0.5)) < 1e-6);
+  assert.ok(Math.abs(l.rmsDb - 20 * Math.log10(0.5)) < 1e-6);
+  // the average is -6 dB and the target -18 dB: the track needs -12 dB
+  assert.ok(Math.abs(trackGainDb(l, -18) - (-18 + 6.0206)) < 1e-3);
+});
+
+test("levels: silence has no finite levels", () => {
+  const l = levelsOf({ sampleRate: 8000, channels: [new Float32Array(100)] });
+  assert.equal(l.peakDb, -Infinity);
+  assert.equal(l.rmsDb, -Infinity);
 });
