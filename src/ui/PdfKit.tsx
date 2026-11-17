@@ -336,7 +336,7 @@ export function usePdf() {
   return { pdf, error, setError, busy, load, clear };
 }
 
-export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.pdf", label, hint = "PDF", className = "h-56", icon }: {
+export function PdfDrop({ onFiles, multiple = false, accept = "application/pdf,.pdf", label, hint = "PDF", className = "aspect-video max-w-xl mx-auto", icon }: {
   onFiles: (files: File[]) => void;
   multiple?: boolean;
   accept?: string;
