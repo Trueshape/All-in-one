@@ -587,7 +587,7 @@ export const TOOLS: ToolItem[] = [
   },
   {
     id: "eta_calc",
-    name: "Calcolatore ETA",
+    name: "Tempo stimato",
     description: "Stima quando finirà un'attività dalla velocità finora: durata totale e ora di fine.",
     icon: Hourglass,
     colorClass: "border-orange-900/30 hover:border-orange-500/50",
