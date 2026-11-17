@@ -18,7 +18,7 @@ type Dict = Record<string, string>;
 /** Interface strings of the landing page and the tool window. Italian is the source language. */
 const UI: Record<Lang, Dict> = {
   it: {
-    nav_all: "Tutti i Tool", nav_calcolo: "Calcoli", nav_convertitori: "Convertitori", nav_immagini: "Immagini", nav_testo: "Testo", nav_pdf: "PDF", nav_produttivita: "Produttività", nav_creative: "Utilità",
+    nav_all: "Tutti i Tool", nav_calcolo: "Calcolo", nav_convertitori: "Convertitori", nav_immagini: "Immagini", nav_testo: "Testo", nav_pdf: "PDF", nav_produttivita: "Produttività", nav_creative: "Utilità",
     search: "Cerca strumento o funzione...", style: "Stile:", select_interface: "Seleziona Interfaccia",
     theme_artistic: "Minimale, stampo editoriale", theme_immersive: "Terminale cyber, dettagli neon, fosfori", theme_sophisticated: "Premium dark, angoli morbidi, sfumature",
     select_category: "Seleziona Categoria", select_category_sub: "Esplora i diversi strumenti raggruppati per tipologia di utilizzo.",

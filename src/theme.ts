@@ -1,6 +1,6 @@
 export const CATEGORY_LABELS: Record<string, string> = {
   all: "Tutti i Tool",
-  calcolo: "Calcoli",
+  calcolo: "Calcolo",
   convertitori: "Convertitori",
   immagini: "Immagini",
   testo: "Testo",
