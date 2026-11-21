@@ -7,7 +7,7 @@ import { useUi } from "../ui/tokens";
 import { contrastRatio, hexToRgb, rgbToHex } from "../lib/color";
 import type { Rgb } from "../lib/color";
 import { extractPalette } from "../lib/palette";
-import { readPixels, resample } from "../lib/imageOps";
+import { pixelAt, readPixels, resample } from "../lib/imageOps";
 
 const SAMPLE_SIDE = 400;
 
@@ -36,10 +36,7 @@ export default function ColorExtractor() {
     const data = sample.current;
     if (!data) return;
     const box = e.currentTarget.getBoundingClientRect();
-    const x = Math.min(data.width - 1, Math.max(0, Math.floor(((e.clientX - box.left) / box.width) * data.width)));
-    const y = Math.min(data.height - 1, Math.max(0, Math.floor(((e.clientY - box.top) / box.height) * data.height)));
-    const i = (y * data.width + x) * 4;
-    const rgb: Rgb = [data.data[i], data.data[i + 1], data.data[i + 2]];
+    const rgb: Rgb = pixelAt(data, (e.clientX - box.left) / box.width, (e.clientY - box.top) / box.height);
     setPicked({ hex: rgbToHex(rgb), rgb });
   };
 

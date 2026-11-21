@@ -42,6 +42,14 @@ export function resample(source: HTMLImageElement | HTMLCanvasElement, width: nu
 
 export const readPixels = (canvas: HTMLCanvasElement) => context(canvas).getImageData(0, 0, canvas.width, canvas.height);
 
+/** The RGB of the pixel at fractions fx, fy (0..1) of the image, clamped to its edges. */
+export function pixelAt(image: { width: number; height: number; data: Uint8ClampedArray }, fx: number, fy: number): [number, number, number] {
+  const x = Math.min(image.width - 1, Math.max(0, Math.floor(fx * image.width)));
+  const y = Math.min(image.height - 1, Math.max(0, Math.floor(fy * image.height)));
+  const i = (y * image.width + x) * 4;
+  return [image.data[i], image.data[i + 1], image.data[i + 2]];
+}
+
 export const writePixels = (canvas: HTMLCanvasElement, image: ImageData) => context(canvas).putImageData(image, 0, 0);
 
 export interface Adjustments {

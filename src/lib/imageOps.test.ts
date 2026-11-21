@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { adjust, sharpen } from "./imageOps";
+import { adjust, pixelAt, sharpen } from "./imageOps";
 
 test("adjust with all zeros leaves the pixels alone", () => {
   const data = new Uint8ClampedArray([10, 120, 250, 255]);
@@ -30,4 +30,16 @@ test("sharpen leaves a flat image unchanged and boosts an edge", () => {
   const image = { width: 3, height: 1, data: edge } as ImageData;
   sharpen(image, 1);
   assert.ok(image.data[0] < 50 && image.data[8] > 150);
+});
+
+test("pixelAt reads the pixel under a fraction of the image and clamps to the edges", () => {
+  // 2 × 2 image: red, green / blue, white
+  const data = new Uint8ClampedArray([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255]);
+  const image = { width: 2, height: 2, data };
+  assert.deepEqual(pixelAt(image, 0.1, 0.1), [255, 0, 0]);
+  assert.deepEqual(pixelAt(image, 0.9, 0.1), [0, 255, 0]);
+  assert.deepEqual(pixelAt(image, 0.1, 0.9), [0, 0, 255]);
+  assert.deepEqual(pixelAt(image, 0.5, 0.5), [255, 255, 255]);
+  assert.deepEqual(pixelAt(image, 1, 1), [255, 255, 255]);
+  assert.deepEqual(pixelAt(image, -3, -3), [255, 0, 0]);
 });

@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import { Coins, Dices, Disc3, ListTodo, Plus, Sparkles, X } from "lucide-react";
 import { Notice, Segmented, Button, TextInput, Chips, Panel, Stack, Tag, cx } from "../ui/kit";
 import { useUi } from "../ui/tokens";
+import { randomInt, wheelAngle as angleFor } from "../lib/random";
 
 type Tab = "coin" | "dice" | "list" | "wheel";
 
@@ -40,14 +41,6 @@ function Die({ value, rolling, delay }: { value: number; rolling: boolean; delay
       ))}
     </div>
   );
-}
-
-function randomInt(max: number): number {
-  const limit = Math.floor(0x1_0000_0000 / max) * max;
-  const buf = new Uint32Array(1);
-  do crypto.getRandomValues(buf);
-  while (buf[0] >= limit);
-  return buf[0] % max;
 }
 
 /** Timers started by this tool, cleared on unmount. */
@@ -133,13 +126,10 @@ export default function DecisionMaker() {
   const spin = () => {
     if (options.length < 2 || spinning) return;
     const winner = randomInt(options.length);
-    const slice = 360 / options.length;
-    // The pointer is at the top: bring the middle of the winning slice there, with a random offset inside it.
-    const inside = (randomInt(1000) / 1000 - 0.5) * slice * 0.8;
-    const base = Math.ceil(wheelAngle / 360) * 360;
     setSpinning(true);
     setWheelResult(null);
-    setWheelAngle(base + 360 * 6 + (360 - (winner * slice + slice / 2 + inside)));
+    // The pointer is at the top: bring the middle of the winning slice there, with a random offset inside it.
+    setWheelAngle(angleFor(wheelAngle, winner, options.length, randomInt(1000) / 1000));
     timers.timeout(() => { setWheelResult(options[winner]); setSpinning(false); }, 4000);
   };
 
