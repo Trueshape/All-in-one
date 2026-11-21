@@ -675,8 +675,18 @@ export function DatePicker({ value, onChange, max }: { value: string; onChange: 
   useEffect(() => {
     if (!open) return;
     const close = (e: MouseEvent) => { if (root.current && !root.current.contains(e.target as Node)) setOpen(false); };
+    // Escape closes only the calendar: the tool window must stay open.
+    const esc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopImmediatePropagation();
+      setOpen(false);
+    };
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    document.addEventListener("keydown", esc, true);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", esc, true);
+    };
   }, [open]);
 
   const first = new Date(view.getFullYear(), view.getMonth(), 1);
