@@ -1,34 +1,9 @@
 import { useMemo, useState } from "react";
 import { Download, QrCode, Type, Wifi } from "lucide-react";
-import qrcode from "qrcode-generator";
 import { Field, TextInput, TextArea, Select, Segmented, Chips, Button, Panel, Notice, Stack } from "../ui/kit";
 import { useUi } from "../ui/tokens";
-
-// The encoder defaults to Latin-1: force UTF-8 so accents and emoji survive.
-qrcode.stringToBytes = (s: string) => Array.from(new TextEncoder().encode(s));
-
-type Level = "L" | "M" | "Q" | "H";
-
-const QUIET_ZONE = 4;
-
-const escapeWifi = (s: string) => s.replace(/([\\;,:"])/g, "\\$1");
-
-function buildMatrix(data: string, level: Level): boolean[][] {
-  const qr = qrcode(0, level);
-  qr.addData(data);
-  qr.make();
-  const n = qr.getModuleCount();
-  return Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => qr.isDark(r, c)));
-}
-
-const luminance = (hex: string) => {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-};
-const contrast = (a: string, b: string) => {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-};
+import { QUIET_ZONE, buildMatrix, contrast, luminance, wifiPayload } from "../lib/qr";
+import type { QrLevel as Level } from "../lib/qr";
 
 function download(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
@@ -50,9 +25,7 @@ export default function QrGenerator() {
   const [fg, setFg] = useState("#000000");
   const [bg, setBg] = useState("#ffffff");
 
-  const payload = mode === "wifi"
-    ? ssid ? `WIFI:T:${security};S:${escapeWifi(ssid)};${security === "nopass" ? "" : `P:${escapeWifi(wifiPassword)};`};` : ""
-    : text;
+  const payload = mode === "wifi" ? wifiPayload(ssid, wifiPassword, security) : text;
 
   const { matrix, error } = useMemo(() => {
     if (!payload.trim()) return { matrix: null, error: null };

@@ -6,6 +6,7 @@ import { ImageDrop } from "../ui/ImageDrop";
 import type { ImageSourceState } from "../ui/ImageDrop";
 import { encodeBmp, encodeGif, encodeIco, encodeTiff } from "../lib/imageEncoders";
 import { MAX_SIDE, formatBytes } from "../lib/imageOps";
+import { otherSide, sizeError } from "../lib/imageSize";
 
 type Format = "jpeg" | "png" | "webp" | "gif" | "avif" | "bmp" | "tiff" | "ico";
 
@@ -48,25 +49,22 @@ export default function ImageConverter({ image }: { image: ImageSourceState }) {
 
   const onWidth = (value: string) => {
     setWidth(value);
-    const w = parseFloat(value);
-    if (lock && source && w > 0) setHeight(String(Math.round((w * source.height) / source.width)));
+    const other = lock && source ? otherSide(value, "width", source) : null;
+    if (other) setHeight(other);
   };
   const onHeight = (value: string) => {
     setHeight(value);
-    const h = parseFloat(value);
-    if (lock && source && h > 0) setWidth(String(Math.round((h * source.width) / source.height)));
+    const other = lock && source ? otherSide(value, "height", source) : null;
+    if (other) setWidth(other);
   };
 
   const save = () => {
     if (!source) return;
     const w = Math.round(parseFloat(width));
     const h = Math.round(parseFloat(height));
-    if (!(w > 0 && h > 0) || w > MAX_SIDE || h > MAX_SIDE) {
-      setError(`Dimensioni non valide: usa valori tra 1 e ${MAX_SIDE} px.`);
-      return;
-    }
-    if (format === "ico" && (w > 256 || h > 256)) {
-      setError("Il formato ICO arriva a 256 × 256 px: riduci larghezza e altezza.");
+    const problem = sizeError(w, h, format === "ico");
+    if (problem) {
+      setError(problem);
       return;
     }
     setError(null);

@@ -39,6 +39,8 @@
 - `src/lib/bill.ts` (+ test) — Sconto, mancia e divisione del conto, usata da `TipCalculator`.
 - `src/lib/age.ts` (+ test) — Età in anni, mesi e giorni e totali, usata da `AgeCalculator`.
 - `src/lib/timers.ts` (+ test) — Stato di Pomodoro e Cronometro fuori dai componenti, così continuano a contare (e il Pomodoro suona) anche a finestra chiusa. Usato da `PomodoroTimer`.
+- `src/lib/qr.ts` (+ test) — Contenuto Wi-Fi, griglia del codice e contrasto dei colori del Generatore QR (`QrGenerator`); forza UTF-8 per accenti ed emoji.
+- `src/lib/imageSize.ts` (+ test) — Lato corrispondente a proporzioni bloccate e limiti di dimensione (8192 px, ICO 256 px) del Convertitore immagini (`ImageConverter`).
 - `src/lib/units.ts` (+ test) — Tabelle delle unità di misura e `convert`, usate da `UnitConverter`.
 - `src/ui/ToolErrorBoundary.tsx` — Se uno strumento non si scarica o va in errore mostra un messaggio con «Ricarica la pagina» al posto suo, senza svuotare il sito. Usato in `src/ToolModal.tsx`.
 - `src/ui/unsaved.tsx` — Avviso prima di cambiare pagina con un file in lavorazione: `useUnsaved` (file aperto e toccato, finché non si scarica) e `useUnsavedFlag`; l'App chiede conferma su Esc, Precedente, Successivo, chiusura e ricarica.
