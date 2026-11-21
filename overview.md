@@ -63,6 +63,7 @@
 - `package.json` / `package-lock.json` — dipendenze e script (`dev`, `build`, `lint`).
 - `tsconfig.json` — config TypeScript (`npm run lint` = `tsc --noEmit`).
 - `.github/workflows/pages.yml` — build statico e deploy su GitHub Pages a ogni push su `main`.
+- `avvia.bat` — doppio clic per installare le dipendenze al primo avvio e far partire la versione locale (`npm run dev`, porta 5182).
 - `.nojekyll` — file vuoto: dice a GitHub Pages di non usare Jekyll.
 - `.gitignore` — esclude dipendenze, build, segreti (`.env`, chiavi) ed file di editor.
 - `README.md` — cos'è il progetto, come si avvia, come si pubblica su Pages.
