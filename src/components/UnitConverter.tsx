@@ -76,7 +76,7 @@ function UnitCategory({ category, value, setValue }: { category: string; value: 
       />
 
       {valid && (
-        <div className={cx("p-3 space-y-2 rounded-xl", u.panel)}>
+        <div className={cx("p-3 space-y-2", u.panel)}>
           <div className={cx("px-1 text-xs font-medium", u.subtle)}>{number === 1 ? `1 ${fromSymbol} in tutte le unità` : `${fmtUnit(number)} ${fromSymbol} in tutte le unità`}</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             {keys.filter((k) => k !== from).map((k) => (
@@ -85,7 +85,7 @@ function UnitCategory({ category, value, setValue }: { category: string; value: 
                 type="button"
                 onClick={() => setTo(k)}
                 title={`${cat.units[k].name}: usa come unità di arrivo`}
-                className={cx("flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-left", u.panelInset, k === to && "ring-1")}
+                className={cx("flex items-center justify-between gap-2 px-2 py-1.5 cursor-pointer text-left", u.panelInset, k === to && "ring-1")}
                 style={k === to ? { boxShadow: `inset 0 0 0 1px ${u.accentHex}` } : undefined}
               >
                 <span className={cx("font-medium", k === to ? u.accent : u.muted)}>{cat.units[k].symbol}</span>

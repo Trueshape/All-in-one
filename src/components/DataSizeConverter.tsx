@@ -57,7 +57,7 @@ export default function DataSizeConverter() {
       />
 
       {valid && (
-        <div className={cx("p-3 space-y-2 rounded-xl", u.panel)}>
+        <div className={cx("p-3 space-y-2", u.panel)}>
           <div className={cx("px-1 text-xs font-medium", u.subtle)}>{value === 1 ? `1 ${fromLabel} in tutte le unità` : `${fmtUnit(value)} ${fromLabel} in tutte le unità`}</div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             {UNITS.filter((x) => x.id !== from).map((x) => (
@@ -66,7 +66,7 @@ export default function DataSizeConverter() {
                 type="button"
                 onClick={() => setTo(x.id)}
                 title={`${unitLabel(x.id, system)}: usa come unità di arrivo`}
-                className={cx("flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-left", u.panelInset, x.id === to && "ring-1")}
+                className={cx("flex items-center justify-between gap-2 px-2 py-1.5 cursor-pointer text-left", u.panelInset, x.id === to && "ring-1")}
                 style={x.id === to ? { boxShadow: `inset 0 0 0 1px ${u.accentHex}` } : undefined}
               >
                 <span className={cx("font-medium", x.id === to ? u.accent : u.muted)}>{unitLabel(x.id, system)}</span>

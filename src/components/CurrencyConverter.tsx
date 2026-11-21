@@ -108,7 +108,7 @@ export default function CurrencyConverter() {
         copyText={valid ? `${fmtNumber(value, 2)} ${from} = ${fmtNumber(converted, 2)} ${to}` : ""}
       />
 
-      <div className={cx("p-3 space-y-2 rounded-xl", u.panel)}>
+      <div className={cx("p-3 space-y-2", u.panel)}>
         <div className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-x-3 gap-y-1.5 text-xs">
           <span />
           <span className={cx("px-2 text-right font-medium", u.subtle)}>Tasso di cambio</span>
@@ -128,9 +128,9 @@ export default function CurrencyConverter() {
             return (
               <Fragment key={code}>
                 <span className={cx("font-medium px-2 py-1.5", u.muted)}>{code}</span>
-                <span className={cx("font-mono text-right px-2 py-1.5 rounded-lg", u.panelInset, rate === null ? u.muted : u.subtle)}>{rate === null ? "—" : fmtNumber(rate, 2)}</span>
-                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, u.text)}>{now === null ? "—" : fmtNumber(now, 2)}</span>
-                <span className={cx("font-mono font-semibold text-right px-2 py-1.5 rounded-lg", u.panelInset, past === null ? u.muted : u.text)}>{past === null ? "—" : fmtNumber(past, 2)}</span>
+                <span className={cx("font-mono text-right px-2 py-1.5", u.panelInset, rate === null ? u.muted : u.subtle)}>{rate === null ? "—" : fmtNumber(rate, 2)}</span>
+                <span className={cx("font-mono font-semibold text-right px-2 py-1.5", u.panelInset, u.text)}>{now === null ? "—" : fmtNumber(now, 2)}</span>
+                <span className={cx("font-mono font-semibold text-right px-2 py-1.5", u.panelInset, past === null ? u.muted : u.text)}>{past === null ? "—" : fmtNumber(past, 2)}</span>
               </Fragment>
             );
           })}

@@ -400,7 +400,7 @@ export default function Landing({
                     <div className="flex justify-between items-start select-none relative z-20 gap-3">
                       <div className="flex flex-col gap-1">
                         <span className={tc.cardIndex}>
-                          {formattedIndex} / CATEGORY
+                          {formattedIndex} / {t("category")}
                         </span>
                         <h2 className={tc.cardTitle}>
                           {category.name}
@@ -503,7 +503,7 @@ export default function Landing({
                     >
                       <div className="flex justify-between items-start select-none relative z-20">
                         <span className={`${tc.cardIndex} flex items-center gap-1`}>
-                          {formattedIndex} / {tool.category}
+                          {formattedIndex} / {t(`nav_${tool.category}`)}
                         </span>
 
                         <div className="absolute right-4 top-3 flex items-center gap-3">
