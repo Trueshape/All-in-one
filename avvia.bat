@@ -8,7 +8,7 @@ if not exist node_modules (
   if errorlevel 1 goto errore
 )
 
-echo Sito in avvio su http://localhost:5182/All-in-one/
+echo Sito in avvio su http://localhost:5182/allin1/
 echo Per fermarlo chiudi questa finestra oppure premi Ctrl+C.
 call npm run dev -- --open
 if errorlevel 1 goto errore

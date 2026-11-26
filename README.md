@@ -1,8 +1,8 @@
-# All in one
+# allin1
 
 Strumenti quotidiani (calcoli, convertitori, produttività, utilità), in un'unica pagina.
 
-- Sito pubblico: https://trueshape.github.io/All-in-one/
+- Sito pubblico: https://trueshape.github.io/allin1/
 
 ## Avvio in locale
 
