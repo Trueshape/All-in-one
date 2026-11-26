@@ -4,7 +4,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: process.env.VITE_PUBLIC === '1' ? '/allin1/' : '/',
+    base: process.env.VITE_PUBLIC === '1' ? '/Toolbox/' : '/',
     plugins: [react(), tailwindcss()],
     server: {port: 5182, strictPort: true},
   };

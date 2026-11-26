@@ -197,7 +197,7 @@ function writeFlac(b: Uint8Array, tags: Tags): Uint8Array {
   add("DATE", tags.year);
   add("TRACKNUMBER", tags.track);
   add("LYRICS", tags.lyrics);
-  const vendor = text.encode("allin1");
+  const vendor = text.encode("Toolbox");
   const comments = entries.map((e) => text.encode(e));
   const data = concat([
     Uint8Array.from(bytes32le(vendor.length)),

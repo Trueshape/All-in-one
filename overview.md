@@ -59,7 +59,7 @@
 - `src/ui/ImageDrop.tsx` — caricamento di un'immagine, o di più immagini con `onFiles` (trascina o scegli) e hook `useImageSource`, usati dagli strumenti per immagini.
 - `src/lib/` — logica pura degli strumenti: `markdown.ts`, `codiceFiscale.ts`, `calcEngine.ts`, `calcState.ts`, `marketData.ts`, `color.ts` (conversioni e armonie), `palette.ts` (colori dominanti), `imageOps.ts` (ricampionamento, nitidezza, filtri), `imageEncoders.ts` (BMP, TIFF, ICO), `barcode.ts` (Code 128, EAN-13), `pattern.ts` (pattern SVG), `handwriting.ts` (foglio e contorni dei glifi per il font a mano), `bracket.ts` (tabellone a eliminazione), `pdfPages.ts` (intervalli di pagine, margini e righe di testo dei PDF), `timeInput.ts` (tempo scritto a mano nel timer), `passwordModes.ts` e `wordlist.ts` (frasi, pronunciabili, PIN, token). Ogni modulo con logica ha il suo `*.test.ts` (`npm test`).
 - `src/index.css`, `src/main.tsx`, `src/vite-env.d.ts` — stili globali, entry React, tipi Vite.
-- `vite.config.ts` — config Vite; `base` cambia con `VITE_PUBLIC=1` (sottocartella `/allin1/` per Pages).
+- `vite.config.ts` — config Vite; `base` cambia con `VITE_PUBLIC=1` (sottocartella `/Toolbox/` per Pages).
 - `package.json` / `package-lock.json` — dipendenze e script (`dev`, `build`, `lint`).
 - `tsconfig.json` — config TypeScript (`npm run lint` = `tsc --noEmit`).
 - `.github/workflows/pages.yml` — build statico e deploy su GitHub Pages a ogni push su `main`.

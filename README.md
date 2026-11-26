@@ -1,8 +1,8 @@
-# allin1
+# Toolbox
 
 Strumenti quotidiani (calcoli, convertitori, produttività, utilità), in un'unica pagina.
 
-- Sito pubblico: https://trueshape.github.io/allin1/
+- Sito pubblico: https://trueshape.github.io/Toolbox/
 
 ## Avvio in locale
 
